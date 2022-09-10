@@ -1,3 +1,10 @@
+# Ignored folders
+.vscode/
+build/
+build_Debug/
+build_Release/
+debug/
+
 # Prerequisites
 *.d
 
