@@ -1,0 +1,33 @@
+<MC-Project>
+ProjectID = 1
+Name = Test_01
+DOS-File = DOS_01.txt
+Output-File = TestResult_01.txt
+Verbosity(0-2) = 2
+EFTAdjust(y/n) = n
+InitialFDDistrib(y/n) = n
+TeffFit(y/n) = n
+EnforceECount(y/n) = n
+CutoffAutoAdjust(y/n) = n
+Description = This is a test project with a 
+ single MC hopping simulation.
+</MC-Project>
+
+<Parameters>
+Repetitions = 1
+Temp(K) = 273.15
+ChemPot(eV) = 0
+Emin(eV) = -0.2
+Emax(eV) = 0.2
+States = 20000
+MinPaths = 100
+DistCutoff(nm) = 0
+EdiffCutoff(eV) = 0
+PreHops = 0
+EqHops = 0
+HopLimit = 1000000
+GradPhi(V/cm) = 2.5e+4
+Seed = -6526958
+AttTime(s) = 1e-13
+LocRadius(nm) = 1.0
+</Parameters>

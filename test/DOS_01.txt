@@ -1,0 +1,7 @@
+<DOS>
+Type = PiecewiseLinear
+RefTemp(K) = 300
+
+E-EF(eV) DOS(1/cm3eV)
+-0.35    1.0E21
+0.35     1.0E21

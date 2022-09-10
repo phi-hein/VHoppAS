@@ -1,0 +1,37 @@
+<MC-Project>
+ProjectID = 3
+Name = Test_05
+DOS-File = DOS_01.txt
+Output-File = TestResult_05.txt
+Verbosity(0-2) = 2
+EFTAdjust(y/n) = y
+InitialFDDistrib(y/n) = y
+TeffFit(y/n) = n
+EnforceECount(y/n) = y
+CutoffAutoAdjust(y/n) = n
+Description = This is a test project with
+ multiple MC hopping simulations and no electric field.
+</MC-Project>
+
+<Parameters>
+Repetitions = 3
+ChemPot(eV) = 0
+Emin(eV) = -0.25
+Emax(eV) = 0.25
+GradPhi(V/cm) = 0.0
+States = 20000
+MinPaths = 100
+DistCutoff(nm) = 1.0
+PreHops = 100000
+EqHops = 500000
+HopLimit = 1000000
+Seed = -6863258
+AttTime(s) = 1e-13
+LocRadius(nm) = 1.0
+</Parameters>
+
+<VariedParameters>
+Temp(K)
+250
+275
+300
