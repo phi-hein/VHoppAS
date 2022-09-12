@@ -17,7 +17,7 @@ Syntax for links to issues (or pull requests):
 ([#1](https://github.com/phi-hein/BulkHopMC/issues/1))
 --->
 
-## [1.6.0] - 10.09.2022
+## [1.6.0] - 12.09.2022
 
 _Initial release._
 
