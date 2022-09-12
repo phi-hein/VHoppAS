@@ -1,16 +1,16 @@
 <MC-Project>
 ProjectID = 2
-Name = Test_03
+Name = Test_02
 DOS-File = "DOS_01.txt"
-Output-File = "TestResult_03.txt"
+Output-File = "Test_02_Result.txt"
 Verbosity(0-2) = 2
 EFTAdjust(y/n) = y
 InitialFDDistrib(y/n) = y
 TeffFit(y/n) = n
 EnforceECount(y/n) = y
 CutoffAutoAdjust(y/n) = n
-OnlyCompareSimID(y/n) = n
-UseYZVariance(y/n) = n
+OnlyCompareSimID(y/n) = y
+UseYZVariance(y/n) = y
 Description = This is a test project with
  multiple MC hopping simulations.
 </MC-Project>

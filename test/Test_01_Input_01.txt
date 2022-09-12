@@ -2,7 +2,7 @@
 ProjectID = 1
 Name = Test_01
 DOS-File = DOS_01.txt
-Output-File = TestResult_01.txt
+Output-File = Test_01_Result.txt
 Verbosity(0-2) = 2
 EFTAdjust(y/n) = n
 InitialFDDistrib(y/n) = n

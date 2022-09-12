@@ -1,14 +1,16 @@
 <MC-Project>
 ProjectID = 3
-Name = Test_05
+Name = Test_03
 DOS-File = DOS_01.txt
-Output-File = TestResult_05.txt
+Output-File = Test_03_Result.txt
 Verbosity(0-2) = 2
 EFTAdjust(y/n) = y
-InitialFDDistrib(y/n) = y
-TeffFit(y/n) = n
+InitialFDDistrib(y/n) = n
+TeffFit(y/n) = y
 EnforceECount(y/n) = y
-CutoffAutoAdjust(y/n) = n
+CutoffAutoAdjust(y/n) = y
+DistAdjustPercentage = 5
+EdiffAdjustPercentage = 10
 Description = This is a test project with
  multiple MC hopping simulations and no electric field.
 </MC-Project>
@@ -21,7 +23,7 @@ Emax(eV) = 0.25
 GradPhi(V/cm) = 0.0
 States = 20000
 MinPaths = 100
-DistCutoff(nm) = 1.0
+DistCutoff(nm) = 2.2
 PreHops = 100000
 EqHops = 500000
 HopLimit = 1000000

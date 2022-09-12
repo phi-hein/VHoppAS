@@ -6,7 +6,7 @@ build_Release/
 debug/
 
 # Ignored test output files
-test/TestResult*
+test/Test*Result*
 test/Test*.log
 test/Example*.txt
 
