@@ -83,7 +83,7 @@ add_test(
   COMMAND sh -c "rm -f Test_02_Result* Test_02*.log && \
   $<TARGET_FILE:${PROJECT_NAME}> -validate -input Test_02_Input_01.txt > Test_02.1.log && \
   $<TARGET_FILE:${PROJECT_NAME}> -input Test_02_Input_01.txt > Test_02.2.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -sim 2 -input Test_02_Input_02.txt > Test_02.3.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 2 -input Test_02_Input_02.txt > Test_02.3.log && \
   $<TARGET_FILE:${PROJECT_NAME}> -collect -input Test_02_Input_02.txt > Test_02.4.log" 
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/test"
   )
@@ -93,7 +93,7 @@ add_test(
 add_test(
   NAME Test_03 
   COMMAND sh -c "rm -f Test_03_Result* Test_03*.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -sim 3 -input Test_03_Input.txt > Test_03.1.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 3 -input Test_03_Input.txt > Test_03.1.log && \
   $<TARGET_FILE:${PROJECT_NAME}> -input Test_03_Input.txt > Test_03.2.log" 
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/test"
   )
