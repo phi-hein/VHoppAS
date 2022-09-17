@@ -34,7 +34,7 @@ MC::TParamSet::TParamSet()
     m_EFTAdjust(true), m_InitialFDDistrib(true), 
     m_TeffFit(true), m_EnforceECount(true), m_CutoffAutoAdjust(false),
     m_DistCutoffAdjustPercentage(0.0), m_EdiffCutoffAdjustPercentage(0.0),
-    m_OnlyCompareSimID(false), m_UseYZVariance(false),
+    m_UseYZVariance(false),
     m_Repetitions(1), c_Repetitions(true),
     m_MinStateEnergy(0.0), c_MinStateEnergy(true),
     m_MaxStateEnergy(0.0), c_MaxStateEnergy(true),
