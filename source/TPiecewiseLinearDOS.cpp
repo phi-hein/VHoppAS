@@ -13,6 +13,13 @@
 #include "GlobalFunctions.hpp"
 #include "CustomExceptions.hpp"
 
+// Type of this DOS sub-class
+const std::string MC::TPiecewiseLinearDOS::m_Type = "PiecewiseLinear";
+
+// Parameter descriptors
+const std::array<std::string,2> MC::TPiecewiseLinearDOS::s_Type = {"Type",""};
+const std::array<std::string,2> MC::TPiecewiseLinearDOS::s_RefTemp = {"RefTemp","K"};
+
 // Default constructor
 MC::TPiecewiseLinearDOS::TPiecewiseLinearDOS()
     : m_HasDOS(false), m_Ready(false), m_RefTemp(0.0), m_MaxEnergy(0.0), m_MinEnergy(0.0), 
@@ -44,7 +51,7 @@ void MC::TPiecewiseLinearDOS::SpecifyDOS(const std::string& dos_content)
 
     // Read reference temperature
     if (std::regex_search(dos_content, match,
-        std::regex(GF::DescRegex({"RefTemp","K"}) + "\\s*=\\s*(" + Constant::dblex + ")")))
+        std::regex(GF::DescRegex(s_RefTemp) + "\\s*=\\s*(" + Constant::dblex + ")")))
     {
         if (!GF::StringToDouble(match[1],ref_temp))
         {

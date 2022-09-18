@@ -195,6 +195,30 @@ std::string MC::GF::DescRegex(const std::array<std::string,2>& desc)
     return "(?:" + MetaEsc(CombineDescUnit(desc)) + "|" + MetaEsc(desc[0]) + ")";
 }
 
+// Extract an XML block that is delimited by <identifier> ... </identifier>
+std::string MC::GF::ExtractXMLBlock(const std::string& str, const std::string& identifier)
+{
+    std::smatch match;
+    if (std::regex_search(str, match,
+        std::regex("<" + MetaEsc(identifier) + ">((?:(?!</" + MetaEsc(identifier) + ">)(?:.|[\\n\\r]))+)")))
+    {
+        return match[1];
+    }
+    else return "";
+}
+
+// Extract an XML block that is delimited by <identifier> ... (end of string)
+std::string MC::GF::ExtractOpenXMLBlock(const std::string& str, const std::string& identifier)
+{
+    std::smatch match;
+    if (std::regex_search(str, match,
+        std::regex("<" + MetaEsc(identifier) + ">((?:.|[\\n\\r])+)")))
+    {
+        return match[1];
+    }
+    else return "";
+}
+
 // Contruct descriptor and unit for standard deviation
 std::array<std::string,2> MC::GF::StdDevDescUnit(const std::array<std::string,2>& desc)
 {

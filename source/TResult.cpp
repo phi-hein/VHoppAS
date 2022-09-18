@@ -144,7 +144,7 @@ std::unique_ptr<MC::TResult> MC::TResult::ValueCopy(const TResult* const result)
 // Write results block
 void MC::TResult::Write(std::ostream& o_str) const
 {
-    o_str << "<Results>" << std::endl;
+    o_str << "<" << XMLSection::Results << ">" << std::endl;
     o_str << GF::CombineDescUnit(s_RepID) << " = " << m_RepID << std::endl;
     o_str << GF::CombineDescUnit(s_DriftConductivity) << " = " << m_DriftConductivity << std::endl;
     o_str << GF::CombineDescUnit(s_DriftMobility) << " = " << m_DriftMobility << std::endl;
@@ -188,14 +188,14 @@ void MC::TResult::Write(std::ostream& o_str) const
     o_str << GF::CombineDescUnit(s_MeanPathCount) << " = " << m_MeanPathCount << std::endl;
     o_str << GF::CombineDescUnit(s_MinUsedStateEnergy) << " = " << m_MinUsedStateEnergy << std::endl;
     o_str << GF::CombineDescUnit(s_MaxUsedStateEnergy) << " = " << m_MaxUsedStateEnergy << std::endl;
-    o_str << "</Results>" << std::endl;
+    o_str << "</" << XMLSection::Results << ">" << std::endl;
     
     if (!m_EqProgress.empty())
     {
         o_str << std::endl;
-        o_str << "<EquilibrationConvergence>" << std::endl;
+        o_str << "<" << XMLSection::EqConv << ">" << std::endl;
         WriteConvergenceTable(o_str,true);
-        o_str << "</EquilibrationConvergence>" << std::endl;
+        o_str << "</" << XMLSection::EqConv << ">" << std::endl;
         o_str << "<!-- averages refer to effective carriers -->" << std::endl;
         o_str << "<!-- respective values are adjusted to the effective carrier density at the end of the complete simulation -->" << std::endl;
     }
@@ -203,9 +203,9 @@ void MC::TResult::Write(std::ostream& o_str) const
     if (!m_Progress.empty())
     {
         o_str << std::endl;
-        o_str << "<SimulationConvergence>" << std::endl;
+        o_str << "<" << XMLSection::SimConv << ">" << std::endl;
         WriteConvergenceTable(o_str,false);
-        o_str << "</SimulationConvergence>" << std::endl;
+        o_str << "</" << XMLSection::SimConv << ">" << std::endl;
         o_str << "<!-- averages refer to effective carriers -->" << std::endl;
         o_str << "<!-- respective values are adjusted to the effective carrier density at the end of the complete simulation -->" << std::endl;
     }

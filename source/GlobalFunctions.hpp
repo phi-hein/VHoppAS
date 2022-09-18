@@ -54,6 +54,12 @@ std::string CombineDescUnit(const std::array<std::string,2>& desc);
 // Construct regex string that matches both property descriptor alone and with unit
 std::string DescRegex(const std::array<std::string,2>& desc);
 
+// Extract an XML block that is delimited by <identifier> ... </identifier>
+std::string ExtractXMLBlock(const std::string& str, const std::string& identifier);
+
+// Extract an XML block that is delimited by <identifier> ... (end of string)
+std::string ExtractOpenXMLBlock(const std::string& str, const std::string& identifier);
+
 // Contruct descriptor and unit for standard deviation
 std::array<std::string,2> StdDevDescUnit(const std::array<std::string,2>& desc);
 

@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <ostream>
 #include <cstdint>
+#include <array>
 
 #include "Constants.hpp"
 #include "TDOS.hpp"

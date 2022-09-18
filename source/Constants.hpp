@@ -91,5 +91,38 @@ namespace Constant
     const std::string boolex_false = "(?:false|f|no|n)";
 }
 
+namespace XMLSection
+{
+    // XML identifier: DOS
+    const std::string DOS = "DOS";
+
+    // XML identifier: Project
+    const std::string Project = "MC-Project";
+
+    // XML identifier: Input parameters
+    const std::string Params = "Parameters";
+
+    // XML identifier: Input parameters
+    const std::string VariedParams = "VariedParameters";
+
+    // XML identifier: Results
+    const std::string Results = "Results";
+
+    // XML identifier: Convergence of equilibration
+    const std::string EqConv = "EquilibrationConvergence";
+
+    // XML identifier: Convergence of simulation
+    const std::string SimConv = "SimulationConvergence";
+
+    // XML identifier: Histogram
+    const std::string Histogram = "Histogram";
+
+    // XML identifier: Table with results of individual repetitions
+    const std::string SummaryTable = "Summary";
+
+    // XML identifier: Table with average results of parameter sets (SimIDs)
+    const std::string MeanTable = "Mean/StdDev-Summary";
+}
+
 } // MC namespace
 #endif  // MC_Constants_H_

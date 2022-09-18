@@ -57,10 +57,10 @@ void MC::TController::GenerateExampleInputFiles()
     std::ofstream dos_file ("ExampleDOS.txt", std::ofstream::trunc);
   	if (dos_file.is_open())
 	{
-		dos_file << "<DOS>" << std::endl;
-		dos_file << "Type = PiecewiseLinear" << std::endl;
-        dos_file << "RefTemp(K) = 300" << std::endl;
-        dos_file <<  std::endl;
+		dos_file << "<" << XMLSection::DOS << ">" << std::endl;
+		dos_file << GF::CombineDescUnit(TPiecewiseLinearDOS::s_Type) << " = " << TPiecewiseLinearDOS::m_Type << std::endl;
+        dos_file << GF::CombineDescUnit(TPiecewiseLinearDOS::s_RefTemp) << " = 300" << std::endl;
+        dos_file << std::endl;
         dos_file << "E-EF(eV) DOS(1/cm3eV)" << std::endl;
         dos_file << "-0.25    1.5E23" << std::endl;
         dos_file << "0.0      1.75E23" << std::endl;
@@ -76,7 +76,7 @@ void MC::TController::GenerateExampleInputFiles()
     m_ProjectID = 1;
     m_ProjectName = "SingleExample";
     m_DOSFile = "ExampleDOS.txt";
-    m_OutputFile = "ExampleResult.txt";  
+    m_OutputFile = "ExampleSingleResult.txt";  
     m_VL = Verbosity::MAXIMUM;
     m_EFTAdjust = true;
     m_InitialFDDistrib = true;
@@ -116,6 +116,7 @@ void MC::TController::GenerateExampleInputFiles()
     // Set multi-example parameters
     m_ProjectID = 2;
     m_ProjectName = "MultiExample";
+    m_OutputFile = "ExampleMultiResult.txt";
     m_ProjectDescription = "This is an example project for\n multiple MC hopping simulations.";
     m_ParamSets[0]->c_PhiGradient = false;
     m_ParamSets[0]->c_Temperature = false;
@@ -186,21 +187,9 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
         }
         else throw EX::TFileAccess("Cannot open input file.");
         
-        std::smatch general_match;
-        if (std::regex_search(file_content,general_match,std::regex("<MC-Project>((?:(?!</MC-Project>)(?:.|[\\n\\r]))+)")))
-        {
-            general_str = general_match[1];
-        }
-        std::smatch param_match;
-        if (std::regex_search(file_content,param_match,std::regex("<Parameters>((?:(?!</Parameters>)(?:.|[\\n\\r]))+)")))
-        {
-            param_str = param_match[1];
-        }
-        std::smatch varied_match;
-        if (std::regex_search(file_content,varied_match,std::regex("<VariedParameters>((?:.|[\\n\\r])+)")))
-        {
-            varied_str = varied_match[1];
-        }
+        general_str = GF::ExtractXMLBlock(file_content,XMLSection::Project);   
+        param_str = GF::ExtractXMLBlock(file_content,XMLSection::Params);
+        varied_str = GF::ExtractOpenXMLBlock(file_content,XMLSection::VariedParams);
     }
     if ((general_str.empty()) || ((param_str.empty()) && (varied_str.empty())))
     {
@@ -429,7 +418,10 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
         }
         else throw EX::TFileAccess("Cannot open DOS file.");
 
-        if (std::regex_search(dos_content,std::regex("<DOS>[\\s\\n\\r]*Type\\s*=\\s*PiecewiseLinear")))
+        if (std::regex_search(dos_content, 
+            std::regex("<" + GF::MetaEsc(XMLSection::DOS) + ">[\\s\\n\\r]*" 
+            + GF::DescRegex(TPiecewiseLinearDOS::s_Type) + "\\s*=\\s*" 
+            + GF::MetaEsc(TPiecewiseLinearDOS::m_Type))))
         {
             std::unique_ptr<MC::TPiecewiseLinearDOS> dos (new MC::TPiecewiseLinearDOS());
             dos->SpecifyDOS(dos_content);
@@ -674,19 +666,11 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
                 continue;
             }
 
-            std::smatch param_match;
-            if (std::regex_search(file_content,param_match,std::regex("<Parameters>((?:(?!</Parameters>)(?:.|[\\n\\r]))+)")))
-            {
-                param_str = param_match[1];
-            }
-            else continue;
+            param_str = GF::ExtractXMLBlock(file_content,XMLSection::Params);
+            if (param_str.empty()) continue;
             
-            std::smatch result_match;
-            if (std::regex_search(file_content,result_match,std::regex("<Results>((?:(?!</Results>)(?:.|[\\n\\r]))+)")))
-            {
-                result_str = result_match[1];
-            }
-            else continue;
+            result_str = GF::ExtractXMLBlock(file_content,XMLSection::Results);
+            if (result_str.empty()) continue;
         }
         
         // Generate and compare parameter set object
@@ -1129,9 +1113,9 @@ void MC::TController::WriteInputFile(const std::filesystem::path& filename) cons
     std::ofstream file (filename, std::ofstream::trunc);
   	if (file.is_open())
 	{
-        file << "<MC-Project>" << std::endl;
+        file << "<" << XMLSection::Project << ">" << std::endl;
         WriteHeader(file);
-        file << "</MC-Project>" << std::endl;
+        file << "</" << XMLSection::Project << ">" << std::endl;
         file << std::endl;
 
         if (m_ParamSets.size() > 1)
@@ -1139,9 +1123,9 @@ void MC::TController::WriteInputFile(const std::filesystem::path& filename) cons
             auto header = m_ParamSets[0]->WriteTableHeader(false);
             if (!header.empty())
             {
-                file << "<Parameters>" << std::endl;
+                file << "<" << XMLSection::Params << ">" << std::endl;
                 file << m_ParamSets[0]->WriteConstant();
-                file << "</Parameters>" << std::endl;
+                file << "</" << XMLSection::Params << ">" << std::endl;
                 file << std::endl;
 
                 std::vector<std::vector<std::string>> table;
@@ -1157,21 +1141,21 @@ void MC::TController::WriteInputFile(const std::filesystem::path& filename) cons
                     throw EX::TOutOfMemory("Parameter table too large.",__func__,e.what());
                 }
 
-                file << "<VariedParameters>" << std::endl;
+                file << "<" << XMLSection::VariedParams << ">" << std::endl;
                 GF::WriteTable(file,header,table);
             }
             else
             {
-                file << "<Parameters>" << std::endl;
+                file << "<" << XMLSection::Params << ">" << std::endl;
                 file << m_ParamSets[0]->Write(false);
-                file << "</Parameters>" << std::endl;
+                file << "</" << XMLSection::Params << ">" << std::endl;
             }
         }
         else
         {
-            file << "<Parameters>" << std::endl;
+            file << "<" << XMLSection::Params << ">" << std::endl;
             file << m_ParamSets[0]->Write(false);
-            file << "</Parameters>" << std::endl;
+            file << "</" << XMLSection::Params << ">" << std::endl;
         }
 		file.close();
 	}
@@ -1221,14 +1205,14 @@ void MC::TController::WriteOutputFile(const std::filesystem::path& filename,
     std::ofstream file (filename, std::ofstream::trunc);
   	if (file.is_open())
 	{
-        file << "<MC-Project>" << std::endl;
+        file << "<" << XMLSection::Project << ">" << std::endl;
         WriteHeader(file);
-        file << "</MC-Project>" << std::endl;
+        file << "</" << XMLSection::Project << ">" << std::endl;
         file << std::endl;
 
-		file << "<Parameters>" << std::endl;
+		file << "<" << XMLSection::Params << ">" << std::endl;
 		file << params.Write();
-        file << "</Parameters>" << std::endl;
+        file << "</" << XMLSection::Params << ">" << std::endl;
 
         file << std::endl;
         result.Write(file);
@@ -1285,9 +1269,9 @@ void MC::TController::WriteOutputFileSummary(const std::filesystem::path& filena
     std::ofstream file (filename, std::ofstream::trunc);
     if (file.is_open())
     {
-        file << "<MC-Project>" << std::endl;
+        file << "<" << XMLSection::Project << ">" << std::endl;
         WriteHeader(file);
-        file << "</MC-Project>" << std::endl;
+        file << "</" << XMLSection::Project << ">" << std::endl;
         if (incomplete_job_ids != "")
         {
             if (m_ParallelizeReps)
@@ -1297,12 +1281,12 @@ void MC::TController::WriteOutputFileSummary(const std::filesystem::path& filena
         }
         file << std::endl;
 
-        file << "<Parameters>" << std::endl;
+        file << "<" << XMLSection::Params << ">" << std::endl;
         file << m_ParamSets[0]->WriteConstant();
-        file << "</Parameters>" << std::endl;
+        file << "</" << XMLSection::Params << ">" << std::endl;
         file << std::endl;
 
-        file << "<Summary>" << std::endl;
+        file << "<" << XMLSection::SummaryTable << ">" << std::endl;
         GF::WriteTable(file,header,table);
     }
     else throw EX::TFileAccess("Cannot open/create summary file.");
@@ -1354,9 +1338,9 @@ void MC::TController::WriteOutputFileMean(const std::filesystem::path& filename,
     std::ofstream file (filename, std::ofstream::trunc);
     if (file.is_open())
     {
-        file << "<MC-Project>" << std::endl;
+        file << "<" << XMLSection::Project << ">" << std::endl;
         WriteHeader(file);
-        file << "</MC-Project>" << std::endl;
+        file << "</" << XMLSection::Project << ">" << std::endl;
         if (incomplete_job_ids != "")
         {
             if (m_ParallelizeReps)
@@ -1366,12 +1350,12 @@ void MC::TController::WriteOutputFileMean(const std::filesystem::path& filename,
         }
         file << std::endl;
 
-        file << "<Parameters>" << std::endl;
+        file << "<" << XMLSection::Params << ">" << std::endl;
         file << m_ParamSets[0]->WriteConstant();
-        file << "</Parameters>" << std::endl;
+        file << "</" << XMLSection::Params << ">" << std::endl;
         file << std::endl;
 
-        file << "<Mean/StdDev-Summary>" << std::endl;
+        file << "<" << XMLSection::MeanTable << ">" << std::endl;
         GF::WriteTable(file,header,table);
     }
     else throw EX::TFileAccess("Cannot open/create mean/stddev file.");
