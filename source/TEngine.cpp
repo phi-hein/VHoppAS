@@ -982,16 +982,16 @@ void MC::TEngine::RunSimulation ()
     // Output of final results (in different variants depending on verbosity)
     if (m_VL == Verbosity::MINIMUM) 
     {
-        std::cout << hop_counter - pre_hop_limit - eq_hop_limit << " hops, ";
+        std::cout << m_SimResult->m_TotalHops << " hops, t = ";
         std::cout << m_SimResult->m_TotalTime << " s -> ";
         if (m_ParamSet->m_PhiGradient == 0.0)
         {
-            std::cout << m_SimResult->m_DiffusionCoefficient << " cm2/s" << std::endl;
+            std::cout << "D = " << m_SimResult->m_DiffusionCoefficient << " cm2/s" << std::endl;
         }
         else
         {
-            std::cout << m_SimResult->m_DriftConductivity << " S/m, " 
-            << m_SimResult->m_DiffusionCoefficientParallel << " cm2/s, "
+            std::cout << "Sigma = " << m_SimResult->m_DriftConductivity << " S/m, Dx = " 
+            << m_SimResult->m_DiffusionCoefficientParallel << " cm2/s, Dyz = "
             << m_SimResult->m_DiffusionCoefficientTransverse << " cm2/s" << std::endl;
         }
     }

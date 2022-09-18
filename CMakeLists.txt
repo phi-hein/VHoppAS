@@ -68,9 +68,9 @@ enable_testing()
 # Test 01.2: Continue single simulation with repetitions
 add_test(
   NAME Test_01 
-  COMMAND sh -c "rm -f Test_01_Result* Test_01*.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -input Test_01_Input_01.txt > Test_01.1.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -input Test_01_Input_02.txt > Test_01.2.log" 
+  COMMAND sh -c "mkdir -p output && cd output && rm -f Test_01_Result* Test_01*.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -input ../Test_01_Input_01.txt > Test_01.1.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -input ../Test_01_Input_02.txt > Test_01.2.log" 
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/test"
   )
 
@@ -80,11 +80,11 @@ add_test(
 # Test 02.4: Result collection
 add_test(
   NAME Test_02 
-  COMMAND sh -c "rm -f Test_02_Result* Test_02*.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -validate -input Test_02_Input_01.txt > Test_02.1.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -input Test_02_Input_01.txt > Test_02.2.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -job 2 -input Test_02_Input_02.txt > Test_02.3.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -collect -input Test_02_Input_02.txt > Test_02.4.log" 
+  COMMAND sh -c "mkdir -p output && cd output && rm -f Test_02_Result* Test_02*.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -validate -input ../Test_02_Input_01.txt > Test_02.1.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -input ../Test_02_Input_01.txt > Test_02.2.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 2 -input ../Test_02_Input_02.txt > Test_02.3.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -collect -input ../Test_02_Input_02.txt > Test_02.4.log" 
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/test"
   )
 
@@ -92,9 +92,9 @@ add_test(
 # Test 03.2: Simulate missing repetitions
 add_test(
   NAME Test_03 
-  COMMAND sh -c "rm -f Test_03_Result* Test_03*.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -job 3 -input Test_03_Input.txt > Test_03.1.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -input Test_03_Input.txt > Test_03.2.log" 
+  COMMAND sh -c "mkdir -p output && cd output && rm -f Test_03_Result* Test_03*.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 3 -input ../Test_03_Input.txt > Test_03.1.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -input ../Test_03_Input.txt > Test_03.2.log" 
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/test"
   )
 
@@ -103,8 +103,8 @@ add_test(
 # Test 04.3: Run multi-type example simulation
 add_test(
   NAME Test_04 
-  COMMAND sh -c "rm -f Test_04*.log Example*.txt && \
-  $<TARGET_FILE:${PROJECT_NAME}> -example > Test_04.1.log \
+  COMMAND sh -c "mkdir -p output && cd output && rm -f Test_04*.log Example*.txt && \
+  $<TARGET_FILE:${PROJECT_NAME}> -example > Test_04.1.log && \
   $<TARGET_FILE:${PROJECT_NAME}> -input ExampleSingle.txt > Test_04.2.log && \
   $<TARGET_FILE:${PROJECT_NAME}> -input ExampleMulti.txt > Test_04.3.log" 
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/test"
@@ -116,11 +116,11 @@ add_test(
 # Test 05.4: Result collection with minimum verbosity
 add_test(
   NAME Test_05 
-  COMMAND sh -c "rm -f Test_05_Result* Test_05*.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -job 2 -input Test_05_Input_01.txt > Test_05.1.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -job 1 -input Test_05_Input_02.txt > Test_05.2.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -job 3 -input Test_05_Input_03.txt > Test_05.3.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -collect -input Test_05_Input_03.txt > Test_05.4.log" 
+  COMMAND sh -c "mkdir -p output && cd output && rm -f Test_05_Result* Test_05*.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 2 -input ../Test_05_Input_01.txt > Test_05.1.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 1 -input ../Test_05_Input_02.txt > Test_05.2.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 3 -input ../Test_05_Input_03.txt > Test_05.3.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -collect -input ../Test_05_Input_03.txt > Test_05.4.log" 
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/test"
   )
 
@@ -135,15 +135,15 @@ add_test(
 # Test 06.9: Result collection with new repetitions
 add_test(
   NAME Test_06 
-  COMMAND sh -c "rm -f Test_06_Result* Test_06*.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -job 4 -input Test_06_Input_01.txt > Test_06.1.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -job 1 -input Test_06_Input_01.txt > Test_06.2.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -job 3 -input Test_06_Input_01.txt > Test_06.3.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -job 6 -input Test_06_Input_01.txt > Test_06.4.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -collect -input Test_06_Input_01.txt > Test_06.5.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -input Test_06_Input_01.txt > Test_06.6.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -job 11 -input Test_06_Input_02.txt > Test_06.7.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -job 4 -input Test_06_Input_02.txt > Test_06.8.log && \
-  $<TARGET_FILE:${PROJECT_NAME}> -collect -input Test_06_Input_02.txt > Test_06.9.log" 
+  COMMAND sh -c "mkdir -p output && cd output && rm -f Test_06_Result* Test_06*.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 4 -input ../Test_06_Input_01.txt > Test_06.1.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 1 -input ../Test_06_Input_01.txt > Test_06.2.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 3 -input ../Test_06_Input_01.txt > Test_06.3.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 6 -input ../Test_06_Input_01.txt > Test_06.4.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -collect -input ../Test_06_Input_01.txt > Test_06.5.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -input ../Test_06_Input_01.txt > Test_06.6.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 11 -input ../Test_06_Input_02.txt > Test_06.7.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 4 -input ../Test_06_Input_02.txt > Test_06.8.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -collect -input ../Test_06_Input_02.txt > Test_06.9.log" 
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/test"
   )

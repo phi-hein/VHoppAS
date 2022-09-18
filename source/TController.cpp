@@ -101,9 +101,9 @@ void MC::TController::GenerateExampleInputFiles()
 	m_ParamSets[0]->m_MinPathCount = 100U;
     m_ParamSets[0]->m_DistCutoff = 0.0;
     m_ParamSets[0]->m_EdiffCutoff = 0.25;
-    m_ParamSets[0]->m_PreHopLimit = 1000000U;
-    m_ParamSets[0]->m_EqHopLimit = 10000000U;
-	m_ParamSets[0]->m_HopLimit = 10000000U;
+    m_ParamSets[0]->m_PreHopLimit = 20000U;
+    m_ParamSets[0]->m_EqHopLimit = 500000U;
+	m_ParamSets[0]->m_HopLimit = 500000U;
     m_ParamSets[0]->m_RndSeed = -6526958;
 	m_ParamSets[0]->m_AttemptTime = 1.0E-13;
 	m_ParamSets[0]->m_Temperature = 273.15;
@@ -396,10 +396,10 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
         std::cout << "- Energy reference: E = 0 is the position of the Fermi level in the charge neutral material." << std::endl;
         std::cout << "- Chemical potential = difference betw. the Fermi level in the simulated cell and the charge neutral Fermi level (on the energy axis of the DOS)." << std::endl;
         std::cout << "- Mobile electrons = electrons with > 0 non-oscillating hops." << std::endl;
-        std::cout << std::endl;
     }
 
     // Read DOS file
+    std::cout << std::endl;
     std::cout << "Reading DOS file: " << m_DOSFile << std::endl;
     {
         std::string dos_content;
@@ -965,9 +965,8 @@ void MC::TController::ExecuteSimulations()
             {
                 std::cout << "(total repetition runtime: ";
                 GF::WriteDuration(std::cout, std::chrono::steady_clock::now() - runtime_start);
-                std::cout << ")" << std::endl;
+                std::cout << ")" << std::endl << std::endl;
             }
-            if (m_VL >= Verbosity::MINIMUM) std::cout << std::endl;
         }
 
         // Print combined analysis for completed simulation ID
@@ -999,7 +998,6 @@ void MC::TController::CollectResults()
         throw EX::TInvalidStatus("Inconsistent number of parameter sets and results.",__func__);
 
     // Print overview of results and collect missing JobIDs
-    std::cout << std::endl;
     std::cout << " ============ RESULTS COLLECTION ============ " << std::endl;
     if ((m_ParamSets.size() == 1) && (m_Results[0].size() == 1))
     {
@@ -1067,6 +1065,10 @@ void MC::TController::CollectResults()
         incomplete_str = GF::FormatIDList(incomplete_job_ids);
     std::cout << incomplete_str << std::endl << std::endl;
 
+    // Set verbosity to maximum
+    Verbosity t_VL = m_VL;
+    m_VL = Verbosity::MAXIMUM;
+
     // Write summary output file
     std::filesystem::path summary_path = m_OutputFile;
     summary_path.replace_extension();
@@ -1084,6 +1086,9 @@ void MC::TController::CollectResults()
         WriteOutputFileMean(mean_path,incomplete_str);
     }
     else std::cout << "No mean/stddev file written because only up to one result per parameter set." << std::endl;
+
+    // Restore original verbosity
+    m_VL = t_VL;
 
     // Print analysis of the complete results table
     std::cout << std::endl << "Collective results of all simulations:" << std::endl;
