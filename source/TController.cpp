@@ -16,22 +16,22 @@
 #include "CustomExceptions.hpp"
 
 // Parameter descriptors
-const std::string MC::TController::s_ProjectID = "ProjectID";
-const std::string MC::TController::s_ProjectName = "Name";
-const std::string MC::TController::s_DOSFile = "DOS-File";
-const std::string MC::TController::s_OutputFile = "Output-File";
-const std::string MC::TController::s_VL = "Verbosity(0-2)";
-const std::string MC::TController::s_EFTAdjust = "EFTAdjust(y/n)";
-const std::string MC::TController::s_InitialFDDistrib = "InitialFDDistrib(y/n)";
-const std::string MC::TController::s_TeffFit = "TeffFit(y/n)";
-const std::string MC::TController::s_EnforceECount = "EnforceECount(y/n)";
-const std::string MC::TController::s_CutoffAutoAdjust = "CutoffAutoAdjust(y/n)";
-const std::string MC::TController::s_DistCutoffAdjustPercentage = "DistAdjustPercentage";
-const std::string MC::TController::s_EdiffCutoffAdjustPercentage = "EdiffAdjustPercentage";
-const std::string MC::TController::s_OnlyCompareSimID = "OnlyCompareSimID(y/n)";
-const std::string MC::TController::s_UseYZVariance = "UseYZVariance(y/n)";
-const std::string MC::TController::s_ParallelizeReps = "ParallelizeReps(y/n)";
-const std::string MC::TController::s_ProjectDescription = "Description";
+const std::array<std::string,2> MC::TController::s_ProjectID = {"ProjectID",""};
+const std::array<std::string,2> MC::TController::s_ProjectName = {"Name",""};
+const std::array<std::string,2> MC::TController::s_DOSFile = {"DOS-File",""};
+const std::array<std::string,2> MC::TController::s_OutputFile = {"Output-File",""};
+const std::array<std::string,2> MC::TController::s_VL = {"Verbosity","0-2"};
+const std::array<std::string,2> MC::TController::s_EFTAdjust = {"EFTAdjust","y/n"};
+const std::array<std::string,2> MC::TController::s_InitialFDDistrib = {"InitialFDDistrib","y/n"};
+const std::array<std::string,2> MC::TController::s_TeffFit = {"TeffFit","y/n"};
+const std::array<std::string,2> MC::TController::s_EnforceECount = {"EnforceECount","y/n"};
+const std::array<std::string,2> MC::TController::s_CutoffAutoAdjust = {"CutoffAutoAdjust","y/n"};
+const std::array<std::string,2> MC::TController::s_DistCutoffAdjustPercentage = {"DistAdjustPercentage",""};
+const std::array<std::string,2> MC::TController::s_EdiffCutoffAdjustPercentage = {"EdiffAdjustPercentage",""};
+const std::array<std::string,2> MC::TController::s_OnlyCompareSimID = {"OnlyCompareSimID","y/n"};
+const std::array<std::string,2> MC::TController::s_UseYZVariance = {"UseYZVariance","y/n"};
+const std::array<std::string,2> MC::TController::s_ParallelizeReps = {"ParallelizeReps","y/n"};
+const std::array<std::string,2> MC::TController::s_ProjectDescription = {"Description",""};
 
 // Default constructor
 MC::TController::TController()
@@ -229,52 +229,48 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
     m_InputFile = filename;
 
     // Read general parameters
-    auto makeex = [] (const std::string& str) -> std::string
-    {
-        return std::regex_replace(std::regex_replace(str, std::regex("\\)"), "\\)"), std::regex("\\("), "\\(");
-    };
-    auto get_optional_bool = [&] (const std::string& desc, const std::string& name, bool& val, bool def_val)
+    auto get_optional_bool = [&] (const std::array<std::string,2>& desc, bool& val, bool def_val)
     {
         std::smatch match;
-        if (std::regex_search(general_str,match,std::regex(makeex(desc) + "\\s*=\\s*(\\w+)")))
+        if (std::regex_search(general_str,match,std::regex(GF::DescRegex(desc) + "\\s*=\\s*(\\w+)")))
         {
             if (!GF::StringToBool(match[1], val))
             {
                 val = def_val;
-                std::cout << name << " setting has invalid value -> set to default." << std::endl;
+                std::cout << desc[0] << " setting has invalid value -> set to default." << std::endl;
             }
         }
         else
         {
             val = def_val;
-            std::cout << name << " setting not found -> set to default." << std::endl;
+            std::cout << desc[0] << " setting not found -> set to default." << std::endl;
         }
     };
-    auto get_optional_perc = [&] (const std::string& desc, const std::string& name, double& val, bool show_msg)
+    auto get_optional_perc = [&] (const std::array<std::string,2>& desc, double& val, bool show_msg)
     {
         std::smatch match;
-        if (std::regex_search(general_str,match,std::regex(makeex(desc) + "\\s*=\\s*(" + Constant::dblex + ")")))
+        if (std::regex_search(general_str,match,std::regex(GF::DescRegex(desc) + "\\s*=\\s*(" + Constant::dblex + ")")))
         {
             if (!GF::StringToDouble(match[1], val))
             {
                 val = 0.0;
-                if (show_msg) std::cout << name << " setting has invalid value -> set to default." << std::endl;
+                if (show_msg) std::cout << desc[0] << " setting has invalid value -> set to default." << std::endl;
             }
             else if (val <= 0.0)
             {
                 val = 0.0;
-                if (show_msg) std::cout << name << " setting is zero or negative -> default is used." << std::endl;
+                if (show_msg) std::cout << desc[0] << " setting is zero or negative -> default is used." << std::endl;
             }
         }
         else
         {
             val = 0.0;
-            if (show_msg) std::cout << name << " setting not set -> default is used." << std::endl;
+            if (show_msg) std::cout << desc[0] << " setting not set -> default is used." << std::endl;
         }
     };
     {
         std::smatch match;
-        if (std::regex_search(general_str,match,std::regex(makeex(s_ProjectID) + "\\s*=\\s*(\\d+)")))
+        if (std::regex_search(general_str,match,std::regex(GF::DescRegex(s_ProjectID) + "\\s*=\\s*(\\d+)")))
         {
             if (!GF::StringToUInt32(match[1], m_ProjectID))
             {
@@ -288,7 +284,7 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
     }
     {
         std::smatch match;
-        if (std::regex_search(general_str,match,std::regex(makeex(s_ProjectName) + "\\s*=\\s*(.+)")))
+        if (std::regex_search(general_str,match,std::regex(GF::DescRegex(s_ProjectName) + "\\s*=\\s*(.+)")))
         {
             m_ProjectName = match[1];
             GF::TrimString(m_ProjectName);
@@ -301,7 +297,7 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
     }
     {
         std::smatch match;
-        if (std::regex_search(general_str,match,std::regex(makeex(s_DOSFile) + "\\s*=\\s*(.+)")))
+        if (std::regex_search(general_str,match,std::regex(GF::DescRegex(s_DOSFile) + "\\s*=\\s*(.+)")))
         {
             std::string str = match[1];
             GF::TrimString(str);
@@ -318,7 +314,7 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
     }
     {
         std::smatch match;
-        if (std::regex_search(general_str,match,std::regex(makeex(s_OutputFile) + "\\s*=\\s*(.+)")))
+        if (std::regex_search(general_str,match,std::regex(GF::DescRegex(s_OutputFile) + "\\s*=\\s*(.+)")))
         {
             std::string str = match[1];
             GF::TrimString(str);
@@ -341,7 +337,7 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
     }
     {
         std::smatch match;
-        if (std::regex_search(general_str,match,std::regex(makeex(s_VL) + "\\s*=\\s*(\\d+)")))
+        if (std::regex_search(general_str,match,std::regex(GF::DescRegex(s_VL) + "\\s*=\\s*(\\d+)")))
         {
             std::uint32_t vl = 0;
             if (GF::StringToUInt32(match[1], vl))
@@ -376,20 +372,20 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
         }
     }
 
-    get_optional_bool(s_EFTAdjust, "EFTAdjust", m_EFTAdjust, true);
-    get_optional_bool(s_InitialFDDistrib, "InitialFDDistrib", m_InitialFDDistrib, true);
-    get_optional_bool(s_TeffFit, "TeffFit", m_TeffFit, true);
-    get_optional_bool(s_EnforceECount, "EnforceECount", m_EnforceECount, true);
-    get_optional_bool(s_CutoffAutoAdjust, "CutoffAutoAdjust", m_CutoffAutoAdjust, false);
-    get_optional_perc(s_DistCutoffAdjustPercentage, "DistAdjustPercentage", m_DistCutoffAdjustPercentage, m_CutoffAutoAdjust);
-    get_optional_perc(s_EdiffCutoffAdjustPercentage, "EdiffAdjustPercentage", m_EdiffCutoffAdjustPercentage, m_CutoffAutoAdjust);
-    get_optional_bool(s_OnlyCompareSimID, "OnlyCompareSimID", m_OnlyCompareSimID, false);
-    get_optional_bool(s_UseYZVariance, "UseYZVariance", m_UseYZVariance, false);
-    get_optional_bool(s_ParallelizeReps, "ParallelizeReps", m_ParallelizeReps, false);
+    get_optional_bool(s_EFTAdjust, m_EFTAdjust, true);
+    get_optional_bool(s_InitialFDDistrib, m_InitialFDDistrib, true);
+    get_optional_bool(s_TeffFit, m_TeffFit, true);
+    get_optional_bool(s_EnforceECount, m_EnforceECount, true);
+    get_optional_bool(s_CutoffAutoAdjust, m_CutoffAutoAdjust, false);
+    get_optional_perc(s_DistCutoffAdjustPercentage, m_DistCutoffAdjustPercentage, m_CutoffAutoAdjust);
+    get_optional_perc(s_EdiffCutoffAdjustPercentage, m_EdiffCutoffAdjustPercentage, m_CutoffAutoAdjust);
+    get_optional_bool(s_OnlyCompareSimID, m_OnlyCompareSimID, false);
+    get_optional_bool(s_UseYZVariance, m_UseYZVariance, false);
+    get_optional_bool(s_ParallelizeReps, m_ParallelizeReps, false);
 
     {
         std::smatch match;
-        if (std::regex_search(general_str,match,std::regex(makeex(s_ProjectDescription) + "\\s*=\\s*((?:.|[\\n\\r])+)")))
+        if (std::regex_search(general_str,match,std::regex(GF::DescRegex(s_ProjectDescription) + "\\s*=\\s*((?:.|[\\n\\r])+)")))
         {
             m_ProjectDescription = match[1];
             GF::TrimString(m_ProjectDescription);
@@ -671,7 +667,7 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
             else continue;
             
             std::smatch id_match;
-            if ((!std::regex_search(file_content,id_match,std::regex(s_ProjectID + "\\s*=\\s*(\\d+)"))) ||
+            if ((!std::regex_search(file_content,id_match,std::regex(GF::DescRegex(s_ProjectID) + "\\s*=\\s*(\\d+)"))) ||
                 (!GF::StringToUInt32(id_match[1],proj_id)) ||
                 (proj_id != m_ProjectID))
             {
@@ -1080,49 +1076,19 @@ void MC::TController::CollectResults()
         std::cout << "Incomplete JobIDs (= serialized RepIDs): ";
     else
         std::cout << "Incomplete JobIDs (= SimIDs): ";
-    std::stringstream incomplete_sstr;
+    std::string incomplete_str;
     if (incomplete_job_ids.empty())
-    {
-        incomplete_sstr << "none";
-    }
+        incomplete_str = "none";
     else
-    {
-        std::sort(incomplete_job_ids.begin(),incomplete_job_ids.end());
-        bool in_range = false;
-        for (std::size_t i = 0; i < incomplete_job_ids.size(); i++)
-        {
-            if (in_range == false)
-            {
-                if (i != 0) incomplete_sstr << ",";
-                incomplete_sstr << incomplete_job_ids[i];
-                if (i + 1 < incomplete_job_ids.size())
-                {
-                    if (incomplete_job_ids[i] + 1 == incomplete_job_ids[i + 1]) in_range = true;
-                }
-            }
-            else
-            {
-                if (i + 1 < incomplete_job_ids.size())
-                {
-                    if (incomplete_job_ids[i] + 1 != incomplete_job_ids[i + 1])
-                    {
-                        incomplete_sstr << "-" << incomplete_job_ids[i];
-                        in_range = false;
-                    }
-                }
-                else incomplete_sstr << "-" << incomplete_job_ids[i];
-            }
-        }
-    }
-    std::cout << incomplete_sstr.str() << std::endl;
-    std::cout << std::endl;
+        incomplete_str = GF::FormatIDList(incomplete_job_ids);
+    std::cout << incomplete_str << std::endl << std::endl;
 
     // Write summary output file
     std::filesystem::path summary_path = m_OutputFile;
     summary_path.replace_extension();
     summary_path += "_Summary";
     summary_path += m_OutputFile.extension();
-    WriteOutputFileSummary(summary_path,incomplete_sstr.str());
+    WriteOutputFileSummary(summary_path,incomplete_str);
 
     // Write mean output file
     if (write_mean_file)
@@ -1131,7 +1097,7 @@ void MC::TController::CollectResults()
         mean_path.replace_extension();
         mean_path += "_Mean";
         mean_path += m_OutputFile.extension();
-        WriteOutputFileMean(mean_path,incomplete_sstr.str());
+        WriteOutputFileMean(mean_path,incomplete_str);
     }
     else std::cout << "No mean/stddev file written because only up to one result per parameter set." << std::endl;
 
@@ -1217,29 +1183,29 @@ void MC::TController::WriteInputFile(const std::filesystem::path& filename) cons
 // Write controller parameters
 void MC::TController::WriteHeader(std::ostream& o_str) const
 {
-    o_str << s_ProjectID << " = " << m_ProjectID << std::endl;
-    o_str << s_ProjectName << " = " << m_ProjectName << std::endl;
-    o_str << s_DOSFile << " = " << m_DOSFile << std::endl;
-    o_str << s_OutputFile << " = " << m_OutputFile << std::endl;
-    o_str << s_VL << " = ";
+    o_str << GF::CombineDescUnit(s_ProjectID) << " = " << m_ProjectID << std::endl;
+    o_str << GF::CombineDescUnit(s_ProjectName) << " = " << m_ProjectName << std::endl;
+    o_str << GF::CombineDescUnit(s_DOSFile) << " = " << m_DOSFile << std::endl;
+    o_str << GF::CombineDescUnit(s_OutputFile) << " = " << m_OutputFile << std::endl;
+    o_str << GF::CombineDescUnit(s_VL) << " = ";
     if (m_VL == Verbosity::MINIMUM) o_str << "0" << std::endl;
     if (m_VL == Verbosity::MEDIUM) o_str << "1" << std::endl;
     if (m_VL == Verbosity::MAXIMUM) o_str << "2" << std::endl;
-    o_str << s_EFTAdjust << " = " << ((m_EFTAdjust) ? "y" : "n") << std::endl;
-    o_str << s_InitialFDDistrib << " = " << ((m_InitialFDDistrib) ? "y" : "n") << std::endl;
-    o_str << s_TeffFit << " = " << ((m_TeffFit) ? "y" : "n") << std::endl;
-    o_str << s_EnforceECount << " = " << ((m_EnforceECount) ? "y" : "n") << std::endl;
-    o_str << s_CutoffAutoAdjust << " = " << ((m_CutoffAutoAdjust) ? "y" : "n") << std::endl;
+    o_str << GF::CombineDescUnit(s_EFTAdjust) << " = " << ((m_EFTAdjust) ? "y" : "n") << std::endl;
+    o_str << GF::CombineDescUnit(s_InitialFDDistrib) << " = " << ((m_InitialFDDistrib) ? "y" : "n") << std::endl;
+    o_str << GF::CombineDescUnit(s_TeffFit) << " = " << ((m_TeffFit) ? "y" : "n") << std::endl;
+    o_str << GF::CombineDescUnit(s_EnforceECount) << " = " << ((m_EnforceECount) ? "y" : "n") << std::endl;
+    o_str << GF::CombineDescUnit(s_CutoffAutoAdjust) << " = " << ((m_CutoffAutoAdjust) ? "y" : "n") << std::endl;
     if ((m_DistCutoffAdjustPercentage != 0.0) || (m_CutoffAutoAdjust))
-        o_str << s_DistCutoffAdjustPercentage << " = " << m_DistCutoffAdjustPercentage << std::endl;
+        o_str << GF::CombineDescUnit(s_DistCutoffAdjustPercentage) << " = " << m_DistCutoffAdjustPercentage << std::endl;
     if ((m_EdiffCutoffAdjustPercentage != 0.0) || (m_CutoffAutoAdjust))
-        o_str << s_EdiffCutoffAdjustPercentage << " = " << m_EdiffCutoffAdjustPercentage << std::endl;
-    o_str << s_OnlyCompareSimID << " = " << ((m_OnlyCompareSimID) ? "y" : "n") << std::endl;
-    o_str << s_UseYZVariance << " = " << ((m_UseYZVariance) ? "y" : "n") << std::endl;
-    o_str << s_ParallelizeReps << " = " << ((m_ParallelizeReps) ? "y" : "n") << std::endl;
+        o_str << GF::CombineDescUnit(s_EdiffCutoffAdjustPercentage) << " = " << m_EdiffCutoffAdjustPercentage << std::endl;
+    o_str << GF::CombineDescUnit(s_OnlyCompareSimID) << " = " << ((m_OnlyCompareSimID) ? "y" : "n") << std::endl;
+    o_str << GF::CombineDescUnit(s_UseYZVariance) << " = " << ((m_UseYZVariance) ? "y" : "n") << std::endl;
+    o_str << GF::CombineDescUnit(s_ParallelizeReps) << " = " << ((m_ParallelizeReps) ? "y" : "n") << std::endl;
     if (!m_ProjectDescription.empty())
     {
-        o_str << s_ProjectDescription << " = " << m_ProjectDescription << std::endl;
+        o_str << GF::CombineDescUnit(s_ProjectDescription) << " = " << m_ProjectDescription << std::endl;
     }
 }
 

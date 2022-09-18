@@ -291,10 +291,6 @@ bool MC::TParamSet::Read(const std::string& general, const std::string& header, 
 
     // Define lambda functions to get parameters
     bool is_essential = false;
-    auto makeex = [] (const std::string& str) -> std::string
-    {
-        return std::regex_replace(std::regex_replace(str, std::regex("\\)"), "\\)"), std::regex("\\("), "\\(");
-    };
     auto get_dbl = [&] (const std::array<std::string,2>& desc, double& val, bool& cflag) -> bool
     {
         cflag = true;
@@ -317,7 +313,7 @@ bool MC::TParamSet::Read(const std::string& general, const std::string& header, 
         } else {
             std::smatch match;
             if (!((std::regex_search(general, match, 
-                std::regex(makeex(GF::CombineDescUnit(desc)) + "\\s*=\\s*(" + Constant::dblex + ")"))) &&
+                std::regex(GF::DescRegex(desc) + "\\s*=\\s*(" + Constant::dblex + ")"))) &&
                 (GF::StringToDouble(match[1],val))))
             {
                 if ((is_essential) && (raise_errors)) 
@@ -349,7 +345,7 @@ bool MC::TParamSet::Read(const std::string& general, const std::string& header, 
         } else {
             std::smatch match;
             if (!((std::regex_search(general, match, 
-                std::regex(makeex(GF::CombineDescUnit(desc)) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
+                std::regex(GF::DescRegex(desc) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
                 (GF::StringToUInt32(match[1],val))))
             {
                 if ((is_essential) && (raise_errors)) 
@@ -381,7 +377,7 @@ bool MC::TParamSet::Read(const std::string& general, const std::string& header, 
         } else {
             std::smatch match;
             if (!((std::regex_search(general, match, 
-                std::regex(makeex(GF::CombineDescUnit(desc)) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
+                std::regex(GF::DescRegex(desc) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
                 (GF::StringToUInt64(match[1],val))))
             {
                 if ((is_essential) && (raise_errors)) 
@@ -413,7 +409,7 @@ bool MC::TParamSet::Read(const std::string& general, const std::string& header, 
         } else {
             std::smatch match;
             if (!((std::regex_search(general, match, 
-                std::regex(makeex(GF::CombineDescUnit(desc)) + "\\s*=\\s*(" + Constant::intex + ")"))) &&
+                std::regex(GF::DescRegex(desc) + "\\s*=\\s*(" + Constant::intex + ")"))) &&
                 (GF::StringToInt64(match[1],val))))
             {
                 if ((is_essential) && (raise_errors)) 

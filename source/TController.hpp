@@ -19,23 +19,23 @@ namespace MC
 class TController
 {
 public:
-    // Parameter descriptors
-    static const std::string s_ProjectID;
-    static const std::string s_ProjectName;
-    static const std::string s_DOSFile;
-    static const std::string s_OutputFile;
-    static const std::string s_VL;
-    static const std::string s_EFTAdjust;
-    static const std::string s_InitialFDDistrib;
-    static const std::string s_TeffFit;
-    static const std::string s_EnforceECount;
-    static const std::string s_CutoffAutoAdjust;
-    static const std::string s_DistCutoffAdjustPercentage;
-    static const std::string s_EdiffCutoffAdjustPercentage;
-    static const std::string s_OnlyCompareSimID;
-    static const std::string s_UseYZVariance;
-    static const std::string s_ParallelizeReps;
-    static const std::string s_ProjectDescription;
+    // Parameter descriptors and units (without white-spaces)
+    static const std::array<std::string,2> s_ProjectID;
+    static const std::array<std::string,2> s_ProjectName;
+    static const std::array<std::string,2> s_DOSFile;
+    static const std::array<std::string,2> s_OutputFile;
+    static const std::array<std::string,2> s_VL;
+    static const std::array<std::string,2> s_EFTAdjust;
+    static const std::array<std::string,2> s_InitialFDDistrib;
+    static const std::array<std::string,2> s_TeffFit;
+    static const std::array<std::string,2> s_EnforceECount;
+    static const std::array<std::string,2> s_CutoffAutoAdjust;
+    static const std::array<std::string,2> s_DistCutoffAdjustPercentage;
+    static const std::array<std::string,2> s_EdiffCutoffAdjustPercentage;
+    static const std::array<std::string,2> s_OnlyCompareSimID;
+    static const std::array<std::string,2> s_UseYZVariance;
+    static const std::array<std::string,2> s_ParallelizeReps;
+    static const std::array<std::string,2> s_ProjectDescription;
 
 	// Default constructor
 	TController();

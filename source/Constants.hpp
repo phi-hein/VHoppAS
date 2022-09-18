@@ -1,6 +1,9 @@
 #ifndef MC_Constants_H_
 #define MC_Constants_H_
 
+#include <string>
+#include <regex>
+
 namespace MC
 {
 
@@ -69,19 +72,22 @@ namespace Constant
     // Auto-adjustment of cut-offs after equilibration: Increment for used ranges in percent
     constexpr double autocutoff_inc = 5.0;
 
-    // Regex that represents a double value
+    // Regex that represents all regex meta-characters
+    const std::regex regex_metachars ("\\^|\\$|\\\\|\\.|\\*|\\+|\\?|\\(|\\)|\\[|\\]|\\{|\\}|\\|");
+
+    // Regex string that represents a double value
     const std::string dblex = "[\\+-]?(?:[1-9]\\d*|0)(?:\\.\\d+)?(?:[Ee][\\+-]?\\d+)?";
 
-    // Regex that represents an uint32 or uint64 value
+    // Regex string that represents an uint32 or uint64 value
     const std::string uintex = "\\+?\\d+";
 
-    // Regex that represents an int32 or int64 value
+    // Regex string that represents an int32 or int64 value
     const std::string intex = "[\\+-]?\\d+";
 
-    // Regex that represents a boolean value: true
+    // Regex string that represents a boolean value: true
     const std::string boolex_true = "(?:true|t|yes|y)";
 
-    // Regex that represents a boolean value: false
+    // Regex string that represents a boolean value: false
     const std::string boolex_false = "(?:false|f|no|n)";
 }
 

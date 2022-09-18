@@ -543,16 +543,12 @@ std::vector<std::string> MC::TResult::WriteTableLine() const
 // Read results (true = successful read)
 bool MC::TResult::Read(const std::string& str, bool raise_errors)
 {
-    // Define lambda functions to get results    
-    auto makeex = [] (const std::string& str) -> std::string
-    {
-        return std::regex_replace(std::regex_replace(str, std::regex("\\)"), "\\)"), std::regex("\\("), "\\(");
-    };
+    // Define lambda functions to get results
     auto get_dbl = [&] (const std::array<std::string,2>& desc, double& val) -> bool
     {
         std::smatch match;
         if ((std::regex_search(str, match, 
-            std::regex(makeex(GF::CombineDescUnit(desc)) + "\\s*=\\s*(" + Constant::dblex + ")"))) &&
+            std::regex(GF::DescRegex(desc) + "\\s*=\\s*(" + Constant::dblex + ")"))) &&
             (GF::StringToDouble(match[1],val)))
         {
             return true;
@@ -565,7 +561,7 @@ bool MC::TResult::Read(const std::string& str, bool raise_errors)
     {
         std::smatch match;
         if ((std::regex_search(str, match, 
-            std::regex(makeex(GF::CombineDescUnit(desc)) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
+            std::regex(GF::DescRegex(desc) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
             (GF::StringToUInt32(match[1],val)))
         {
             return true;
@@ -578,7 +574,7 @@ bool MC::TResult::Read(const std::string& str, bool raise_errors)
     {
         std::smatch match;
         if ((std::regex_search(str, match, 
-            std::regex(makeex(GF::CombineDescUnit(desc)) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
+            std::regex(GF::DescRegex(desc) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
             (GF::StringToUInt64(match[1],val)))
         {
             return true;

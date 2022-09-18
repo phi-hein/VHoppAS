@@ -45,8 +45,14 @@ bool StringToUInt64(const std::string& str, std::uint64_t& val);
 // Compare two double values with tolerance
 bool AlmostEqual(double x, double y, std::uint32_t ulp = 10);
 
+// Escape regex meta-characters
+std::string MetaEsc(const std::string& str);
+
 // Combine property descriptor and unit
 std::string CombineDescUnit(const std::array<std::string,2>& desc);
+
+// Construct regex string that matches both property descriptor alone and with unit
+std::string DescRegex(const std::array<std::string,2>& desc);
 
 // Contruct descriptor and unit for standard deviation
 std::array<std::string,2> StdDevDescUnit(const std::array<std::string,2>& desc);
@@ -64,6 +70,9 @@ void WriteTable(std::ostream& o_str, std::vector<std::array<std::string,2>>& hea
 // Write a formatted table (modifies vectors with padding)
 void WriteTable(std::ostream& o_str, std::vector<std::string>& header, 
     std::vector<std::vector<std::string>>& table);
+
+// Format an ID list for readable output
+std::string FormatIDList(const std::vector<std::uint32_t>& list);
 
 // Write duration formatted as hours, minutes, seconds
 void WriteDuration(std::ostream& o_str, const std::chrono::steady_clock::duration& duration);

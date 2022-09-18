@@ -44,7 +44,7 @@ void MC::TPiecewiseLinearDOS::SpecifyDOS(const std::string& dos_content)
 
     // Read reference temperature
     if (std::regex_search(dos_content, match,
-        std::regex("RefTemp\\(K\\)\\s*=\\s*(" + Constant::dblex + ")")))
+        std::regex(GF::DescRegex({"RefTemp","K"}) + "\\s*=\\s*(" + Constant::dblex + ")")))
     {
         if (!GF::StringToDouble(match[1],ref_temp))
         {
