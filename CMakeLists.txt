@@ -98,11 +98,15 @@ add_test(
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/test"
   )
 
-# Test 04: Write example files
+# Test 04.1: Write example files
+# Test 04.2: Run single-type example simulation
+# Test 04.3: Run multi-type example simulation
 add_test(
   NAME Test_04 
   COMMAND sh -c "rm -f Test_04*.log Example*.txt && \
-  $<TARGET_FILE:${PROJECT_NAME}> -example > Test_04.log" 
+  $<TARGET_FILE:${PROJECT_NAME}> -example > Test_04.1.log \
+  $<TARGET_FILE:${PROJECT_NAME}> -input ExampleSingle.txt > Test_04.2.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -input ExampleMulti.txt > Test_04.3.log" 
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/test"
   )
 
