@@ -212,10 +212,10 @@ public:
 	// Haven ratio (average of all directions)
 	double m_HavenRatio;
 
-	// Haven ratio parallel to electric field (Dx / Dchemx)
+	// Haven ratio parallel to electric field (Dx / Dsigma)
 	double m_HavenRatioParallel;
 
-	// Haven ratio transverse to electric field (Dyz / Dchemx = Haven ratio at weak field)
+	// Haven ratio transverse to electric field (Dyz / Dsigma = Haven ratio at weak field)
 	double m_HavenRatioTransverse;
 
 	// Partial entropy of electrons (in eV/K)

@@ -1031,12 +1031,12 @@ void MC::TEngine::RunSimulation ()
             std::cout << "  Self-diffusion coefficient Dyz (transverse): " 
                 << m_SimResult->m_DiffusionCoefficientTransverse << " cm2/s [incl. eq.: " 
                 << incl_eq_result->m_DiffusionCoefficientTransverse << " cm2/s]" << std::endl;
-            std::cout << "  Haven ratio: " << m_SimResult->m_HavenRatio 
+            std::cout << "  Haven ratio (D / Dsigma): " << m_SimResult->m_HavenRatio 
                 << " [incl. eq.: " << incl_eq_result->m_HavenRatio 
                 << "] (only valid if Dx approx. equal to Dyz)" << std::endl;
-            std::cout << "  Haven ratio (parallel = Dx / Dchemx): " << m_SimResult->m_HavenRatioParallel 
+            std::cout << "  Haven ratio (parallel = Dx / Dsigma): " << m_SimResult->m_HavenRatioParallel 
                 << " [incl. eq.: " << incl_eq_result->m_HavenRatioParallel << "]" << std::endl;
-            std::cout << "  Haven ratio (transverse = Dyz / Dchemx): " << m_SimResult->m_HavenRatioTransverse 
+            std::cout << "  Haven ratio (transverse = Dyz / Dsigma): " << m_SimResult->m_HavenRatioTransverse 
                 << " [incl. eq.: " << incl_eq_result->m_HavenRatioTransverse 
                 << "] (only valid for weak electric field)" << std::endl;
         }
@@ -1130,11 +1130,11 @@ void MC::TEngine::RunSimulation ()
                 << m_SimResult->m_DiffusionCoefficientParallel << " cm2/s" << std::endl;
             std::cout << "  Self-diffusion coefficient Dyz (transverse): " 
                 << m_SimResult->m_DiffusionCoefficientTransverse << " cm2/s" << std::endl;
-            std::cout << "  Haven ratio: " << m_SimResult->m_HavenRatio 
+            std::cout << "  Haven ratio (D / Dsigma): " << m_SimResult->m_HavenRatio 
                 << " (only valid if Dx approx. equal to Dyz)" << std::endl;
-            std::cout << "  Haven ratio (parallel = Dx / Dchemx): " 
+            std::cout << "  Haven ratio (parallel = Dx / Dsigma): " 
                 << m_SimResult->m_HavenRatioParallel << std::endl;
-            std::cout << "  Haven ratio (transverse = Dyz / Dchemx): " 
+            std::cout << "  Haven ratio (transverse = Dyz / Dsigma): " 
                 << m_SimResult->m_HavenRatioParallel << " (only valid for weak electric field)" << std::endl;
         }
         std::cout << "  Partial entropy: " << m_SimResult->m_PartialEntropy 
@@ -2023,22 +2023,22 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
     m_SimResult->m_DiffusionCoefficient = (m_SimResult->m_DiffusionCoefficientParallel + 
         2.0 * m_SimResult->m_DiffusionCoefficientTransverse) / 3.0;
 
-    // Calculation of Haven ratio (self-diffusion coefficient divided by chemical diffusion coefficient)
-    // Nernst-Einstein relation: Dchem_x = - k_boltz * eff_T * drift_mobility / electron_charge
+    // Calculation of Haven ratio (self-diffusion coefficient divided by conductivity diffusion coefficient)
+    // Nernst-Einstein relation: Dsigma = - k_boltz * eff_T * drift_mobility / electron_charge
     // units: cm2/s = eV/K * K * cm2/Vs / e
     // -> isotropic Haven ratio (only valid for weak electric field where Dx approx. equal to Dyz)
-    //    HR = D / Dchem_x
+    //    HR = D / Dsigma
     // -> parallel Haven ratio (parallel to electric field; for high field)
-    //    HR_x = D_x / Dchem_x
+    //    HR_x = D_x / Dsigma
     // -> transverse Haven ratio (only for weak field; D_yz = isotropic self-diffusion coefficient 
     //                            at weak field because of inaccuracy in calculation of D_x, see above)
-    //    HR_yz = D_yz / Dchem_x
+    //    HR_yz = D_yz / Dsigma
     if ((m_ParamSet->m_PhiGradient != 0.0) && (m_SimResult->m_DriftMobility != 0.0))
     {
-        const double Dchemx = - Constant::kboltz * m_SimResult->m_EffTemp * m_SimResult->m_DriftMobility;
-        m_SimResult->m_HavenRatio = m_SimResult->m_DiffusionCoefficient / Dchemx;
-        m_SimResult->m_HavenRatioParallel = m_SimResult->m_DiffusionCoefficientParallel / Dchemx;
-        m_SimResult->m_HavenRatioTransverse = m_SimResult->m_DiffusionCoefficientTransverse / Dchemx;
+        const double Dsigma = - Constant::kboltz * m_SimResult->m_EffTemp * m_SimResult->m_DriftMobility;
+        m_SimResult->m_HavenRatio = m_SimResult->m_DiffusionCoefficient / Dsigma;
+        m_SimResult->m_HavenRatioParallel = m_SimResult->m_DiffusionCoefficientParallel / Dsigma;
+        m_SimResult->m_HavenRatioTransverse = m_SimResult->m_DiffusionCoefficientTransverse / Dsigma;
     }
     else
     {
