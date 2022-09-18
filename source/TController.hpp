@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <ostream>
 #include <cstdint>
+#include <array>
 
 #include "Constants.hpp"
 #include "TDOS.hpp"
@@ -19,22 +20,23 @@ namespace MC
 class TController
 {
 public:
-    // Parameter descriptors
-    static const std::string s_ProjectID;
-    static const std::string s_ProjectName;
-    static const std::string s_DOSFile;
-    static const std::string s_OutputFile;
-    static const std::string s_VL;
-    static const std::string s_EFTAdjust;
-    static const std::string s_InitialFDDistrib;
-    static const std::string s_TeffFit;
-    static const std::string s_EnforceECount;
-    static const std::string s_CutoffAutoAdjust;
-    static const std::string s_DistCutoffAdjustPercentage;
-    static const std::string s_EdiffCutoffAdjustPercentage;
-    static const std::string s_OnlyCompareSimID;
-    static const std::string s_UseYZVariance;
-    static const std::string s_ProjectDescription;
+    // Parameter descriptors and units (without white-spaces)
+    static const std::array<std::string,2> s_ProjectID;
+    static const std::array<std::string,2> s_ProjectName;
+    static const std::array<std::string,2> s_DOSFile;
+    static const std::array<std::string,2> s_OutputFile;
+    static const std::array<std::string,2> s_VL;
+    static const std::array<std::string,2> s_EFTAdjust;
+    static const std::array<std::string,2> s_InitialFDDistrib;
+    static const std::array<std::string,2> s_TeffFit;
+    static const std::array<std::string,2> s_EnforceECount;
+    static const std::array<std::string,2> s_CutoffAutoAdjust;
+    static const std::array<std::string,2> s_DistCutoffAdjustPercentage;
+    static const std::array<std::string,2> s_EdiffCutoffAdjustPercentage;
+    static const std::array<std::string,2> s_OnlyCompareSimID;
+    static const std::array<std::string,2> s_UseYZVariance;
+    static const std::array<std::string,2> s_ParallelizeReps;
+    static const std::array<std::string,2> s_ProjectDescription;
 
 	// Default constructor
 	TController();
@@ -42,8 +44,8 @@ public:
     // Create example input files in current working directory
     void GenerateExampleInputFiles();
 
-    // Read input file (optional: select parameter set, 0 = all)
-    void ReadInputFile(const std::string& filename, const std::uint32_t sim_id = 0);
+    // Read input file (optional: select job, 0 = all)
+    void ReadInputFile(const std::string& filename, const std::uint32_t job_id = 0);
 
 	// Execute simulations
 	void ExecuteSimulations();
@@ -62,10 +64,10 @@ private:
     void WriteOutputFile(const std::filesystem::path& filename, const TParamSet& params, const TResult& result) const;
 
     // Write summary output file for all simulations (based on m_ParamSets and m_Results)
-    void WriteOutputFileSummary(const std::filesystem::path& filename, const std::string& incomplete_sim_ids) const;
+    void WriteOutputFileSummary(const std::filesystem::path& filename, const std::string& incomplete_job_ids) const;
 
     // Write output file with mean of repetitions (based on m_ParamSets and m_Results)
-    void WriteOutputFileMean(const std::filesystem::path& filename, const std::string& incomplete_sim_ids) const;
+    void WriteOutputFileMean(const std::filesystem::path& filename, const std::string& incomplete_job_ids) const;
 
     // Ready-switch: true = has valid input
     bool m_IsReady;
@@ -78,6 +80,9 @@ private:
 
     // Selected parameter set (0 = all)
     std::uint32_t m_SelectedSimID;
+
+    // Selected repetition (0 = all)
+    std::uint32_t m_SelectedRepID;
 
     // Identification number of this project
     std::uint32_t m_ProjectID;
@@ -134,6 +139,11 @@ private:
     // true = calculate Dyz from variances instead of mean squared displacements (only for non-zero field)
     // false = calculate Dyz from mean squared displacements
     bool m_UseYZVariance;
+
+    // Switch: 
+    // true = run only a single repetition (job <id> selects from serialized [SimID][RepID] list)
+    // false = run all repetitions of a certain SimID (job <id> selects from [SimID] list)
+    bool m_ParallelizeReps;
 
     // Description
     std::string m_ProjectDescription;

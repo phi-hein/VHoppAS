@@ -34,7 +34,7 @@ MC::TParamSet::TParamSet()
     m_EFTAdjust(true), m_InitialFDDistrib(true), 
     m_TeffFit(true), m_EnforceECount(true), m_CutoffAutoAdjust(false),
     m_DistCutoffAdjustPercentage(0.0), m_EdiffCutoffAdjustPercentage(0.0),
-    m_OnlyCompareSimID(false), m_UseYZVariance(false),
+    m_UseYZVariance(false),
     m_Repetitions(1), c_Repetitions(true),
     m_MinStateEnergy(0.0), c_MinStateEnergy(true),
     m_MaxStateEnergy(0.0), c_MaxStateEnergy(true),
@@ -291,10 +291,6 @@ bool MC::TParamSet::Read(const std::string& general, const std::string& header, 
 
     // Define lambda functions to get parameters
     bool is_essential = false;
-    auto makeex = [] (const std::string& str) -> std::string
-    {
-        return std::regex_replace(std::regex_replace(str, std::regex("\\)"), "\\)"), std::regex("\\("), "\\(");
-    };
     auto get_dbl = [&] (const std::array<std::string,2>& desc, double& val, bool& cflag) -> bool
     {
         cflag = true;
@@ -317,7 +313,7 @@ bool MC::TParamSet::Read(const std::string& general, const std::string& header, 
         } else {
             std::smatch match;
             if (!((std::regex_search(general, match, 
-                std::regex(makeex(GF::CombineDescUnit(desc)) + "\\s*=\\s*(" + Constant::dblex + ")"))) &&
+                std::regex(GF::DescRegex(desc) + "\\s*=\\s*(" + Constant::dblex + ")"))) &&
                 (GF::StringToDouble(match[1],val))))
             {
                 if ((is_essential) && (raise_errors)) 
@@ -349,7 +345,7 @@ bool MC::TParamSet::Read(const std::string& general, const std::string& header, 
         } else {
             std::smatch match;
             if (!((std::regex_search(general, match, 
-                std::regex(makeex(GF::CombineDescUnit(desc)) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
+                std::regex(GF::DescRegex(desc) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
                 (GF::StringToUInt32(match[1],val))))
             {
                 if ((is_essential) && (raise_errors)) 
@@ -381,7 +377,7 @@ bool MC::TParamSet::Read(const std::string& general, const std::string& header, 
         } else {
             std::smatch match;
             if (!((std::regex_search(general, match, 
-                std::regex(makeex(GF::CombineDescUnit(desc)) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
+                std::regex(GF::DescRegex(desc) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
                 (GF::StringToUInt64(match[1],val))))
             {
                 if ((is_essential) && (raise_errors)) 
@@ -413,7 +409,7 @@ bool MC::TParamSet::Read(const std::string& general, const std::string& header, 
         } else {
             std::smatch match;
             if (!((std::regex_search(general, match, 
-                std::regex(makeex(GF::CombineDescUnit(desc)) + "\\s*=\\s*(" + Constant::intex + ")"))) &&
+                std::regex(GF::DescRegex(desc) + "\\s*=\\s*(" + Constant::intex + ")"))) &&
                 (GF::StringToInt64(match[1],val))))
             {
                 if ((is_essential) && (raise_errors)) 

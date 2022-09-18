@@ -1,7 +1,7 @@
 <MC-Project>
 ProjectID = 2
 Name = Test_02
-DOS-File = "DOS_01.txt"
+DOS-File = "../DOS_01.txt"
 Output-File = "Test_02_Result.txt"
 Verbosity(0-2) = 2
 EFTAdjust(y/n) = y
@@ -11,6 +11,7 @@ EnforceECount(y/n) = y
 CutoffAutoAdjust(y/n) = n
 OnlyCompareSimID(y/n) = y
 UseYZVariance(y/n) = y
+ParallelizeReps(y/n) = n
 Description = This is a test project with
  multiple MC hopping simulations.
 </MC-Project>
@@ -23,8 +24,8 @@ MinPaths = 100
 DistCutoff(nm) = 0
 EdiffCutoff(eV) = 0.15
 PreHops = 100000
-EqHops = 1000000
-HopLimit = 1000000
+EqHops = 500000
+HopLimit = 500000
 Seed = -65216958
 AttTime(s) = 1e-13
 LocRadius(nm) = 1

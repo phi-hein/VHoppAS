@@ -175,11 +175,48 @@ bool MC::GF::AlmostEqual(double x, double y, std::uint32_t ulp)
         || (std::fabs(x-y) < std::numeric_limits<double>::min());
 }
 
+// Escape regex meta-characters
+std::string MC::GF::MetaEsc(const std::string& str)
+{
+    return std::regex_replace(str, Constant::regex_metachars, "\\$&");
+}
+
 // Combine property descriptor and unit
 std::string MC::GF::CombineDescUnit(const std::array<std::string,2>& desc)
 {
     if (desc[1].empty()) return desc[0];
     return desc[0] + "(" + desc[1] + ")";
+}
+
+// Construct regex string that matches both property descriptor alone and with unit
+std::string MC::GF::DescRegex(const std::array<std::string,2>& desc)
+{
+    if (desc[1].empty()) return MetaEsc(desc[0]);
+    return "(?:" + MetaEsc(CombineDescUnit(desc)) + "|" + MetaEsc(desc[0]) + ")";
+}
+
+// Extract an XML block that is delimited by <identifier> ... </identifier>
+std::string MC::GF::ExtractXMLBlock(const std::string& str, const std::string& identifier)
+{
+    std::smatch match;
+    if (std::regex_search(str, match,
+        std::regex("<" + MetaEsc(identifier) + ">((?:(?!</" + MetaEsc(identifier) + ">)(?:.|[\\n\\r]))+)")))
+    {
+        return match[1];
+    }
+    else return "";
+}
+
+// Extract an XML block that is delimited by <identifier> ... (end of string)
+std::string MC::GF::ExtractOpenXMLBlock(const std::string& str, const std::string& identifier)
+{
+    std::smatch match;
+    if (std::regex_search(str, match,
+        std::regex("<" + MetaEsc(identifier) + ">((?:.|[\\n\\r])+)")))
+    {
+        return match[1];
+    }
+    else return "";
 }
 
 // Contruct descriptor and unit for standard deviation
@@ -319,6 +356,43 @@ void MC::GF::WriteTable(std::ostream& o_str, std::vector<std::string>& header,
         }
         o_str << std::endl;
     }
+}
+
+// Format an ID list for readable output
+std::string MC::GF::FormatIDList(const std::vector<std::uint32_t>& list)
+{
+    if (list.empty()) return "";
+
+    std::stringstream sstr;
+    std::vector<std::uint32_t> ids (list.cbegin(),list.cend());
+    std::sort(ids.begin(),ids.end());
+
+    bool in_range = false;
+    for (std::size_t i = 0; i < ids.size(); i++)
+    {
+        if (in_range == false)
+        {
+            if (i != 0) sstr << ",";
+            sstr << ids[i];
+            if (i + 1 < ids.size())
+            {
+                if (ids[i] + 1 == ids[i + 1]) in_range = true;
+            }
+        }
+        else
+        {
+            if (i + 1 < ids.size())
+            {
+                if (ids[i] + 1 != ids[i + 1])
+                {
+                    sstr << "-" << ids[i];
+                    in_range = false;
+                }
+            }
+            else sstr << "-" << ids[i];
+        }
+    }
+    return sstr.str();
 }
 
 // Write duration formatted as hours, minutes, seconds

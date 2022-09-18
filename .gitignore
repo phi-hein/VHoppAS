@@ -4,11 +4,7 @@ build/
 build_Debug/
 build_Release/
 debug/
-
-# Ignored test output files
-test/Test*Result*
-test/Test*.log
-test/Example*.txt
+test/output/
 
 # Prerequisites
 *.d

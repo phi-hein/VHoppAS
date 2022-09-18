@@ -1,6 +1,9 @@
 #ifndef MC_Constants_H_
 #define MC_Constants_H_
 
+#include <string>
+#include <regex>
+
 namespace MC
 {
 
@@ -69,20 +72,56 @@ namespace Constant
     // Auto-adjustment of cut-offs after equilibration: Increment for used ranges in percent
     constexpr double autocutoff_inc = 5.0;
 
-    // Regex that represents a double value
+    // Regex that represents all regex meta-characters
+    const std::regex regex_metachars ("\\^|\\$|\\\\|\\.|\\*|\\+|\\?|\\(|\\)|\\[|\\]|\\{|\\}|\\|");
+
+    // Regex string that represents a double value
     const std::string dblex = "[\\+-]?(?:[1-9]\\d*|0)(?:\\.\\d+)?(?:[Ee][\\+-]?\\d+)?";
 
-    // Regex that represents an uint32 or uint64 value
+    // Regex string that represents an uint32 or uint64 value
     const std::string uintex = "\\+?\\d+";
 
-    // Regex that represents an int32 or int64 value
+    // Regex string that represents an int32 or int64 value
     const std::string intex = "[\\+-]?\\d+";
 
-    // Regex that represents a boolean value: true
+    // Regex string that represents a boolean value: true
     const std::string boolex_true = "(?:true|t|yes|y)";
 
-    // Regex that represents a boolean value: false
+    // Regex string that represents a boolean value: false
     const std::string boolex_false = "(?:false|f|no|n)";
+}
+
+namespace XMLSection
+{
+    // XML identifier: DOS
+    const std::string DOS = "DOS";
+
+    // XML identifier: Project
+    const std::string Project = "MC-Project";
+
+    // XML identifier: Input parameters
+    const std::string Params = "Parameters";
+
+    // XML identifier: Input parameters
+    const std::string VariedParams = "VariedParameters";
+
+    // XML identifier: Results
+    const std::string Results = "Results";
+
+    // XML identifier: Convergence of equilibration
+    const std::string EqConv = "EquilibrationConvergence";
+
+    // XML identifier: Convergence of simulation
+    const std::string SimConv = "SimulationConvergence";
+
+    // XML identifier: Histogram
+    const std::string Histogram = "Histogram";
+
+    // XML identifier: Table with results of individual repetitions
+    const std::string SummaryTable = "Summary";
+
+    // XML identifier: Table with average results of parameter sets (SimIDs)
+    const std::string MeanTable = "Mean/StdDev-Summary";
 }
 
 } // MC namespace

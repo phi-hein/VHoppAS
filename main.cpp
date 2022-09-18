@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 {
 	std::cout << " -- VHoppAS: Variable-range Hopping in Amorphous Solids --" << std::endl; 
 	std::cout << "    DOS-based kinetic Monte-Carlo simulation" << std::endl;
-	std::cout << "    (by Philipp Hein, version 1.6.0";
+	std::cout << "    (by Philipp Hein, version 1.7.0";
 	#ifndef NDEBUG
 	std::cout << ", DEBUG build";
 	#endif
@@ -29,7 +29,9 @@ int main(int argc, char* argv[])
 		std::cout << "-input <filename> : specify input file (relative to working directory)" << std::endl;
 		std::cout << "  optionally combined with:" << std::endl;
 		std::cout << "  -validate : validate complete input file (no simulation)" << std::endl;
-		std::cout << "  -sim <id> : execute only the simulation <id> (1-based) of the input parameter list" << std::endl;
+		std::cout << "  -job <id> : execute only a certain part of all simulations, where <id> is a 1-based identification number with the following meaning:" << std::endl;
+		std::cout << "              when \"ParallelizeReps = n\" (or not specified): execute all repetitions of the simulation <id> in the input parameter list" << std::endl;
+		std::cout << "              when \"ParallelizeReps = y\": execute only the repetition <id> of the serialized input parameter list" << std::endl;
 		std::cout << "  -collect : create summary file for all finished simulations of the input parameter list" << std::endl;
 		std::cout << std::endl;
 		std::cout << "Program finished." << std::endl;
@@ -49,12 +51,12 @@ int main(int argc, char* argv[])
 	auto it_input = std::find(args.begin(),args.end(),"-input");
 	std::string arg_input_filename = "";
 	if ((it_input != args.end()) && (it_input + 1 != args.end())) arg_input_filename = *(it_input + 1);
-	auto it_sim_id = std::find(args.begin(),args.end(),"-sim");
-	std::uint32_t arg_selected_sim_id = 0;
-	if ((it_sim_id != args.end()) && ((it_sim_id + 1 == args.end()) ||
-		(!MC::GF::StringToUInt32(*(it_sim_id + 1),arg_selected_sim_id))))
+	auto it_job_id = std::find(args.begin(),args.end(),"-job");
+	std::uint32_t arg_selected_job_id = 0;
+	if ((it_job_id != args.end()) && ((it_job_id + 1 == args.end()) ||
+		(!MC::GF::StringToUInt32(*(it_job_id + 1),arg_selected_job_id))))
 	{
-		std::cout << "Program aborted: INVALID SIM-ID SELECTION" << std::endl;
+		std::cout << "Program aborted: INVALID JOB-ID SELECTION" << std::endl;
 		return 1;
 	}
 
@@ -92,7 +94,7 @@ int main(int argc, char* argv[])
 		}
 		else
 		{
-			controller.ReadInputFile(arg_input_filename, arg_selected_sim_id);
+			controller.ReadInputFile(arg_input_filename, arg_selected_job_id);
 		}
 
 		// Start no simulation after successful validation

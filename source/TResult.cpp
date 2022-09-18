@@ -144,7 +144,7 @@ std::unique_ptr<MC::TResult> MC::TResult::ValueCopy(const TResult* const result)
 // Write results block
 void MC::TResult::Write(std::ostream& o_str) const
 {
-    o_str << "<Results>" << std::endl;
+    o_str << "<" << XMLSection::Results << ">" << std::endl;
     o_str << GF::CombineDescUnit(s_RepID) << " = " << m_RepID << std::endl;
     o_str << GF::CombineDescUnit(s_DriftConductivity) << " = " << m_DriftConductivity << std::endl;
     o_str << GF::CombineDescUnit(s_DriftMobility) << " = " << m_DriftMobility << std::endl;
@@ -188,14 +188,14 @@ void MC::TResult::Write(std::ostream& o_str) const
     o_str << GF::CombineDescUnit(s_MeanPathCount) << " = " << m_MeanPathCount << std::endl;
     o_str << GF::CombineDescUnit(s_MinUsedStateEnergy) << " = " << m_MinUsedStateEnergy << std::endl;
     o_str << GF::CombineDescUnit(s_MaxUsedStateEnergy) << " = " << m_MaxUsedStateEnergy << std::endl;
-    o_str << "</Results>" << std::endl;
+    o_str << "</" << XMLSection::Results << ">" << std::endl;
     
     if (!m_EqProgress.empty())
     {
         o_str << std::endl;
-        o_str << "<EquilibrationConvergence>" << std::endl;
+        o_str << "<" << XMLSection::EqConv << ">" << std::endl;
         WriteConvergenceTable(o_str,true);
-        o_str << "</EquilibrationConvergence>" << std::endl;
+        o_str << "</" << XMLSection::EqConv << ">" << std::endl;
         o_str << "<!-- averages refer to effective carriers -->" << std::endl;
         o_str << "<!-- respective values are adjusted to the effective carrier density at the end of the complete simulation -->" << std::endl;
     }
@@ -203,9 +203,9 @@ void MC::TResult::Write(std::ostream& o_str) const
     if (!m_Progress.empty())
     {
         o_str << std::endl;
-        o_str << "<SimulationConvergence>" << std::endl;
+        o_str << "<" << XMLSection::SimConv << ">" << std::endl;
         WriteConvergenceTable(o_str,false);
-        o_str << "</SimulationConvergence>" << std::endl;
+        o_str << "</" << XMLSection::SimConv << ">" << std::endl;
         o_str << "<!-- averages refer to effective carriers -->" << std::endl;
         o_str << "<!-- respective values are adjusted to the effective carrier density at the end of the complete simulation -->" << std::endl;
     }
@@ -543,16 +543,12 @@ std::vector<std::string> MC::TResult::WriteTableLine() const
 // Read results (true = successful read)
 bool MC::TResult::Read(const std::string& str, bool raise_errors)
 {
-    // Define lambda functions to get results    
-    auto makeex = [] (const std::string& str) -> std::string
-    {
-        return std::regex_replace(std::regex_replace(str, std::regex("\\)"), "\\)"), std::regex("\\("), "\\(");
-    };
+    // Define lambda functions to get results
     auto get_dbl = [&] (const std::array<std::string,2>& desc, double& val) -> bool
     {
         std::smatch match;
         if ((std::regex_search(str, match, 
-            std::regex(makeex(GF::CombineDescUnit(desc)) + "\\s*=\\s*(" + Constant::dblex + ")"))) &&
+            std::regex(GF::DescRegex(desc) + "\\s*=\\s*(" + Constant::dblex + ")"))) &&
             (GF::StringToDouble(match[1],val)))
         {
             return true;
@@ -565,7 +561,7 @@ bool MC::TResult::Read(const std::string& str, bool raise_errors)
     {
         std::smatch match;
         if ((std::regex_search(str, match, 
-            std::regex(makeex(GF::CombineDescUnit(desc)) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
+            std::regex(GF::DescRegex(desc) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
             (GF::StringToUInt32(match[1],val)))
         {
             return true;
@@ -578,7 +574,7 @@ bool MC::TResult::Read(const std::string& str, bool raise_errors)
     {
         std::smatch match;
         if ((std::regex_search(str, match, 
-            std::regex(makeex(GF::CombineDescUnit(desc)) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
+            std::regex(GF::DescRegex(desc) + "\\s*=\\s*(" + Constant::uintex + ")"))) &&
             (GF::StringToUInt64(match[1],val)))
         {
             return true;

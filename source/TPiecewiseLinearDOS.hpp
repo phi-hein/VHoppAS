@@ -4,6 +4,7 @@
 #include <random>
 #include <vector>
 #include <memory>
+#include <array>
 
 #include "TDOS.hpp"
 
@@ -13,6 +14,13 @@ namespace MC
 class TPiecewiseLinearDOS : public TDOS
 {
 public:
+    // Type of this DOS sub-class
+    static const std::string m_Type;
+
+    // Parameter descriptors and units (without white-spaces)
+    static const std::array<std::string,2> s_Type;
+    static const std::array<std::string,2> s_RefTemp;
+
     // Default constructor
     TPiecewiseLinearDOS();
 

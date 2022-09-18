@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <sstream>
 
+#include "Constants.hpp"
 #include "GlobalFunctions.hpp"
 #include "CustomExceptions.hpp"
 
@@ -340,9 +341,9 @@ void MC::THistogram::Write(std::ostream& o_str, const std::string& name) const
             sstr.str("");
         }
 
-        o_str << "<Histogram:" << name << ">" << std::endl;
+        o_str << "<" << XMLSection::Histogram << ":" << name << ">" << std::endl;
         GF::WriteTable(o_str,header,table);
-        o_str << "</Histogram:" << name << ">" << std::endl;
+        o_str << "</" << XMLSection::Histogram << ":" << name << ">" << std::endl;
     }
     catch(const std::bad_alloc& e)
     {

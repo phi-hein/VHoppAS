@@ -67,11 +67,6 @@ public:
     // Percentage for auto-adjust of energy difference cutoff (copy from controller; optional; 0.0 if not set)
     double m_EdiffCutoffAdjustPercentage;
 
-	// Switch (copy from controller): 
-    // true = compare parameter sets only based on SimID (ignoring differences in other parameters)
-    // false = compare all parameters
-    bool m_OnlyCompareSimID;
-
     // Switch (copy from controller): 
     // true = calculate Dyz from variances instead of mean squared displacements (only for non-zero field)
     // false = calculate Dyz from mean squared displacements

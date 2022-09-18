@@ -1,7 +1,7 @@
 <MC-Project>
 ProjectID = 1
 Name = Test_01
-DOS-File = DOS_01.txt
+DOS-File = "../DOS_01.txt"
 Output-File = Test_01_Result.txt
 Verbosity(0-2) = 2
 EFTAdjust(y/n) = n
@@ -25,7 +25,7 @@ DistCutoff(nm) = 0
 EdiffCutoff(eV) = 0
 PreHops = 100000
 EqHops = 0
-HopLimit = 1000000
+HopLimit = 500000
 GradPhi(V/cm) = 2.5e+4
 Seed = -652334158
 AttTime(s) = 1e-13
