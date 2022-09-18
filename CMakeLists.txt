@@ -119,3 +119,27 @@ add_test(
   $<TARGET_FILE:${PROJECT_NAME}> -collect -input Test_05_Input_03.txt > Test_05.4.log" 
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/test"
   )
+
+# Test 06.1: Parallelized repetitions -> repetition without any previous results
+# Test 06.2: Parallelized repetitions -> first repetition with partial results
+# Test 06.3: Parallelized repetitions -> missing repetition with partial results
+# Test 06.4: Parallelized repetitions -> last repetition with partial results
+# Test 06.5: Result collection with partial results
+# Test 06.6: Parallelized repetitions -> all missing repetitions (no selection)
+# Test 06.7: Parallelized repetitions -> new repetition adjacent to previous results
+# Test 06.8: Parallelized repetitions -> new repetition not adjacent to previous results
+# Test 06.9: Result collection with new repetitions
+add_test(
+  NAME Test_06 
+  COMMAND sh -c "rm -f Test_06_Result* Test_06*.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 4 -input Test_06_Input_01.txt > Test_06.1.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 1 -input Test_06_Input_01.txt > Test_06.2.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 3 -input Test_06_Input_01.txt > Test_06.3.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 6 -input Test_06_Input_01.txt > Test_06.4.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -collect -input Test_06_Input_01.txt > Test_06.5.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -input Test_06_Input_01.txt > Test_06.6.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 11 -input Test_06_Input_02.txt > Test_06.7.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 4 -input Test_06_Input_02.txt > Test_06.8.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -collect -input Test_06_Input_02.txt > Test_06.9.log" 
+  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/test"
+  )

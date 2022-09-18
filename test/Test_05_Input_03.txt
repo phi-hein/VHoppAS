@@ -11,6 +11,7 @@ EnforceECount(y/n) = y
 CutoffAutoAdjust = y
 DistAdjustPercentage = 5
 EdiffAdjustPercentage = 1
+ParallelizeReps = n
 Description = This is a test project with multiple MC hopping simulations, 
  weak electric field and partially omitted units in input file.
 </MC-Project>

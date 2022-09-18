@@ -1,0 +1,38 @@
+<MC-Project>
+ProjectID = 6
+Name = Test_06
+DOS-File = DOS_01.txt
+Output-File = Test_06_Result.txt
+Verbosity = 2
+EFTAdjust = y
+InitialFDDistrib = y
+TeffFit(y/n) = n
+EnforceECount(y/n) = n
+CutoffAutoAdjust = y
+DistAdjustPercentage = 5
+EdiffAdjustPercentage = 2
+ParallelizeReps = y
+Description = This is a test project with different chemical potentials
+ and parallelized repetitions.
+</MC-Project>
+
+<Parameters>
+Repetitions = 4
+Temp(K) = 273.15
+GradPhi(V/cm) = 40000
+States = 20000
+MinPaths = 100
+DistCutoff = 2.2
+PreHops = 100000
+EqHops = 200000
+HopLimit = 500000
+Seed = -16863268
+AttTime(s) = 1e-13
+LocRadius(nm) = 1.0
+</Parameters>
+
+<VariedParameters>
+Emin  Emax ChemPot
+-0.25 0.25 0.0
+-0.3  0.2  -0.05
+-0.35 0.15 -0.1
