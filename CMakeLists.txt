@@ -105,3 +105,17 @@ add_test(
   $<TARGET_FILE:${PROJECT_NAME}> -example > Test_04.log" 
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/test"
   )
+
+# Test 05.1: Multiple repetitions with maximum verbosity
+# Test 05.2: Multiple repetitions with medium verbosity
+# Test 05.3: Multiple repetitions with minimum verbosity
+# Test 05.4: Result collection with minimum verbosity
+add_test(
+  NAME Test_05 
+  COMMAND sh -c "rm -f Test_05_Result* Test_05*.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 2 -input Test_05_Input_01.txt > Test_05.1.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 1 -input Test_05_Input_02.txt > Test_05.2.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -job 3 -input Test_05_Input_03.txt > Test_05.3.log && \
+  $<TARGET_FILE:${PROJECT_NAME}> -collect -input Test_05_Input_03.txt > Test_05.4.log" 
+  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/test"
+  )

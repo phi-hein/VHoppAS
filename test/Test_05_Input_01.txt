@@ -1,0 +1,39 @@
+<MC-Project>
+ProjectID = 5
+Name = Test_05
+DOS-File = DOS_01.txt
+Output-File = Test_05_Result.txt
+Verbosity = 2
+EFTAdjust = y
+InitialFDDistrib = n
+TeffFit(y/n) = y
+EnforceECount(y/n) = y
+CutoffAutoAdjust = y
+DistAdjustPercentage = 5
+EdiffAdjustPercentage = 1
+Description = This is a test project with multiple MC hopping simulations, 
+ weak electric field and partially omitted units in input file.
+</MC-Project>
+
+<Parameters>
+Repetitions = 2
+ChemPot = 0
+Emin = -0.25
+Emax = 0.25
+GradPhi(V/cm) = 40000
+States = 20000
+MinPaths = 100
+DistCutoff = 2.2
+PreHops = 100000
+EqHops = 500000
+HopLimit = 1000000
+Seed = -6863258
+AttTime(s) = 1e-13
+LocRadius(nm) = 1.0
+</Parameters>
+
+<VariedParameters>
+Temp
+250
+275
+300
