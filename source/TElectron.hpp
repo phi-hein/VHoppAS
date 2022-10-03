@@ -10,29 +10,39 @@ namespace MC
 class TElectron 
 {
 public:
-	// Time step for fastest transition (already including acc_time_decay for fast sorting of electrons)
+	// Time step for fastest transition (in s since m_LastHopTime)
 	double m_MinTime;
 
-	// Accumulated time decay (time elapsed since the last update of this electrons' transitions)
-	double m_AccTimeDecay;
+	// Time step for next fastest transition (in s since m_LastHopTime)
+	double m_NextMinTime;
 
-	// Index of fastest transition
+	// Simulation time when this electron made it's last hop
+	double m_LastHopTime;
+
+	// Index of fastest transition (lowest of m_RandomTimes)
 	std::uint32_t m_MinIndex;
 
-	// Randomized hopping times for all paths (in the same order as the paths in the occupied local state)
+	// Index of next fastest transition (2nd lowest of m_RandomTimes)
+	std::uint32_t m_NextMinIndex;
+
+	// Target state index of the fastest transition
+	std::uint32_t m_MinStateID;
+
+	// Randomized hopping times for all paths 
+	// (in s since m_LastHopTime; in the same order as the paths in the occupied local state)
 	std::vector<double> m_RandomTimes;
 
 	// State index of this electron's current location
 	std::uint32_t m_CurrentStateID;
+
+	// State index of this electron's last location
+	std::uint32_t m_LastStateID;
 	
 	// Displacement vector
 	double m_Disp_x, m_Disp_y, m_Disp_z;
 	
 	// Hopping count
 	std::uint64_t m_HopCount;
-
-	// State index of this electron's last location
-	std::uint32_t m_LastStateID;
 
 	// Oscillatory hop count (back-and-forth = 2 hops)
 	std::uint64_t m_OscHopCount;

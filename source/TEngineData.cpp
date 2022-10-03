@@ -81,9 +81,17 @@ void MC::TEngineData::ValidateParameters(const TParamSet& params)
     {
         throw EX::TInvalidInput("Attempt time zero or negative.");
     }
+    if (params.m_AttemptTime > 1.0E100)
+    {
+        throw EX::TInvalidInput("Attempt time unrealistic large (> 1.0E100 s).");
+    }
     if (params.m_Temperature <= 0.0)
     {
         throw EX::TInvalidInput("Temperature zero or negative.");
+    }
+    if (params.m_Temperature < 0.01)
+    {
+        throw EX::TInvalidInput("Temperature unrealistic low (< 0.01 K).");
     }
     if (params.m_LocRadius <= 0.0)
     {

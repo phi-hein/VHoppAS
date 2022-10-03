@@ -63,9 +63,6 @@ namespace Constant
     // Pi
     constexpr double pi = 3.1415926535;
 
-    // Hopping time for occupied paths (in s)
-    constexpr double occupied_path = 1.0E100;
-
     // Minimum integration delta on energy axis (for interpolation; in units of kBT)
     constexpr double deltaE = 0.1;
 
