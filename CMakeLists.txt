@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 3.10)
 
 # Specify project name and version
 set(PROJECT_NAME VHoppAS)
-project(${PROJECT_NAME} VERSION 1.7.0 LANGUAGES CXX)
+project(${PROJECT_NAME} VERSION 1.7.1 LANGUAGES CXX)
 
 # Specify the C++ standard
 set(CMAKE_CXX_STANDARD 17)

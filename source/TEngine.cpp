@@ -7,6 +7,7 @@
 #include <cmath>
 #include <array>
 #include <chrono>
+#include <limits>
 
 #include "TPath.hpp"
 #include "Constants.hpp"
@@ -654,63 +655,88 @@ void MC::TEngine::InitializeSimulation()
         throw EX::TInvalidStatus("Parameters are not properly defined.",__func__);
     if (m_Structure.empty())
         throw EX::TInvalidStatus("Structure is not defined.",__func__);
+    if (m_Electrons.empty())
+        throw EX::TInvalidStatus("Electrons are not defined.",__func__);
+    if (!m_SimResult)
+        throw EX::TInvalidStatus("Result object not available.",__func__);
     for (auto& state : m_Structure)
     {
-        if (state.m_Paths.empty())
+        if ((state.m_Paths.empty()) || (state.m_Paths.size() < 2))
             throw EX::TInvalidStatus("Paths are not properly defined.",__func__);
+        if (state.m_Paths.size() > m_SimResult->m_MaxPathCount)
+            throw EX::TInvalidStatus("Number of paths exceeds the determined maximum.",__func__);
         for (auto& path : state.m_Paths)
         {
             if (path.m_Time == 0.0)
                 throw EX::TInvalidStatus("Paths times are not defined.",__func__);
         }
     }
-    if (m_Electrons.empty())
-        throw EX::TInvalidStatus("Electrons are not defined.",__func__);
-    if (!m_SimResult)
-        throw EX::TInvalidStatus("Result object not available.",__func__);
+    if (m_SimResult->m_MaxPathCount < 2)
+        throw EX::TInvalidStatus("Too low maximum number of paths per state.",__func__);
 
     // Assign randomized hopping times to all paths (reserve memory for max paths to prevent allocations during simulation)
+    // and find minimum paths (index = state count + 1 indicates that all other paths are blocked)
     bool all_electrons_blocked = true;
     std::uniform_real_distribution<double> probability (0.0,1.0);
     for (auto &electron : m_Electrons)
     {
+        electron.m_LastStateID = electron.m_CurrentStateID;
         electron.m_Disp_x = 0.0;
         electron.m_Disp_y = 0.0;
         electron.m_Disp_z = 0.0;
         electron.m_HopCount = 0U;
-        electron.m_AccTimeDecay = 0.0;
-        electron.m_LastStateID = electron.m_CurrentStateID;
         electron.m_OscHopCount = 0U;
+        electron.m_LastHopTime = 0.0;
         electron.m_FirstHopTime = 0.0;
 
         try
         {
-            electron.m_RandomTimes.reserve(m_SimResult->m_MaxPathCount);
-            electron.m_RandomTimes.resize(m_Structure[electron.m_CurrentStateID].m_Paths.size(),0.0);
+            electron.m_RandomTimes = std::vector<double>(m_SimResult->m_MaxPathCount);
         }
         catch(const std::bad_alloc& e)
         {
             throw EX::TOutOfMemory("Cannot create paths for electrons.",__func__,e.what());
         }
 
-        for (std::uint32_t i = 0; i < electron.m_RandomTimes.size(); ++i)
+        const auto& paths = m_Structure[electron.m_CurrentStateID].m_Paths;
+        electron.m_MinTime = std::numeric_limits<double>::max();
+        electron.m_NextMinTime = std::numeric_limits<double>::max();
+        electron.m_MinIndex = m_ParamSet->m_StateCount + 1;
+        electron.m_NextMinIndex = m_ParamSet->m_StateCount + 1;
+        for (std::uint32_t i = 0; i < paths.size(); ++i)
         {
-            if (m_Structure[m_Structure[electron.m_CurrentStateID].m_Paths[i].m_StateID].m_ElectronID 
-                < m_ParamSet->m_StateCount)
+            if (m_Structure[paths[i].m_StateID].m_ElectronID < m_ParamSet->m_StateCount)
             {
-                electron.m_RandomTimes[i] = Constant::occupied_path;
+                electron.m_RandomTimes[i] = std::numeric_limits<double>::max();
             }
             else
             {
-                electron.m_RandomTimes[i] = 
-                    -log(probability(m_RndGen))*m_Structure[electron.m_CurrentStateID].m_Paths[i].m_Time;
-                all_electrons_blocked = false;
+                electron.m_RandomTimes[i] = -log(probability(m_RndGen))*paths[i].m_Time;
+
+                if (electron.m_RandomTimes[i] < electron.m_MinTime)
+                {
+                    electron.m_NextMinTime = electron.m_MinTime;
+                    electron.m_NextMinIndex = electron.m_MinIndex;
+                    electron.m_MinTime = electron.m_RandomTimes[i];
+                    electron.m_MinIndex = i;
+                } 
+                else if (electron.m_RandomTimes[i] < electron.m_NextMinTime)
+                {
+                    electron.m_NextMinTime = electron.m_RandomTimes[i];
+                    electron.m_NextMinIndex = i;
+                }
             }
         }
 
-        auto min_it = std::min_element(electron.m_RandomTimes.cbegin(),electron.m_RandomTimes.cend());
-        electron.m_MinIndex = static_cast<std::uint32_t>(std::distance(electron.m_RandomTimes.cbegin(),min_it));
-	    electron.m_MinTime = *min_it;
+        if (electron.m_MinIndex < m_ParamSet->m_StateCount) 
+        {
+            electron.m_MinStateID = paths[electron.m_MinIndex].m_StateID;
+            all_electrons_blocked = false;
+        }
+        else
+        {
+            electron.m_MinStateID = m_ParamSet->m_StateCount;
+        }
     }
     if (all_electrons_blocked)
     {
@@ -853,7 +879,6 @@ void MC::TEngine::RunSimulation ()
         // - movement statistics is reset
         if ((hop_counter == pre_hop_limit) && (pre_hop_limit != 0))
         {
-            m_TotalTime = 0.0;
             for (TLocalState& state : m_Structure)
             {
                 state.m_LastHopTime = 0.0;
@@ -866,14 +891,32 @@ void MC::TEngine::RunSimulation ()
             }
             for (TElectron& electron : m_Electrons)
             {
+                for (std::uint32_t i = 0; i < m_Structure[electron.m_CurrentStateID].m_Paths.size(); ++i)
+                {
+                    if (electron.m_RandomTimes[i] != std::numeric_limits<double>::max())
+                    {
+                        electron.m_RandomTimes[i] -= m_TotalTime - electron.m_LastHopTime;
+                    }
+                }
+                if (electron.m_MinIndex < m_ParamSet->m_StateCount)
+                {
+                    electron.m_MinTime = electron.m_RandomTimes[electron.m_MinIndex];
+                }
+                if (electron.m_NextMinIndex < m_ParamSet->m_StateCount)
+                {
+                    electron.m_NextMinTime = electron.m_RandomTimes[electron.m_NextMinIndex];
+                }
+                electron.m_LastHopTime = 0.0;
+
                 electron.m_HopCount = 0U;
+                electron.m_OscHopCount = 0U;
                 electron.m_Disp_x = 0.0;
                 electron.m_Disp_y = 0.0;
                 electron.m_Disp_z = 0.0;
                 electron.m_LastStateID = electron.m_CurrentStateID;
-                electron.m_OscHopCount = 0U;
                 electron.m_FirstHopTime = 0.0;
             }
+            m_TotalTime = 0.0;
         }
 
         // Handle finished equilibration
@@ -1192,102 +1235,268 @@ void MC::TEngine::KMCLoop(std::uint64_t& hop_counter, const std::uint64_t hop_li
 {
     // No checks because only internally called by RunSimulation
 
-    // This function is not expected to throw exceptions (for example there should be no major memory 
+    // This function is not expected to throw exceptions (for example there are no major memory 
     // allocations because already enough memory was reserved for m_RandomTimes-vectors of 
     // electrons), but the main reason that it is specified as noexcept is to exclude it from 
     // surrounding exception handling for improved performance
     // (calls std::terminate immidiately if an exception occurs in this function)
 
-    // Grab values and references (t-prefix) to avoid repeated *this dereferencing
-    double& t_total_time {m_TotalTime};
-    const std::uint32_t t_state_count {m_ParamSet->m_StateCount};
-    const std::vector<TLocalState>& t_structure {m_Structure};
-    std::vector<TElectron>& t_electrons {m_Electrons};
-    std::mt19937_64& t_rndgen {m_RndGen};
+    // Grab states and electrons as fixed-size arrays
+    // Important: m_Structure and m_Electrons vectors must not change size during this function!
+    // (it is guaranteed by input validation that their size does not exceed uint32_t)
+    const std::uint32_t state_count {static_cast<std::uint32_t>(m_Structure.size())};
+    const TLocalState* const p_structure {m_Structure.data()};
+    const std::uint32_t electron_count {static_cast<std::uint32_t>(m_Electrons.size())};
+    TElectron* const p_electrons {m_Electrons.data()};    
     std::uniform_real_distribution<double> probability (0.0, 1.0);
+    const TElectron* min_e = nullptr;
+    double min_time = 0.0;
+    const TElectron* next_min_e = nullptr;
+    double next_min_time = 0.0;
     
     // Inner KMC-Loop = performance-critical
     while (hop_counter < hop_limit)
     {
-        // Electron with minimal time
-        TElectron& min_e {*std::min_element(t_electrons.begin(),t_electrons.end(),
-            [] (const TElectron& e_left, const TElectron& e_right) -> bool
-            {
-                return e_left.m_MinTime < e_right.m_MinTime;
-            })};
+        // Nomenclature:
+        // hop_e = electron that currently hops in this iteration
+        // min_e = electron that hops next (nullptr if unknown)
+        // next_min_e = electron that would hop after min_e (nullptr if unknown)
+        // (the corresponding ..._time values are the time intervals in s from the current m_TotalTime 
+        // till the respective hops)
+        // Important:
+        // - min_e must always have different target (end state) than current hop
+        // - next_min_e must always have different target (end state) than min_e
+        // - always next_min_e != min_e
 
-        // Subtract time step for all electrons and advance total time
-        // (also iterates over min_e and invalidates its time values which is no problem)
+        // Values here (different alternatives):
+        // 1. min_e and next_min_e point to valid objects
+        // 2. min_e points to valid object, but next_min_e is nullptr -> min search at next iteration
+        // 3. min_e and next_min_e are nullptr -> min search required
+        // (must not occur: min_e is nullptr and next_min_e points to valid object)
+
+        // Find min_e and next_min_e
+        // Necessary if min_e is nullptr (-> next_min_e is also nullptr)
+        // Algorithm to find 1st lowest electron and 2nd lowest with different target (!) than 1st:
+        // - start with 1st and 2nd time set to max double value 
+        //   (or use first electron as starting value for 1st time; at least one electron is guaranteed)
+        // - loop through all electrons:
+        //   - if electron is lower than 1st time:
+        //     - if new 1st has a different target than old 1st then copy old 1st to 2nd
+        //       (when old 1st has same target as new 1st then its lowest path would become blocked
+        //       and it is thus no candidate for 2nd, except through its next lowest path, see note below)
+        //     - set electron as new 1st
+        //     else:
+        //     - if electron is lower than 2nd time and has different target than current 1st:
+        //       (when it has the same target as current 1st then it would never be 2nd even when 1st
+        //       changes later in the loop, because then rather the current 1st would be 2nd)
+        //       - set electron as new 2nd
+        // Note: All electrons with the same target as 1st will be encountered further below when 
+        // blocking their lowest paths. There it will be checked if their next lowest path (with 
+        // different target) is lower than the 2nd electron found here.
+        // --
+        // Note: It was decided against the combining of m_MinTime and m_LastHopTime into one variable
+        // (by calculating their sum when the electron made a hop), which would save one mathematical
+        // operation for the calculation of the time for each electron. The reason why this should not
+        // be done is that m_LastHopTime might become relatively large (on the same scale as m_TotalTime)
+        // while m_MinTime might be very small such that m_MinTime + m_LastHopTime == m_LastHopTime. Then
+        // the hops would not be selected in the correct order anymore. The optimal solution for this
+        // precision problem is to subtract m_TotalTime - m_LastHopTime, which yields a smaller double
+        // value especially for electrons that hop often (which also have often small m_MinTime).
+        // --
+        // Rare case: When only one electron has unblocked paths (becomes min_e = hop_e; its existance is 
+        // guaranteed), then next_min_e will point to an electron with all paths blocked -> next_min_time 
+        // set to max double value or slightly smaller -> any path that becomes available during this 
+        // iteration (which is guaranteed to happen) sets a new valid min_e (because next_min_time becomes
+        // min_time) and makes next_min_time = approx. max double -> any other electron with lowest 
+        // path > min_e will become next_min_e (or if none is found then at the begin of the next 
+        // iteration the same situation is obtained: min_e = only electron with unblocked paths, 
+        // next_min_time = approx. max double value).
+        // --
+        // Rare case: When there is only one electron (becomes min_e = hop_e), then next_min_e will 
+        // remain as nullptr and next_min_time = max double value -> when the new paths for hop_e are 
+        // evaluated during this iteration then min_e will be set to hop_e again (because next_min_time 
+        // becomes min_time) and min_time to its lowest path -> next_min_e = nullptr and 
+        // next_min_time = max double value such that the same behavior is obtained in the next iteration.
+        if (min_e == nullptr) 
         {
-            const double time_step {min_e.m_MinTime};
-            for (TElectron& it_e : t_electrons)
+            min_e = p_electrons;
+            min_time = min_e->m_MinTime - (m_TotalTime - min_e->m_LastHopTime);
+            std::uint32_t min_state_id = min_e->m_MinStateID;
+            next_min_time = std::numeric_limits<double>::max();
+            const TElectron* const it_end = p_electrons + electron_count;
+            for (const TElectron* it_e = p_electrons + 1; it_e != it_end; ++it_e)
             {
-                it_e.m_AccTimeDecay += time_step;
-                it_e.m_MinTime -= time_step;
+                const double it_time = it_e->m_MinTime - (m_TotalTime - it_e->m_LastHopTime);
+                if (it_time < min_time)
+                {
+                    if (it_e->m_MinStateID != min_state_id)
+                    {
+                        min_state_id = it_e->m_MinStateID;
+                        next_min_e = min_e;
+                        next_min_time = min_time;
+                    }
+                    min_e = it_e;
+                    min_time = it_time;
+                }
+                else if ((it_time < next_min_time) && (it_e->m_MinStateID != min_state_id))
+                {
+                    next_min_e = it_e;
+                    next_min_time = it_time;
+                }
             }
-            t_total_time += time_step;
         }
 
+        // Use min_e as new hop_e (= current hop)
+        TElectron& hop_e {*const_cast<TElectron*>(min_e)};
+
+        // Advance total time and set last hop time for the hopping electron
+        m_TotalTime += min_time;
+        hop_e.m_LastHopTime = m_TotalTime;
+        
+        // Use next_min_e as new min_e (= next hop candidate)
+        // (if next_min_e is unknown then min_e becomes nullptr and min_time becomes negative, 
+        // which means min_e cannot be set during this iteration and a new min search is triggered
+        // at the begin of the next iteration)
+        // - min_time = next_min_time - current time step 
+        //   (because next_min_time is relative to the old m_TotalTime before this hop)
+        // - next_min_e becomes unknown = nullptr
+        // - next_min_time = 0.0 to prevent any set of next_min_e before a new min_e was found
+        //   (avoids checking if next_min_e == nullptr)
+        min_e = next_min_e;
+        min_time = next_min_time - min_time;
+        next_min_e = nullptr;
+        next_min_time = 0.0;
+
         // Update electrons around the start position (which becomes empty)
-        // (also iterates over the minimal path which is no problem because end state is still empty)
-        const TLocalState& old_state {t_structure[min_e.m_CurrentStateID]};
-        for (const TPath& it_p : old_state.m_Paths)
+        // - also iterates over the minimal path which is no problem because end state is still empty
+        // - the new paths all have the same target state so only min_e can be set if any of them has
+        //   smaller m_MinTime and the target state would always be different from current min_e's target
+        //   state because old_state was previously blocked
+        // - possible situation: the current min_e could be one of the electrons that gets a newly 
+        //   available path -> then if its new path is not its lowest path nothing has to be done, but 
+        //   if its new path becomes its lowest path then two options arise:
+        //   - it is the lowest of all new paths with old_state as target
+        //   - it is not the lowest of the new paths with old_state as target
+        //   in both cases the old min_e should not be copied to next_min_e (in the second case its
+        //   lowest path will be blocked in the next iteration -> restores its previous lowest path and
+        //   might be set to min_e again), which can be reached by checking if the targets of old and new
+        //   min_e are equal (because the old min_e's m_MinStateID would be set to old_state when adding
+        //   its newly available path; checking only min_env_e != min_e would miss the second case)
+        const TLocalState& old_state {p_structure[hop_e.m_CurrentStateID]};
         {
-            const TLocalState& state {t_structure[it_p.m_StateID]};
-            if (state.m_ElectronID < t_state_count)
+            const TElectron* min_env_e = nullptr;
+            double min_env_time = std::numeric_limits<double>::max();
+            for (const TPath& it_p : old_state.m_Paths)
             {
-                TElectron& env_e {t_electrons[state.m_ElectronID]};
-
-                // Subtract accumulated time decay from path times before new path is added
-                const double& decay {env_e.m_AccTimeDecay};
-                for (double& it_t : env_e.m_RandomTimes)
+                const TLocalState& state {p_structure[it_p.m_StateID]};
+                if (state.m_ElectronID < state_count)
                 {
-                    it_t -= decay;
+                    TElectron& env_e {p_electrons[state.m_ElectronID]};
+
+                    // Calculate time step for the newly available path (relative to now)
+                    const double env_time = -log(probability(m_RndGen)) * state.m_Paths[it_p.m_ReverseID].m_Time;
+
+                    // Set new path time (relative to m_LastHopTime)
+                    // (add the time decay since this electron's last hop to keep the correct order
+                    // of the randomized path times; alternative would be to subtract it from all
+                    // other paths which might have precision advantages but would require to loop
+                    // through all other paths)
+                    double& reverse_time {env_e.m_RandomTimes[it_p.m_ReverseID]};
+                    reverse_time = env_time + (m_TotalTime - env_e.m_LastHopTime);                    
+
+                    // Check if its the new 1st or 2nd minimum path time (cannot be the old minimum)
+                    if (reverse_time < env_e.m_MinTime)
+                    {
+                        // Do not copy to m_NextMinIndex when the old minimum path will be blocked
+                        // by the current hop anyways
+                        if (env_e.m_MinStateID != hop_e.m_MinStateID)
+                        {
+                            env_e.m_NextMinIndex = env_e.m_MinIndex;
+                            env_e.m_NextMinTime = env_e.m_MinTime;
+                        }
+                        env_e.m_MinTime = reverse_time;
+                        env_e.m_MinIndex = it_p.m_ReverseID;
+                        env_e.m_MinStateID = hop_e.m_CurrentStateID;
+
+                        // Save the lowest of electrons that get a new minimum path
+                        if (env_time < min_env_time)
+                        {
+                            min_env_e = std::addressof(env_e);
+                            min_env_time = env_time;
+                        }
+                    }
+                    else if (reverse_time < env_e.m_NextMinTime)
+                    {
+                        // Save as second lowest path except when the first minimum path gets blocked
+                        // by the current hop, then the newly available path is the new 1st minimum
+                        if (env_e.m_MinStateID != hop_e.m_MinStateID)
+                        {
+                            env_e.m_NextMinTime = reverse_time;
+                            env_e.m_NextMinIndex = it_p.m_ReverseID;
+                        }
+                        else
+                        {
+                            env_e.m_MinTime = reverse_time;
+                            env_e.m_MinIndex = it_p.m_ReverseID;
+                            env_e.m_MinStateID = hop_e.m_CurrentStateID;
+
+                            // Save the lowest of electrons that get a new minimum path
+                            if (env_time < min_env_time)
+                            {
+                                min_env_e = std::addressof(env_e);
+                                min_env_time = env_time;
+                            }
+                        }
+                    }
                 }
-                env_e.m_AccTimeDecay = 0.0;
+            }
 
-                // Calculate time for the newly available path
-                double& reverse_time {env_e.m_RandomTimes[it_p.m_ReverseID]};
-                reverse_time = -log(probability(t_rndgen)) * state.m_Paths[it_p.m_ReverseID].m_Time;
-
-                // Check if its the new minimal time (cannot be the old minimum)
-                if (reverse_time < env_e.m_MinTime)
+            // Check if the lowest of the newly available paths is the new min_e
+            // (no need to check next_min_e because it is always "unknown" at this point)
+            if ((min_env_e) && (min_env_time < min_time))
+            {
+                // Only copy to next_min_e if the new min_e has a different target
+                // (see above for longer explanation)
+                if ((min_e == nullptr) || (min_env_e->m_MinStateID != min_e->m_MinStateID))
                 {
-                    env_e.m_MinTime = reverse_time;
-                    env_e.m_MinIndex = it_p.m_ReverseID;
+                    next_min_e = min_e;
+                    next_min_time = min_time;
                 }
+
+                min_e = min_env_e;
+                min_time = min_env_time;
             }
         }
 
         // Get reference to chosen path and new state
-        const TPath& min_path {old_state.m_Paths[min_e.m_MinIndex]};
-        const TLocalState& new_state {t_structure[min_path.m_StateID]};
+        const TPath& min_path {old_state.m_Paths[hop_e.m_MinIndex]};
+        const TLocalState& new_state {p_structure[hop_e.m_MinStateID]};
 
         // Detect if this is an oscillatory hop (back to previous position)
-        if (min_e.m_LastStateID == min_path.m_StateID)
+        if (hop_e.m_LastStateID == min_path.m_StateID)
         {
-            min_e.m_OscHopCount += 2U;
+            hop_e.m_OscHopCount += 2U;
             ++(min_path.m_OscHopCount);
             ++(new_state.m_Paths[min_path.m_ReverseID].m_OscHopCount);
         }
         else
         {
-            min_e.m_LastStateID = min_e.m_CurrentStateID;
+            hop_e.m_LastStateID = hop_e.m_CurrentStateID;
         }
 
-        // Transfer electron to new state (and set old state empty)
-        min_e.m_CurrentStateID = min_path.m_StateID;
+        // Transfer electron to new state
+        hop_e.m_CurrentStateID = min_path.m_StateID;
         ++(min_path.m_HopCount);
         new_state.m_ElectronID = old_state.m_ElectronID;
-        old_state.m_ElectronID = t_state_count;
+        old_state.m_ElectronID = state_count;        
 
         // Add timespan that old state was occupied
-        old_state.m_OccTime += t_total_time - old_state.m_LastHopTime;
-        old_state.m_LastHopTime = t_total_time;
-        new_state.m_LastHopTime = t_total_time;
+        old_state.m_OccTime += m_TotalTime - old_state.m_LastHopTime;
+        old_state.m_LastHopTime = m_TotalTime;
+        new_state.m_LastHopTime = m_TotalTime;
 
         // Detect if it is the first hop of this electron
-        if (min_e.m_HopCount == 0) min_e.m_FirstHopTime = t_total_time;
+        if (hop_e.m_HopCount == 0) hop_e.m_FirstHopTime = m_TotalTime;
 
         // Calculate displacement and hopping counters
         {
@@ -1304,56 +1513,196 @@ void MC::TEngine::KMCLoop(std::uint64_t& hop_counter, const std::uint64_t hop_li
             if (old_z - new_z > 0.5) new_z += 1.0;
             if (new_z - old_z > 0.5) new_z -= 1.0;
 
-            min_e.m_Disp_x += new_x - old_x;
-            min_e.m_Disp_y += new_y - old_y;
-            min_e.m_Disp_z += new_z - old_z;
-            ++(min_e.m_HopCount);
+            hop_e.m_Disp_x += new_x - old_x;
+            hop_e.m_Disp_y += new_y - old_y;
+            hop_e.m_Disp_z += new_z - old_z;
+            ++(hop_e.m_HopCount);
             ++hop_counter;
         }
 
-        // Generate new randomized transition times and find minimum
+        // Generate new randomized transition times for hop_e and find 1st and 2nd minimum path
+        // (m_RandomTimes has sufficient size for all possible path counts)
         {
-            double min_time {Constant::occupied_path};
-            std::uint32_t min_index {0U};
-            const std::size_t path_count {new_state.m_Paths.size()};
-            min_e.m_RandomTimes.resize(path_count,0.0);
-            for (std::uint32_t i = 0U; i < path_count; ++i)
+            hop_e.m_MinTime = std::numeric_limits<double>::max();
+            hop_e.m_NextMinTime = std::numeric_limits<double>::max();
+            const double* it_min = nullptr;
+            const double* it_next_min = nullptr;
+            double* const it_start = hop_e.m_RandomTimes.data();
+            double* const it_end = it_start + new_state.m_Paths.size();
+            const TPath* it_p = new_state.m_Paths.data();
+            for (double* it_t = it_start; it_t != it_end; ++it_t, ++it_p)
             {
-                if (t_structure[new_state.m_Paths[i].m_StateID].m_ElectronID < t_state_count)
+                if (p_structure[it_p->m_StateID].m_ElectronID < state_count)
                 {
-                    min_e.m_RandomTimes[i] = Constant::occupied_path;
+                    *it_t = std::numeric_limits<double>::max();
                 }
                 else
                 {
-                    min_e.m_RandomTimes[i] = -log(probability(t_rndgen))*new_state.m_Paths[i].m_Time;
-                    if (min_e.m_RandomTimes[i] < min_time)
+                    *it_t = -log(probability(m_RndGen)) * it_p->m_Time;
+
+                    if (*it_t < hop_e.m_MinTime)
                     {
-                        min_time = min_e.m_RandomTimes[i];
-                        min_index = i;
+                        hop_e.m_NextMinTime = hop_e.m_MinTime;
+                        it_next_min = it_min;
+                        hop_e.m_MinTime = *it_t;
+                        it_min = it_t;
+                    }
+                    else if (*it_t < hop_e.m_NextMinTime)
+                    {
+                        hop_e.m_NextMinTime = *it_t;
+                        it_next_min = it_t;
                     }
                 }
             }
-            min_e.m_MinTime = min_time;
-            min_e.m_MinIndex = min_index;
-            min_e.m_AccTimeDecay = 0.0;
+
+            // The pointer it_min is always valid because there is at least the unblocked back-jump
+            hop_e.m_MinIndex = static_cast<std::uint32_t>(it_min - it_start);
+            hop_e.m_MinStateID = new_state.m_Paths[hop_e.m_MinIndex].m_StateID;
+            
+            // When all paths except one (back-jump) are blocked: m_NextMinIndex = state_count + 1
+            // and m_NextMinTime = max. double value (would be unchanged, see above)
+            hop_e.m_NextMinIndex = (it_next_min) ? 
+                static_cast<std::uint32_t>(it_next_min - it_start) : (state_count + 1);
+
+            // Check if hop_e is the new min_e or next_min_e 
+            // - so far it cannot be min_e or next_min_e, also not from previous iteration because
+            //   min_e must always be a different electron than next_min_e
+            // - for hop_e the plain m_MinTime can be used to compare with min_time and 
+            //   next_min_time because hop_e.m_LastHopTime is equal to m_TotalTime
+            // - when hop_e.m_MinTime < next_min_time then min_e has already been set to a valid object
+            //   thus no need to check if min_e is nullptr in the else-if clause
+            if (hop_e.m_MinTime < min_time)
+            {
+                if ((min_e == nullptr) || (hop_e.m_MinStateID != min_e->m_MinStateID))
+                {
+                    next_min_e = min_e;
+                    next_min_time = min_time;
+                }
+                min_e = std::addressof(hop_e);
+                min_time = hop_e.m_MinTime;
+            }
+            else if ((hop_e.m_MinTime < next_min_time) && (hop_e.m_MinStateID != min_e->m_MinStateID))
+            {
+                next_min_e = std::addressof(hop_e);
+                next_min_time = hop_e.m_MinTime;
+            }
         }
 
-        // Update electrons around the end position (which becomes occupied)
+        // From now on min_e either points to a valid electron incl. valid min_time or it is nullptr 
+        // and min_time is zero (or even negative). The case with min_e == nullptr and 
+        // min_time == approx. max double is resolved by hop_e above in any case because hop_e has 
+        // at least one unblocked hop. This means that when path time < min_time is true then 
+        // min_e is valid (and no need to check it below).
+
+        // Update electrons around the end position (which became occupied)
+        // - electrons whose minimum path gets blocked cannot be min_e or next_min_e from this
+        //   iteration (because for the env_e of old_state which may became min_e was the m_MinIndex
+        //   already set to the newly available path) or from the previous iteration because min_e
+        //   (which became hop_e) and next_min_e (which became min_e or probably next_min_e again)
+        //   must had different targets -> the remaining min_e or next_min_e from previous iteration
+        //   has a different target than hop_e and thus cannot become blocked
+        //   -> electrons that get a new minimum path after blocking can become min_e or next_min_e
+        //      but they cannot already be min_e or next_min_e
         for (const TPath& it_p : new_state.m_Paths)
         {
-            const TLocalState& state {t_structure[it_p.m_StateID]};
-            if (state.m_ElectronID < t_state_count)
+            const TLocalState& state {p_structure[it_p.m_StateID]};
+            if (state.m_ElectronID < state_count)
             {
-                TElectron& env_e {t_electrons[state.m_ElectronID]};
-                env_e.m_RandomTimes[it_p.m_ReverseID] = Constant::occupied_path;
+                TElectron& env_e {p_electrons[state.m_ElectronID]};
+                env_e.m_RandomTimes[it_p.m_ReverseID] = std::numeric_limits<double>::max();
 
-                // Check if it was the minimal time (cannot remain minimum = find new minimum)
+                // Check if it was the 1st or 2nd minimum path (cannot remain minimum = find new minimum)
                 if (env_e.m_MinIndex == it_p.m_ReverseID)
                 {
-                    std::vector<double>::const_iterator min_it 
-                        {std::min_element(env_e.m_RandomTimes.cbegin(),env_e.m_RandomTimes.cend())};
-                    env_e.m_MinIndex = static_cast<std::uint32_t>(std::distance(env_e.m_RandomTimes.cbegin(),min_it));
-	                env_e.m_MinTime = *min_it - env_e.m_AccTimeDecay;
+                    // Use m_NextMinIndex if available, otherwise search new minimum paths
+                    // - m_NextMinIndex is available when its either a valid path index or 
+                    //   state_count + 1, which indicates that all other paths are blocked
+                    // - m_NextMinIndex is "unknown" if it equals state_count
+                    if (env_e.m_NextMinIndex != state_count)
+                    {
+                        env_e.m_MinIndex = env_e.m_NextMinIndex;
+                        env_e.m_MinTime = env_e.m_NextMinTime;
+
+                        // Only set m_NextMinIndex to "unknown" if not all other paths are blocked
+                        // - m_NextMinIndex partially used as m_MinIndex here until reset
+                        // - time set to zero to prevent any set of m_MinNextIndex (e.g. through newly
+                        //   available paths), but zero cannot end up as m_MinTime because m_NextMinIndex
+                        //   stays equal to state_count (see if-condition above, before set of m_MinTime)
+                        if (env_e.m_NextMinIndex != state_count + 1)
+                        {
+                            env_e.m_MinStateID = state.m_Paths[env_e.m_NextMinIndex].m_StateID;
+                            env_e.m_NextMinIndex = state_count;
+                            env_e.m_NextMinTime = 0.0;
+                        }
+                        else env_e.m_MinStateID = state_count;
+                    }
+                    else
+                    {
+                        // Search new 1st and 2nd lowest paths
+                        env_e.m_MinTime = std::numeric_limits<double>::max();
+                        env_e.m_NextMinTime = std::numeric_limits<double>::max();
+                        const double* it_min = nullptr;
+                        const double* it_next_min = nullptr;
+                        const double* const it_start = env_e.m_RandomTimes.data();
+                        const double* const it_end = it_start + state.m_Paths.size();
+                        for (const double* it_t = it_start; it_t != it_end; ++it_t)
+                        {
+                            if (*it_t < env_e.m_MinTime)
+                            {
+                                env_e.m_NextMinTime = env_e.m_MinTime;
+                                it_next_min = it_min;
+                                env_e.m_MinTime = *it_t;
+                                it_min = it_t;
+                            }
+                            else if (*it_t < env_e.m_NextMinTime)
+                            {
+                                env_e.m_NextMinTime = *it_t;
+                                it_next_min = it_t;
+                            }
+                        }
+
+                        // The pointers it_min and it_next_min will remain nullptr when only blocked
+                        // paths are found (which are equal to max double value, not smaller)
+                        if (it_min)
+                        {
+                            env_e.m_MinIndex = static_cast<std::uint32_t>(it_min - it_start);
+                            env_e.m_MinStateID = state.m_Paths[env_e.m_MinIndex].m_StateID;
+                        }
+                        else
+                        {
+                            env_e.m_MinIndex = state_count + 1;
+                            env_e.m_MinStateID = state_count;
+                        }
+                        env_e.m_NextMinIndex = (it_next_min) ? 
+                            static_cast<std::uint32_t>(it_next_min - it_start) : (state_count + 1);
+                    }
+
+                    // Check if it becomes the new min_e or next_min_e
+                    const double env_time = env_e.m_MinTime - (m_TotalTime - env_e.m_LastHopTime);
+                    if (env_time < min_time)
+                    {
+                        if (env_e.m_MinStateID != min_e->m_MinStateID)
+                        {
+                            next_min_e = min_e;
+                            next_min_time = min_time;
+                        }
+                        min_e = std::addressof(env_e);
+                        min_time = env_time;
+                    }
+                    else if ((env_time < next_min_time) && (env_e.m_MinStateID != min_e->m_MinStateID))
+                    {
+                        next_min_e = std::addressof(env_e);
+                        next_min_time = env_time;
+                    }
+                }
+                else if (env_e.m_NextMinIndex == it_p.m_ReverseID)
+                {
+                    // If the blocked path was the 2nd lowest path then set it "unknown"
+                    // - time set to 0.0 to avoid set through newly available paths (0.0 cannot become
+                    //   m_MinTime because m_NextMinIndex remains state_count, which is checked before
+                    //   m_NextMinTime is used for m_MinTime above)
+                    env_e.m_NextMinIndex = state_count;
+                    env_e.m_NextMinTime = 0.0;
                 }
             }
         }
@@ -1543,45 +1892,17 @@ void MC::TEngine::CalculatePostEquilibrationStatistics()
                         // Update electrons that occupy these states
                         if (state.m_ElectronID < m_ParamSet->m_StateCount)
                         {
-                            TElectron& electron = m_Electrons[state.m_ElectronID];
+                            auto& rndtimes = m_Electrons[state.m_ElectronID].m_RandomTimes;
 
-                            // Delete electron.m_RandomTimes[k] (list in same order as m_Paths)
-                            electron.m_RandomTimes.erase(electron.m_RandomTimes.begin() + k);
-
-                            // Find new minimum time if deleted path was the minimum
-                            if (electron.m_MinIndex == k)
-                            {
-                                std::vector<double>::const_iterator min_it 
-                                    {std::min_element(electron.m_RandomTimes.cbegin(),electron.m_RandomTimes.cend())};
-                                electron.m_MinIndex = static_cast<std::uint32_t>(std::distance(electron.m_RandomTimes.cbegin(),min_it));
-                                electron.m_MinTime = *min_it - electron.m_AccTimeDecay;
-                            }
-                            // Reduce minimum index if deleted path was below in the list
-                            else if (electron.m_MinIndex > k)
-                            {
-                                --(electron.m_MinIndex);
-                            } 
+                            // Delete m_RandomTimes[k] (list in same order as m_Paths)
+                            rndtimes.erase(rndtimes.begin() + k);
                         }
                         if (new_state.m_ElectronID < m_ParamSet->m_StateCount)
                         {
-                            TElectron& electron = m_Electrons[new_state.m_ElectronID];
+                            auto& rndtimes = m_Electrons[new_state.m_ElectronID].m_RandomTimes;
 
-                            // Delete electron.m_RandomTimes[rev_k] (list in same order as m_Paths)
-                            electron.m_RandomTimes.erase(electron.m_RandomTimes.begin() + rev_k);
-
-                            // Find new minimum time if deleted path was the minimum
-                            if (electron.m_MinIndex == rev_k)
-                            {
-                                std::vector<double>::const_iterator min_it 
-                                    {std::min_element(electron.m_RandomTimes.cbegin(),electron.m_RandomTimes.cend())};
-                                electron.m_MinIndex = static_cast<std::uint32_t>(std::distance(electron.m_RandomTimes.cbegin(),min_it));
-                                electron.m_MinTime = *min_it - electron.m_AccTimeDecay;
-                            }
-                            // Reduce minimum index if deleted path was below in the list
-                            else if (electron.m_MinIndex > rev_k)
-                            {
-                                --(electron.m_MinIndex);
-                            } 
+                            // Delete m_RandomTimes[rev_k] (list in same order as m_Paths)
+                            rndtimes.erase(rndtimes.begin() + rev_k);
                         }
                         
                         // Update the m_ReverseIDs of paths that are reverse to the paths that shifted in the list (>= k, >= rev_k)
@@ -1611,17 +1932,48 @@ void MC::TEngine::CalculatePostEquilibrationStatistics()
                     state.m_Paths.shrink_to_fit();
                 }
 
-                // Adjust capacity of electrons time list to avoid allocations during simulation
+                // Find new m_MinTime and m_NextMinTime for all electrons and adjust
+                // capacity of electrons' time list to avoid allocations during simulation
                 for (TElectron& electron : m_Electrons)
                 {
-                    electron.m_RandomTimes.shrink_to_fit();
                     try
                     {
-                        electron.m_RandomTimes.reserve(m_SimResult->m_MaxPathCount);
+                        electron.m_RandomTimes.resize(m_SimResult->m_MaxPathCount);
+                        electron.m_RandomTimes.shrink_to_fit();
                     }
                     catch(const std::bad_alloc& e)
                     {
-                        throw EX::TOutOfMemory("Cannot reserve space for electron paths.",__func__,e.what());
+                        throw EX::TOutOfMemory("Cannot adjust space for electron paths.",__func__,e.what());
+                    }
+
+                    const auto& paths = m_Structure[electron.m_CurrentStateID].m_Paths;
+                    electron.m_MinTime = std::numeric_limits<double>::max();
+                    electron.m_NextMinTime = std::numeric_limits<double>::max();
+                    electron.m_MinIndex = m_ParamSet->m_StateCount + 1;
+                    electron.m_NextMinIndex = m_ParamSet->m_StateCount + 1;
+                    for (std::uint32_t i = 0; i < paths.size(); ++i)
+                    {
+                        if (electron.m_RandomTimes[i] < electron.m_MinTime)
+                        {
+                            electron.m_NextMinTime = electron.m_MinTime;
+                            electron.m_NextMinIndex = electron.m_MinIndex;
+                            electron.m_MinTime = electron.m_RandomTimes[i];
+                            electron.m_MinIndex = i;
+                        } 
+                        else if (electron.m_RandomTimes[i] < electron.m_NextMinTime)
+                        {
+                            electron.m_NextMinTime = electron.m_RandomTimes[i];
+                            electron.m_NextMinIndex = i;
+                        }
+                    }
+
+                    if (electron.m_MinIndex < m_ParamSet->m_StateCount) 
+                    {
+                        electron.m_MinStateID = paths[electron.m_MinIndex].m_StateID;
+                    }
+                    else
+                    {
+                        electron.m_MinStateID = m_ParamSet->m_StateCount;
                     }
                 }
 
@@ -2156,7 +2508,7 @@ void MC::TEngine::GenerateResults()
             }
         }
         if (!electron_is_blocked[i])
-            next_time_per_electron.check(electron.m_MinTime);
+            next_time_per_electron.check(electron.m_MinTime - (m_TotalTime - electron.m_LastHopTime));
         else if (electron.m_HopCount == 0)
             ++blocked_zerohop_electrons;
         else if (electron.m_HopCount == electron.m_OscHopCount)
@@ -2906,7 +3258,8 @@ void MC::TEngine::GenerateResults()
         //
         if (!electron_is_blocked[i])
         {
-            m_SimResult->m_HNextTime.IncCount(HP::EL, electron.m_MinTime);
+            m_SimResult->m_HNextTime.IncCount(HP::EL, 
+                electron.m_MinTime - (m_TotalTime - electron.m_LastHopTime));
         }
 
         // Stationary electron (0 hops)
@@ -2917,7 +3270,8 @@ void MC::TEngine::GenerateResults()
             //
             if (!electron_is_blocked[i])
             {
-                m_SimResult->m_HNextTime.IncCount(HP::ZEROHOP_EL, electron.m_MinTime);
+                m_SimResult->m_HNextTime.IncCount(HP::ZEROHOP_EL, 
+                    electron.m_MinTime - (m_TotalTime - electron.m_LastHopTime));
             }
 
             continue;
@@ -2968,7 +3322,8 @@ void MC::TEngine::GenerateResults()
             //
             if (!electron_is_blocked[i])
             {
-                m_SimResult->m_HNextTime.IncCount(HP::OSC_EL, electron.m_MinTime);
+                m_SimResult->m_HNextTime.IncCount(HP::OSC_EL, 
+                    electron.m_MinTime - (m_TotalTime - electron.m_LastHopTime));
             }
 
             // Oscillating electron (only osc. hops) that became mobile after equilibration
@@ -3065,7 +3420,8 @@ void MC::TEngine::GenerateResults()
         //
         if (!electron_is_blocked[i])
         {
-            m_SimResult->m_HNextTime.IncCount(HP::MOB_EL, electron.m_MinTime);
+            m_SimResult->m_HNextTime.IncCount(HP::MOB_EL, 
+                electron.m_MinTime - (m_TotalTime - electron.m_LastHopTime));
         }
 
         // Mobile electron (> 0 non-osc. hops) that became mobile after equilibration
