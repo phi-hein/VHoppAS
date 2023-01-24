@@ -2411,6 +2411,7 @@ void MC::TEngine::GenerateResults()
     const double spfac = m_DOS->GetSpatialFactor();
     const double enmax = m_ParamSet->m_MaxStateEnergy;
     const double enfac = m_DOS->GetEnergyFactor();
+    const double fermilvl = (m_ParamSet->m_ChemPot - enmax)/enfac;  // in relative units
     
     // Analyze paths (e.g. min/max for histogram boundaries)
     GF::TMinMax<double> time_per_path;
@@ -2929,6 +2930,9 @@ void MC::TEngine::GenerateResults()
     
     // Additional statistics on energies and distances
     std::uint64_t total_hops = 0;
+    std::uint64_t total_oscs = 0;
+    std::uint64_t total_nonoscs = 0;
+    double total_xdisp = 0.0;
     std::vector<std::uint64_t> state_hops (m_Structure.size(), 0);
     std::vector<std::uint64_t> state_oscs (m_Structure.size(), 0);
     std::vector<std::uint64_t> state_nonoscs (m_Structure.size(), 0);
@@ -2942,6 +2946,21 @@ void MC::TEngine::GenerateResults()
     GF::TOuterCounter<std::uint32_t> outer_used_states (-0.95, -0.05);
     GF::TMinMax<double> dist_per_used_path;
     GF::TMinMax<double> ediff_per_used_path;
+    std::uint64_t hops_below_fermilvl = 0;
+    std::uint64_t oscs_below_fermilvl = 0;
+    std::uint64_t nonoscs_below_fermilvl = 0;
+    double xdisp_below_fermilvl = 0.0;
+    std::uint64_t hops_up_across_fermilvl = 0;
+    std::uint64_t oscs_up_across_fermilvl = 0;
+    std::uint64_t nonoscs_up_across_fermilvl = 0;
+    std::uint64_t hops_down_across_fermilvl = 0;
+    std::uint64_t oscs_down_across_fermilvl = 0;
+    std::uint64_t nonoscs_down_across_fermilvl = 0;
+    double xdisp_across_fermilvl = 0.0;
+    std::uint64_t hops_above_fermilvl = 0;
+    std::uint64_t oscs_above_fermilvl = 0;
+    std::uint64_t nonoscs_above_fermilvl = 0;
+    double xdisp_above_fermilvl = 0.0;
 
     // Paths
     for (std::size_t i = 0; i < m_Structure.size(); ++i)
@@ -3009,6 +3028,9 @@ void MC::TEngine::GenerateResults()
             state_is_used[i] = true;
             state_is_used[path.m_StateID] = true;
             total_hops += path.m_HopCount;
+            total_oscs += path.m_OscHopCount;
+            total_nonoscs += path.m_HopCount - path.m_OscHopCount;
+            total_xdisp += (new_x - old_x)*static_cast<double>(path.m_HopCount - path.m_OscHopCount);
             state_hops[i] += path.m_HopCount;
             state_oscs[i] += path.m_OscHopCount;
             state_nonoscs[i] += path.m_HopCount - path.m_OscHopCount;
@@ -3084,6 +3106,44 @@ void MC::TEngine::GenerateResults()
             m_SimResult->m_HDistance.AddValue(HP::OSC_PER_PT, t_path_dist, static_cast<double>(path.m_OscHopCount));
             m_SimResult->m_HDistance.AddValue(HP::EDIFF_PER_HOP, t_path_dist, t_path_ediff + t_field_contrib, path.m_HopCount);
             m_SimResult->m_HDistance.AddValue(HP::EDIFF_PER_NONOSC, t_path_dist, t_path_ediff + t_field_contrib, path.m_HopCount - path.m_OscHopCount);
+
+            // Used path with start and end below Fermi level
+            if ((m_Structure[path.m_StateID].m_Energy < fermilvl) && (state.m_Energy < fermilvl))
+            {
+                hops_below_fermilvl += path.m_HopCount;
+                oscs_below_fermilvl += path.m_OscHopCount;
+                nonoscs_below_fermilvl += path.m_HopCount - path.m_OscHopCount;
+                xdisp_below_fermilvl += (new_x - old_x)*static_cast<double>(path.m_HopCount - path.m_OscHopCount);
+            }
+
+            // Used path with start below Fermi level and end above Fermi level (= upwards)
+            // (includes those with start and end at the Fermi level)
+            if ((m_Structure[path.m_StateID].m_Energy >= fermilvl) && (state.m_Energy <= fermilvl))
+            {
+                hops_up_across_fermilvl += path.m_HopCount;
+                oscs_up_across_fermilvl += path.m_OscHopCount;
+                nonoscs_up_across_fermilvl += path.m_HopCount - path.m_OscHopCount;
+                xdisp_across_fermilvl += (new_x - old_x)*static_cast<double>(path.m_HopCount - path.m_OscHopCount);
+            }
+
+            // Used path with start above Fermi level and end below Fermi level (= downwards)
+            // (combined xdisp with upwards because of oscillations)
+            if ((m_Structure[path.m_StateID].m_Energy < fermilvl) && (state.m_Energy >= fermilvl))
+            {
+                hops_down_across_fermilvl += path.m_HopCount;
+                oscs_down_across_fermilvl += path.m_OscHopCount;
+                nonoscs_down_across_fermilvl += path.m_HopCount - path.m_OscHopCount;
+                xdisp_across_fermilvl += (new_x - old_x)*static_cast<double>(path.m_HopCount - path.m_OscHopCount);
+            }
+
+            // Used path with start and end above Fermi level
+            if ((m_Structure[path.m_StateID].m_Energy > fermilvl) && (state.m_Energy > fermilvl))
+            {
+                hops_above_fermilvl += path.m_HopCount;
+                oscs_above_fermilvl += path.m_OscHopCount;
+                nonoscs_above_fermilvl += path.m_HopCount - path.m_OscHopCount;
+                xdisp_above_fermilvl += (new_x - old_x)*static_cast<double>(path.m_HopCount - path.m_OscHopCount);
+            }
         }
     }
 
@@ -3515,6 +3575,27 @@ void MC::TEngine::GenerateResults()
         if (outer_states.upper != 0) std::cout << " (" << 100.0 * static_cast<double>(outer_used_states.upper) / static_cast<double>(outer_states.upper) << " %)";
         if ((outer_states.lower != 0) || (outer_states.upper != 0)) std::cout << " [% = of outer states]";
         std::cout << std::endl;
+
+        std::cout << "Hops with start and end below the Fermi level [% = of total value]:";
+        std::cout << "  Hops: " << hops_below_fermilvl << " (" << 100.0 * static_cast<double>(hops_below_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
+        std::cout << "  Osc. hops: " << oscs_below_fermilvl << " (" << 100.0 * static_cast<double>(oscs_below_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
+        std::cout << "  Non-osc. hops: " << nonoscs_below_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_below_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
+        std::cout << "  Mean x-disp. of eff. charge carriers: " << xdisp_below_fermilvl * spfac / m_SimResult->m_EffCarriers << " nm (" << 100.0 * xdisp_below_fermilvl / total_xdisp << " %)" << std::endl;
+
+        std::cout << "Hops across the Fermi level [% = of total value]:";
+        std::cout << "  Hops (upwards): " << hops_up_across_fermilvl << " (" << 100.0 * static_cast<double>(hops_up_across_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
+        std::cout << "  Hops (downwards): " << hops_down_across_fermilvl << " (" << 100.0 * static_cast<double>(hops_down_across_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
+        std::cout << "  Osc. hops (upwards): " << oscs_up_across_fermilvl << " (" << 100.0 * static_cast<double>(oscs_up_across_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
+        std::cout << "  Osc. hops (downwards): " << oscs_down_across_fermilvl << " (" << 100.0 * static_cast<double>(oscs_down_across_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
+        std::cout << "  Non-osc. hops (upwards): " << nonoscs_up_across_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_up_across_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
+        std::cout << "  Non-osc. hops (downwards): " << nonoscs_down_across_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_down_across_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
+        std::cout << "  Mean x-disp. of eff. charge carriers: " << xdisp_across_fermilvl * spfac / m_SimResult->m_EffCarriers << " nm (" << 100.0 * xdisp_across_fermilvl / total_xdisp << " %)" << std::endl;
+    
+        std::cout << "Hops with start and end above the Fermi level [% = of total value]:";
+        std::cout << "  Hops: " << hops_above_fermilvl << " (" << 100.0 * static_cast<double>(hops_above_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
+        std::cout << "  Osc. hops: " << oscs_above_fermilvl << " (" << 100.0 * static_cast<double>(oscs_above_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
+        std::cout << "  Non-osc. hops: " << nonoscs_above_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_above_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
+        std::cout << "  Mean x-disp. of eff. charge carriers: " << xdisp_above_fermilvl * spfac / m_SimResult->m_EffCarriers << " nm (" << 100.0 * xdisp_above_fermilvl / total_xdisp << " %)" << std::endl;
     }
 
     // Additional analysis of different electron types
