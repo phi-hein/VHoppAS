@@ -624,6 +624,22 @@ void MC::TEngine::GenerateElectrons()
             total_energy += m_Structure[electron.m_CurrentStateID].m_Energy * enfac + enmax;
         }
 
+        // Calculate number of electrons above Ef and holes below Ef
+        std::uint32_t electrons_above_fermilvl = 0;
+        std::uint32_t holes_below_fermilvl = 0;
+        const double fermilvl = (m_ParamSet->m_ChemPot - enmax)/enfac;  // in relative units
+        for (const auto &state : m_Structure)
+        {
+            if (state.m_ElectronID < m_ParamSet->m_StateCount)
+            {
+                if (state.m_Energy >= fermilvl) electrons_above_fermilvl++;
+            }
+            else
+            {
+                if (state.m_Energy <= fermilvl) holes_below_fermilvl++;
+            }
+        }
+
         // Print electrons-related overview
         std::cout << "done" << std::endl;
         if (m_ParamSet->m_InitialFDDistrib)
@@ -637,6 +653,8 @@ void MC::TEngine::GenerateElectrons()
         std::cout << "  Occupation ratio: " 
             << static_cast<double>(m_Electrons.size())/static_cast<double>(m_Structure.size()) << std::endl;
         std::cout << "  Initial total energy (sum of occupied state energies): " << total_energy << " eV" << std::endl;
+        std::cout << "  Initial electrons above Fermi level: " << electrons_above_fermilvl << std::endl;
+        std::cout << "  Initial holes below Fermi level: " << holes_below_fermilvl << std::endl;
     }
 
     m_SimulationReady = false;
@@ -1121,6 +1139,10 @@ void MC::TEngine::RunSimulation ()
                 << m_SimResult->m_MeanFieldContribution << " eV [incl. eq.: " 
                 << incl_eq_result->m_MeanFieldContribution << " eV]" << std::endl;
         }
+        std::cout << "  Electrons above Fermi level: " << m_SimResult->m_ElectronsAboveEf << " [after eq.: " 
+            << eq_result->m_ElectronsAboveEf << "]" << std::endl;
+        std::cout << "  Holes below Fermi level: " << m_SimResult->m_HolesBelowEf << " [after eq.: " 
+            << eq_result->m_HolesBelowEf << "]" << std::endl;
         std::cout << "-- all following values include the equilibration --" << std::endl;
         std::cout << "  Mobile electrons (> 0 non-osc. hops): " << m_SimResult->m_MobileElectrons << " ("
             << 100.0 * static_cast<double>(m_SimResult->m_MobileElectrons)/static_cast<double>(m_SimResult->m_ElectronCount) 
@@ -1210,6 +1232,8 @@ void MC::TEngine::RunSimulation ()
             std::cout << "  Average electric field contribution to hop energy difference: " 
                 << m_SimResult->m_MeanFieldContribution << " eV" << std::endl;
         }
+        std::cout << "  Electrons above Fermi level: " << m_SimResult->m_ElectronsAboveEf << std::endl;
+        std::cout << "  Holes below Fermi level: " << m_SimResult->m_HolesBelowEf << std::endl;
         if (eq_hop_limit != 0)
             std::cout << "-- all following values include the equilibration --" << std::endl;
         std::cout << "  Mobile electrons (> 0 non-osc. hops): " << m_SimResult->m_MobileElectrons << " ("
@@ -1766,6 +1790,8 @@ void MC::TEngine::CalculatePostEquilibrationStatistics()
             << " eV (without electric field contribution)" << std::endl;
         std::cout << "  State energy range used during eq.: [" << m_SimResult->m_MinUsedStateEnergy << ", "
             << m_SimResult->m_MaxUsedStateEnergy << "] eV" << std::endl;
+        std::cout << "  Electrons above Fermi level (end of eq.): " << m_SimResult->m_ElectronsAboveEf << std::endl;
+        std::cout << "  Holes below Fermi level (end of eq.): " << m_SimResult->m_HolesBelowEf << std::endl;
     }
 
     // Adjust cut-offs and delete exceeding paths
@@ -2133,6 +2159,7 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
     const double spfac = m_DOS->GetSpatialFactor();
     const double enmax = m_ParamSet->m_MaxStateEnergy;
     const double enfac = m_DOS->GetEnergyFactor();
+    const double fermilvl = (m_ParamSet->m_ChemPot - enmax)/enfac;  // in relative units
 
     // Evaluation of electron statistics 
     // sum_energy = sum of state energies of occupied states (in eV)
@@ -2173,11 +2200,23 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
     // max_dist = maximum distance of used paths (in relative units)
     // max_ediff = maximum absolute state energy difference of used paths (in relative units)
     // used_energy_range = min/max of used state energies (in relative units)
+    // electrons_above_fermilvl = number of occupied states above Fermi level
+    // holes_below_fermilvl = number of unoccupied states below Fermi level
     std::uint64_t sum_hops = 0, sum_nonosc_hops = 0, sum_in_xdir_nonosc_hops = 0;
     double avg_field_contrib = 0.0, max_dist = 0.0, max_ediff = 0.0;
     GF::TMinMax<double> used_energy_range;
+    std::uint32_t electrons_above_fermilvl = 0, holes_below_fermilvl = 0;
     for (const auto& state : m_Structure)
     {
+        if (state.m_ElectronID < m_ParamSet->m_StateCount)
+        {
+            if (state.m_Energy >= fermilvl) electrons_above_fermilvl++;
+        }
+        else
+        {
+            if (state.m_Energy <= fermilvl) holes_below_fermilvl++;
+        }
+
         for (const auto& path : state.m_Paths)
         {
             if (path.m_HopCount == 0) continue;
@@ -2243,6 +2282,8 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
         - m_SimResult->m_EffCarriers / static_cast<double>(m_SimResult->m_MobileElectrons)
         * m_SimResult->m_MeanDisp_z * m_SimResult->m_MeanDisp_z;
     m_SimResult->m_TotalEnergy = sum_energy;
+    m_SimResult->m_ElectronsAboveEf = electrons_above_fermilvl;
+    m_SimResult->m_HolesBelowEf = holes_below_fermilvl;
 
     // Path-related properties
     m_SimResult->m_TotalTime = m_TotalTime;
@@ -2411,6 +2452,7 @@ void MC::TEngine::GenerateResults()
     const double spfac = m_DOS->GetSpatialFactor();
     const double enmax = m_ParamSet->m_MaxStateEnergy;
     const double enfac = m_DOS->GetEnergyFactor();
+    const double fermilvl = (m_ParamSet->m_ChemPot - enmax)/enfac;  // in relative units
     
     // Analyze paths (e.g. min/max for histogram boundaries)
     GF::TMinMax<double> time_per_path;
@@ -2929,6 +2971,9 @@ void MC::TEngine::GenerateResults()
     
     // Additional statistics on energies and distances
     std::uint64_t total_hops = 0;
+    std::uint64_t total_oscs = 0;
+    std::uint64_t total_nonoscs = 0;
+    double total_xdisp = 0.0;
     std::vector<std::uint64_t> state_hops (m_Structure.size(), 0);
     std::vector<std::uint64_t> state_oscs (m_Structure.size(), 0);
     std::vector<std::uint64_t> state_nonoscs (m_Structure.size(), 0);
@@ -2942,6 +2987,21 @@ void MC::TEngine::GenerateResults()
     GF::TOuterCounter<std::uint32_t> outer_used_states (-0.95, -0.05);
     GF::TMinMax<double> dist_per_used_path;
     GF::TMinMax<double> ediff_per_used_path;
+    std::uint64_t hops_below_fermilvl = 0;
+    std::uint64_t oscs_below_fermilvl = 0;
+    std::uint64_t nonoscs_below_fermilvl = 0;
+    double xdisp_below_fermilvl = 0.0;
+    std::uint64_t hops_up_across_fermilvl = 0;
+    std::uint64_t oscs_up_across_fermilvl = 0;
+    std::uint64_t nonoscs_up_across_fermilvl = 0;
+    std::uint64_t hops_down_across_fermilvl = 0;
+    std::uint64_t oscs_down_across_fermilvl = 0;
+    std::uint64_t nonoscs_down_across_fermilvl = 0;
+    double xdisp_across_fermilvl = 0.0;
+    std::uint64_t hops_above_fermilvl = 0;
+    std::uint64_t oscs_above_fermilvl = 0;
+    std::uint64_t nonoscs_above_fermilvl = 0;
+    double xdisp_above_fermilvl = 0.0;
 
     // Paths
     for (std::size_t i = 0; i < m_Structure.size(); ++i)
@@ -3009,6 +3069,9 @@ void MC::TEngine::GenerateResults()
             state_is_used[i] = true;
             state_is_used[path.m_StateID] = true;
             total_hops += path.m_HopCount;
+            total_oscs += path.m_OscHopCount;
+            total_nonoscs += path.m_HopCount - path.m_OscHopCount;
+            total_xdisp += (new_x - old_x)*static_cast<double>(path.m_HopCount - path.m_OscHopCount);
             state_hops[i] += path.m_HopCount;
             state_oscs[i] += path.m_OscHopCount;
             state_nonoscs[i] += path.m_HopCount - path.m_OscHopCount;
@@ -3084,6 +3147,44 @@ void MC::TEngine::GenerateResults()
             m_SimResult->m_HDistance.AddValue(HP::OSC_PER_PT, t_path_dist, static_cast<double>(path.m_OscHopCount));
             m_SimResult->m_HDistance.AddValue(HP::EDIFF_PER_HOP, t_path_dist, t_path_ediff + t_field_contrib, path.m_HopCount);
             m_SimResult->m_HDistance.AddValue(HP::EDIFF_PER_NONOSC, t_path_dist, t_path_ediff + t_field_contrib, path.m_HopCount - path.m_OscHopCount);
+
+            // Used path with start and end below Fermi level
+            if ((m_Structure[path.m_StateID].m_Energy < fermilvl) && (state.m_Energy < fermilvl))
+            {
+                hops_below_fermilvl += path.m_HopCount;
+                oscs_below_fermilvl += path.m_OscHopCount;
+                nonoscs_below_fermilvl += path.m_HopCount - path.m_OscHopCount;
+                xdisp_below_fermilvl += (new_x - old_x)*static_cast<double>(path.m_HopCount - path.m_OscHopCount);
+            }
+
+            // Used path with start below Fermi level and end above Fermi level (= upwards)
+            // (includes those with start and end at the Fermi level)
+            if ((m_Structure[path.m_StateID].m_Energy >= fermilvl) && (state.m_Energy <= fermilvl))
+            {
+                hops_up_across_fermilvl += path.m_HopCount;
+                oscs_up_across_fermilvl += path.m_OscHopCount;
+                nonoscs_up_across_fermilvl += path.m_HopCount - path.m_OscHopCount;
+                xdisp_across_fermilvl += (new_x - old_x)*static_cast<double>(path.m_HopCount - path.m_OscHopCount);
+            }
+
+            // Used path with start above Fermi level and end below Fermi level (= downwards)
+            // (combined xdisp with upwards because of oscillations)
+            if ((m_Structure[path.m_StateID].m_Energy < fermilvl) && (state.m_Energy >= fermilvl))
+            {
+                hops_down_across_fermilvl += path.m_HopCount;
+                oscs_down_across_fermilvl += path.m_OscHopCount;
+                nonoscs_down_across_fermilvl += path.m_HopCount - path.m_OscHopCount;
+                xdisp_across_fermilvl += (new_x - old_x)*static_cast<double>(path.m_HopCount - path.m_OscHopCount);
+            }
+
+            // Used path with start and end above Fermi level
+            if ((m_Structure[path.m_StateID].m_Energy > fermilvl) && (state.m_Energy > fermilvl))
+            {
+                hops_above_fermilvl += path.m_HopCount;
+                oscs_above_fermilvl += path.m_OscHopCount;
+                nonoscs_above_fermilvl += path.m_HopCount - path.m_OscHopCount;
+                xdisp_above_fermilvl += (new_x - old_x)*static_cast<double>(path.m_HopCount - path.m_OscHopCount);
+            }
         }
     }
 
@@ -3515,6 +3616,27 @@ void MC::TEngine::GenerateResults()
         if (outer_states.upper != 0) std::cout << " (" << 100.0 * static_cast<double>(outer_used_states.upper) / static_cast<double>(outer_states.upper) << " %)";
         if ((outer_states.lower != 0) || (outer_states.upper != 0)) std::cout << " [% = of outer states]";
         std::cout << std::endl;
+
+        std::cout << "Hops with start and end below the Fermi level [% = of total value]:";
+        std::cout << "  Hops: " << hops_below_fermilvl << " (" << 100.0 * static_cast<double>(hops_below_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
+        std::cout << "  Osc. hops: " << oscs_below_fermilvl << " (" << 100.0 * static_cast<double>(oscs_below_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
+        std::cout << "  Non-osc. hops: " << nonoscs_below_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_below_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
+        std::cout << "  Mean x-disp. of eff. charge carriers: " << xdisp_below_fermilvl * spfac / m_SimResult->m_EffCarriers << " nm (" << 100.0 * xdisp_below_fermilvl / total_xdisp << " %)" << std::endl;
+
+        std::cout << "Hops across the Fermi level [% = of total value]:";
+        std::cout << "  Hops (upwards): " << hops_up_across_fermilvl << " (" << 100.0 * static_cast<double>(hops_up_across_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
+        std::cout << "  Hops (downwards): " << hops_down_across_fermilvl << " (" << 100.0 * static_cast<double>(hops_down_across_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
+        std::cout << "  Osc. hops (upwards): " << oscs_up_across_fermilvl << " (" << 100.0 * static_cast<double>(oscs_up_across_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
+        std::cout << "  Osc. hops (downwards): " << oscs_down_across_fermilvl << " (" << 100.0 * static_cast<double>(oscs_down_across_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
+        std::cout << "  Non-osc. hops (upwards): " << nonoscs_up_across_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_up_across_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
+        std::cout << "  Non-osc. hops (downwards): " << nonoscs_down_across_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_down_across_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
+        std::cout << "  Mean x-disp. of eff. charge carriers: " << xdisp_across_fermilvl * spfac / m_SimResult->m_EffCarriers << " nm (" << 100.0 * xdisp_across_fermilvl / total_xdisp << " %)" << std::endl;
+    
+        std::cout << "Hops with start and end above the Fermi level [% = of total value]:";
+        std::cout << "  Hops: " << hops_above_fermilvl << " (" << 100.0 * static_cast<double>(hops_above_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
+        std::cout << "  Osc. hops: " << oscs_above_fermilvl << " (" << 100.0 * static_cast<double>(oscs_above_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
+        std::cout << "  Non-osc. hops: " << nonoscs_above_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_above_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
+        std::cout << "  Mean x-disp. of eff. charge carriers: " << xdisp_above_fermilvl * spfac / m_SimResult->m_EffCarriers << " nm (" << 100.0 * xdisp_above_fermilvl / total_xdisp << " %)" << std::endl;
     }
 
     // Additional analysis of different electron types

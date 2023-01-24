@@ -56,6 +56,8 @@ const std::array<std::string,2> MC::TResult::s_MaxPathCount = {"MaxPaths",""};
 const std::array<std::string,2> MC::TResult::s_MeanPathCount = {"MeanPaths",""};
 const std::array<std::string,2> MC::TResult::s_MinUsedStateEnergy = {"MinUsedStateE","eV"};
 const std::array<std::string,2> MC::TResult::s_MaxUsedStateEnergy = {"MaxUsedStateE","eV"};
+const std::array<std::string,2> MC::TResult::s_ElectronsAboveEf = {"ElectronsAboveEf",""};
+const std::array<std::string,2> MC::TResult::s_HolesBelowEf = {"HolesBelowEf",""};
 
 // Default constructor
 MC::TResult::TResult()
@@ -72,7 +74,8 @@ MC::TResult::TResult()
     m_NonOscHops(0), m_NonOscHopRatio(0.0), m_InXDirNonOscRatio(0.0), m_MeanFieldContribution(0.0),
     m_TotalEnergy(0.0), m_CellSize(0.0), 
     m_MaxPathDist(0.0), m_MaxUsedPathDist(0.0), m_MaxPathEdiff(0.0), m_MaxUsedPathEdiff(0.0),
-    m_MaxPathCount(0), m_MeanPathCount(0.0), m_MinUsedStateEnergy(0.0), m_MaxUsedStateEnergy(0.0)
+    m_MaxPathCount(0), m_MeanPathCount(0.0), m_MinUsedStateEnergy(0.0), m_MaxUsedStateEnergy(0.0),
+    m_ElectronsAboveEf(0), m_HolesBelowEf(0)
 {
 
 }
@@ -137,6 +140,8 @@ std::unique_ptr<MC::TResult> MC::TResult::ValueCopy(const TResult* const result)
 	temp.m_MeanPathCount = result->m_MeanPathCount;
     temp.m_MinUsedStateEnergy = result->m_MinUsedStateEnergy;
     temp.m_MaxUsedStateEnergy = result->m_MaxUsedStateEnergy;
+    temp.m_ElectronsAboveEf = result->m_ElectronsAboveEf;
+    temp.m_HolesBelowEf = result->m_HolesBelowEf;
     
     return temporary;
 }
@@ -188,6 +193,8 @@ void MC::TResult::Write(std::ostream& o_str) const
     o_str << GF::CombineDescUnit(s_MeanPathCount) << " = " << m_MeanPathCount << std::endl;
     o_str << GF::CombineDescUnit(s_MinUsedStateEnergy) << " = " << m_MinUsedStateEnergy << std::endl;
     o_str << GF::CombineDescUnit(s_MaxUsedStateEnergy) << " = " << m_MaxUsedStateEnergy << std::endl;
+    o_str << GF::CombineDescUnit(s_ElectronsAboveEf) << " = " << m_ElectronsAboveEf << std::endl;
+    o_str << GF::CombineDescUnit(s_HolesBelowEf) << " = " << m_HolesBelowEf << std::endl;
     o_str << "</" << XMLSection::Results << ">" << std::endl;
     
     if (!m_EqProgress.empty())
@@ -350,6 +357,8 @@ std::vector<std::array<std::string,2>> MC::TResult::WriteTableHeader()
     header.push_back(s_MeanPathCount);
     header.push_back(s_MinUsedStateEnergy);
     header.push_back(s_MaxUsedStateEnergy);
+    header.push_back(s_ElectronsAboveEf);
+    header.push_back(s_HolesBelowEf);
 
     for (auto& item : header)
     {
@@ -536,6 +545,14 @@ std::vector<std::string> MC::TResult::WriteTableLine() const
     sstr << m_MaxUsedStateEnergy;
     line.push_back(sstr.str());
     sstr.str("");
+
+    sstr << m_ElectronsAboveEf;
+    line.push_back(sstr.str());
+    sstr.str("");
+
+    sstr << m_HolesBelowEf;
+    line.push_back(sstr.str());
+    sstr.str("");
     
     return line;
 }
@@ -630,6 +647,8 @@ bool MC::TResult::Read(const std::string& str, bool raise_errors)
 	if (get_dbl(s_MeanPathCount,m_MeanPathCount) == false) return false;
     if (get_dbl(s_MinUsedStateEnergy,m_MinUsedStateEnergy) == false) return false;
     if (get_dbl(s_MaxUsedStateEnergy,m_MaxUsedStateEnergy) == false) return false;
+    if (get_uint32(s_ElectronsAboveEf,m_ElectronsAboveEf) == false) return false;
+    if (get_uint32(s_HolesBelowEf,m_HolesBelowEf) == false) return false;
 	
     return true;
 }
@@ -778,6 +797,8 @@ void MC::TResult::WriteMultiAnalysis(std::ostream& o_str, const std::vector<std:
 	write_dbl_analysis(s_MeanPathCount,&TResult::m_MeanPathCount);
     write_dbl_analysis(s_MinUsedStateEnergy,&TResult::m_MinUsedStateEnergy);
     write_dbl_analysis(s_MaxUsedStateEnergy,&TResult::m_MaxUsedStateEnergy);
+    write_uint32_analysis(s_ElectronsAboveEf,&TResult::m_ElectronsAboveEf);
+    write_uint32_analysis(s_HolesBelowEf,&TResult::m_HolesBelowEf);
 }
 
 // Write analysis for results of multiple simulations
@@ -941,6 +962,8 @@ void MC::TResult::WriteMultiAnalysis(std::ostream& o_str, const std::vector<std:
 	write_dbl_analysis(s_MeanPathCount,&TResult::m_MeanPathCount);
     write_dbl_analysis(s_MinUsedStateEnergy,&TResult::m_MinUsedStateEnergy);
     write_dbl_analysis(s_MaxUsedStateEnergy,&TResult::m_MaxUsedStateEnergy);
+    write_uint32_analysis(s_ElectronsAboveEf,&TResult::m_ElectronsAboveEf);
+    write_uint32_analysis(s_HolesBelowEf,&TResult::m_HolesBelowEf);
 }
 
 // Write table header for mean and stddev of multiple simulations
@@ -1027,6 +1050,10 @@ std::vector<std::array<std::string,2>> MC::TResult::WriteMultiTableHeader()
     header.push_back(GF::StdDevDescUnit(s_MeanPathCount));
     header.push_back(GF::MinDescUnit(s_MinUsedStateEnergy));
     header.push_back(GF::MaxDescUnit(s_MaxUsedStateEnergy));
+    header.push_back(s_ElectronsAboveEf);
+    header.push_back(GF::StdDevDescUnit(s_ElectronsAboveEf));
+    header.push_back(s_HolesBelowEf);
+    header.push_back(GF::StdDevDescUnit(s_HolesBelowEf));
 
     for (auto& item : header)
     {
@@ -1230,6 +1257,8 @@ std::vector<std::string> MC::TResult::WriteMultiTableLine(const std::vector<std:
 	write_dbl_analysis(&TResult::m_MeanPathCount);
     write_dbl_min(&TResult::m_MinUsedStateEnergy);
     write_dbl_max(&TResult::m_MaxUsedStateEnergy);
+    write_uint32_analysis(&TResult::m_ElectronsAboveEf);
+    write_uint32_analysis(&TResult::m_HolesBelowEf);
 
     return line;
 }
@@ -1282,6 +1311,8 @@ void MC::TResult::SaveProgress(double percentage, bool is_eq)
     new_progress->m_MaxUsedPathEdiff = m_MaxUsedPathEdiff;
     new_progress->m_MinUsedStateEnergy = m_MinUsedStateEnergy;
     new_progress->m_MaxUsedStateEnergy = m_MaxUsedStateEnergy;
+    new_progress->m_ElectronsAboveEf = m_ElectronsAboveEf;
+    new_progress->m_HolesBelowEf = m_HolesBelowEf;
 }
 
 // Write progress table header
@@ -1448,6 +1479,8 @@ void MC::TResult::WriteConvergenceTable(std::ostream& o_str, bool is_eq) const
     header.push_back(s_MaxUsedPathEdiff);
     header.push_back(s_MinUsedStateEnergy);
     header.push_back(s_MaxUsedStateEnergy);
+    header.push_back(s_ElectronsAboveEf);
+    header.push_back(s_HolesBelowEf);
 
     for (auto& item : header)
     {
@@ -1635,6 +1668,14 @@ void MC::TResult::WriteConvergenceTable(std::ostream& o_str, bool is_eq) const
         sstr.str("");
 
         sstr << it->m_MaxUsedStateEnergy;
+        table.back().push_back(sstr.str());
+        sstr.str("");
+
+        sstr << it->m_ElectronsAboveEf;
+        table.back().push_back(sstr.str());
+        sstr.str("");
+
+        sstr << it->m_HolesBelowEf;
         table.back().push_back(sstr.str());
         sstr.str("");
     }
