@@ -204,8 +204,6 @@ void MC::TPiecewiseLinearDOS::ApplyParameters(const TParamSet& pset, std::string
         // Generate cropped and scaled energy axis (-1 to 0) and DOS values
         m_RelEnergyValues = std::vector<double>();
         m_RelDOSValues = std::vector<double>();
-        std::size_t first_over_min = 0;
-        std::size_t last_below_max = 0;
         for (std::size_t i = 1; i < m_EnergyValues.size(); ++i)
         {
             if (m_EnergyValues[i] > m_MinEnergy)
