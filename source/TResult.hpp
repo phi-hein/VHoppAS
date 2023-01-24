@@ -96,6 +96,10 @@ struct TProgress
 	// Minimum and maximum used state energy (in eV)
 	double m_MinUsedStateEnergy;
 	double m_MaxUsedStateEnergy;
+
+	// Electron-hole counts
+	std::uint32_t m_ElectronsAboveEf;
+	std::uint32_t m_HolesBelowEf;
 };
 
 class TResult 
@@ -145,6 +149,8 @@ public:
 	static const std::array<std::string,2> s_MeanPathCount;
 	static const std::array<std::string,2> s_MinUsedStateEnergy;
 	static const std::array<std::string,2> s_MaxUsedStateEnergy;
+	static const std::array<std::string,2> s_ElectronsAboveEf;
+	static const std::array<std::string,2> s_HolesBelowEf;
 
     // Default constructor
     TResult();
@@ -303,6 +309,10 @@ public:
 	// Minimum and maximum used state energy (in eV)
 	double m_MinUsedStateEnergy;
 	double m_MaxUsedStateEnergy;
+
+	// Electron-hole counts
+	std::uint32_t m_ElectronsAboveEf;
+	std::uint32_t m_HolesBelowEf;
 
 	// Equilibration progress
 	std::vector<TProgress> m_EqProgress;

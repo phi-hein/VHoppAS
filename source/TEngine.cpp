@@ -624,6 +624,22 @@ void MC::TEngine::GenerateElectrons()
             total_energy += m_Structure[electron.m_CurrentStateID].m_Energy * enfac + enmax;
         }
 
+        // Calculate number of electrons above Ef and holes below Ef
+        std::uint32_t electrons_above_fermilvl = 0;
+        std::uint32_t holes_below_fermilvl = 0;
+        const double fermilvl = (m_ParamSet->m_ChemPot - enmax)/enfac;  // in relative units
+        for (const auto &state : m_Structure)
+        {
+            if (state.m_ElectronID < m_ParamSet->m_StateCount)
+            {
+                if (state.m_Energy >= fermilvl) electrons_above_fermilvl++;
+            }
+            else
+            {
+                if (state.m_Energy <= fermilvl) holes_below_fermilvl++;
+            }
+        }
+
         // Print electrons-related overview
         std::cout << "done" << std::endl;
         if (m_ParamSet->m_InitialFDDistrib)
@@ -637,6 +653,8 @@ void MC::TEngine::GenerateElectrons()
         std::cout << "  Occupation ratio: " 
             << static_cast<double>(m_Electrons.size())/static_cast<double>(m_Structure.size()) << std::endl;
         std::cout << "  Initial total energy (sum of occupied state energies): " << total_energy << " eV" << std::endl;
+        std::cout << "  Initial electrons above Fermi level: " << electrons_above_fermilvl << std::endl;
+        std::cout << "  Initial holes below Fermi level: " << holes_below_fermilvl << std::endl;
     }
 
     m_SimulationReady = false;
@@ -1121,6 +1139,10 @@ void MC::TEngine::RunSimulation ()
                 << m_SimResult->m_MeanFieldContribution << " eV [incl. eq.: " 
                 << incl_eq_result->m_MeanFieldContribution << " eV]" << std::endl;
         }
+        std::cout << "  Electrons above Fermi level: " << m_SimResult->m_ElectronsAboveEf << " [after eq.: " 
+            << eq_result->m_ElectronsAboveEf << "]" << std::endl;
+        std::cout << "  Holes below Fermi level: " << m_SimResult->m_HolesBelowEf << " [after eq.: " 
+            << eq_result->m_HolesBelowEf << "]" << std::endl;
         std::cout << "-- all following values include the equilibration --" << std::endl;
         std::cout << "  Mobile electrons (> 0 non-osc. hops): " << m_SimResult->m_MobileElectrons << " ("
             << 100.0 * static_cast<double>(m_SimResult->m_MobileElectrons)/static_cast<double>(m_SimResult->m_ElectronCount) 
@@ -1210,6 +1232,8 @@ void MC::TEngine::RunSimulation ()
             std::cout << "  Average electric field contribution to hop energy difference: " 
                 << m_SimResult->m_MeanFieldContribution << " eV" << std::endl;
         }
+        std::cout << "  Electrons above Fermi level: " << m_SimResult->m_ElectronsAboveEf << std::endl;
+        std::cout << "  Holes below Fermi level: " << m_SimResult->m_HolesBelowEf << std::endl;
         if (eq_hop_limit != 0)
             std::cout << "-- all following values include the equilibration --" << std::endl;
         std::cout << "  Mobile electrons (> 0 non-osc. hops): " << m_SimResult->m_MobileElectrons << " ("
@@ -1766,6 +1790,8 @@ void MC::TEngine::CalculatePostEquilibrationStatistics()
             << " eV (without electric field contribution)" << std::endl;
         std::cout << "  State energy range used during eq.: [" << m_SimResult->m_MinUsedStateEnergy << ", "
             << m_SimResult->m_MaxUsedStateEnergy << "] eV" << std::endl;
+        std::cout << "  Electrons above Fermi level (end of eq.): " << m_SimResult->m_ElectronsAboveEf << std::endl;
+        std::cout << "  Holes below Fermi level (end of eq.): " << m_SimResult->m_HolesBelowEf << std::endl;
     }
 
     // Adjust cut-offs and delete exceeding paths
@@ -2133,6 +2159,7 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
     const double spfac = m_DOS->GetSpatialFactor();
     const double enmax = m_ParamSet->m_MaxStateEnergy;
     const double enfac = m_DOS->GetEnergyFactor();
+    const double fermilvl = (m_ParamSet->m_ChemPot - enmax)/enfac;  // in relative units
 
     // Evaluation of electron statistics 
     // sum_energy = sum of state energies of occupied states (in eV)
@@ -2173,11 +2200,23 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
     // max_dist = maximum distance of used paths (in relative units)
     // max_ediff = maximum absolute state energy difference of used paths (in relative units)
     // used_energy_range = min/max of used state energies (in relative units)
+    // electrons_above_fermilvl = number of occupied states above Fermi level
+    // holes_below_fermilvl = number of unoccupied states below Fermi level
     std::uint64_t sum_hops = 0, sum_nonosc_hops = 0, sum_in_xdir_nonosc_hops = 0;
     double avg_field_contrib = 0.0, max_dist = 0.0, max_ediff = 0.0;
     GF::TMinMax<double> used_energy_range;
+    std::uint32_t electrons_above_fermilvl = 0, holes_below_fermilvl = 0;
     for (const auto& state : m_Structure)
     {
+        if (state.m_ElectronID < m_ParamSet->m_StateCount)
+        {
+            if (state.m_Energy >= fermilvl) electrons_above_fermilvl++;
+        }
+        else
+        {
+            if (state.m_Energy <= fermilvl) holes_below_fermilvl++;
+        }
+
         for (const auto& path : state.m_Paths)
         {
             if (path.m_HopCount == 0) continue;
@@ -2243,6 +2282,8 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
         - m_SimResult->m_EffCarriers / static_cast<double>(m_SimResult->m_MobileElectrons)
         * m_SimResult->m_MeanDisp_z * m_SimResult->m_MeanDisp_z;
     m_SimResult->m_TotalEnergy = sum_energy;
+    m_SimResult->m_ElectronsAboveEf = electrons_above_fermilvl;
+    m_SimResult->m_HolesBelowEf = holes_below_fermilvl;
 
     // Path-related properties
     m_SimResult->m_TotalTime = m_TotalTime;
