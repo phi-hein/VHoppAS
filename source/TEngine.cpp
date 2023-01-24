@@ -3617,13 +3617,13 @@ void MC::TEngine::GenerateResults()
         if ((outer_states.lower != 0) || (outer_states.upper != 0)) std::cout << " [% = of outer states]";
         std::cout << std::endl;
 
-        std::cout << "Hops with start and end below the Fermi level [% = of total value]:";
+        std::cout << "Hops with start and end below the Fermi level [% = of total value]:" << std::endl;
         std::cout << "  Hops: " << hops_below_fermilvl << " (" << 100.0 * static_cast<double>(hops_below_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
         std::cout << "  Osc. hops: " << oscs_below_fermilvl << " (" << 100.0 * static_cast<double>(oscs_below_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
         std::cout << "  Non-osc. hops: " << nonoscs_below_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_below_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
         std::cout << "  Mean x-disp. of eff. charge carriers: " << xdisp_below_fermilvl * spfac / m_SimResult->m_EffCarriers << " nm (" << 100.0 * xdisp_below_fermilvl / total_xdisp << " %)" << std::endl;
 
-        std::cout << "Hops across the Fermi level [% = of total value]:";
+        std::cout << "Hops across the Fermi level [% = of total value]:" << std::endl;
         std::cout << "  Hops (upwards): " << hops_up_across_fermilvl << " (" << 100.0 * static_cast<double>(hops_up_across_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
         std::cout << "  Hops (downwards): " << hops_down_across_fermilvl << " (" << 100.0 * static_cast<double>(hops_down_across_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
         std::cout << "  Osc. hops (upwards): " << oscs_up_across_fermilvl << " (" << 100.0 * static_cast<double>(oscs_up_across_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
@@ -3632,7 +3632,7 @@ void MC::TEngine::GenerateResults()
         std::cout << "  Non-osc. hops (downwards): " << nonoscs_down_across_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_down_across_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
         std::cout << "  Mean x-disp. of eff. charge carriers: " << xdisp_across_fermilvl * spfac / m_SimResult->m_EffCarriers << " nm (" << 100.0 * xdisp_across_fermilvl / total_xdisp << " %)" << std::endl;
     
-        std::cout << "Hops with start and end above the Fermi level [% = of total value]:";
+        std::cout << "Hops with start and end above the Fermi level [% = of total value]:" << std::endl;
         std::cout << "  Hops: " << hops_above_fermilvl << " (" << 100.0 * static_cast<double>(hops_above_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
         std::cout << "  Osc. hops: " << oscs_above_fermilvl << " (" << 100.0 * static_cast<double>(oscs_above_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
         std::cout << "  Non-osc. hops: " << nonoscs_above_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_above_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
