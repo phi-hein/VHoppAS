@@ -39,13 +39,13 @@ MC::TParamSet::TParamSet()
     m_MinStateEnergy(0.0), c_MinStateEnergy(true),
     m_MaxStateEnergy(0.0), c_MaxStateEnergy(true),
 	m_ChemPot(0.0), c_ChemPot(true),
-	m_StateCount(0), c_StateCount(true),
+	mI_StateCount(0), c_StateCount(true),
 	m_MinPathCount(0), c_MinPathCount(true),
     m_DistCutoff(0.0), c_DistCutoff(true),
     m_EdiffCutoff(0.0), c_EdiffCutoff(true),
-    m_PreHopLimit(0), c_PreHopLimit(true),
-    m_EqHopLimit(0), c_EqHopLimit(true),
-	m_HopLimit(0), c_HopLimit(true),
+    mI_PreHopLimit(0), c_PreHopLimit(true),
+    mI_EqHopLimit(0), c_EqHopLimit(true),
+	mI_HopLimit(0), c_HopLimit(true),
     m_RndSeed(0), c_RndSeed(true),
 	m_AttemptTime(0.0), c_AttemptTime(true),
 	m_Temperature(0.0), c_Temperature(true),
@@ -62,13 +62,13 @@ bool MC::TParamSet::operator==(const TParamSet& rhs) const
         (GF::AlmostEqual(m_MinStateEnergy, rhs.m_MinStateEnergy)) &&
         (GF::AlmostEqual(m_MaxStateEnergy, rhs.m_MaxStateEnergy)) &&
         (GF::AlmostEqual(m_ChemPot, rhs.m_ChemPot)) &&
-        (m_StateCount == rhs.m_StateCount) &&
+        (mI_StateCount == rhs.mI_StateCount) &&
         (m_MinPathCount == rhs.m_MinPathCount) &&
         (GF::AlmostEqual(m_DistCutoff, rhs.m_DistCutoff)) &&
         (GF::AlmostEqual(m_EdiffCutoff, rhs.m_EdiffCutoff)) &&
-        (m_PreHopLimit == rhs.m_PreHopLimit) &&
-        (m_EqHopLimit == rhs.m_EqHopLimit) &&
-        (m_HopLimit == rhs.m_HopLimit) &&
+        (mI_PreHopLimit == rhs.mI_PreHopLimit) &&
+        (mI_EqHopLimit == rhs.mI_EqHopLimit) &&
+        (mI_HopLimit == rhs.mI_HopLimit) &&
         (GF::AlmostEqual(m_AttemptTime, rhs.m_AttemptTime)) &&
         (GF::AlmostEqual(m_Temperature, rhs.m_Temperature)) &&
         (GF::AlmostEqual(m_PhiGradient, rhs.m_PhiGradient)) &&
@@ -84,13 +84,13 @@ std::string MC::TParamSet::Write(bool is_output) const
     sstr << GF::CombineDescUnit(s_MinStateEnergy) << " = " << m_MinStateEnergy << std::endl;
     sstr << GF::CombineDescUnit(s_MaxStateEnergy) << " = " << m_MaxStateEnergy << std::endl;
     sstr << GF::CombineDescUnit(s_ChemPot) << " = " << m_ChemPot << std::endl;
-    sstr << GF::CombineDescUnit(s_StateCount) << " = " << m_StateCount << std::endl;
+    sstr << GF::CombineDescUnit(s_StateCount) << " = " << mO_StateCount() << std::endl;
     sstr << GF::CombineDescUnit(s_MinPathCount) << " = " << m_MinPathCount << std::endl;
     sstr << GF::CombineDescUnit(s_DistCutoff) << " = " << m_DistCutoff << std::endl;
     sstr << GF::CombineDescUnit(s_EdiffCutoff) << " = " << m_EdiffCutoff << std::endl;
-    sstr << GF::CombineDescUnit(s_PreHopLimit) << " = " << m_PreHopLimit << std::endl;
-    sstr << GF::CombineDescUnit(s_EqHopLimit) << " = " << m_EqHopLimit << std::endl;
-    sstr << GF::CombineDescUnit(s_HopLimit) << " = " << m_HopLimit << std::endl;
+    sstr << GF::CombineDescUnit(s_PreHopLimit) << " = " << mO_PreHopLimit() << std::endl;
+    sstr << GF::CombineDescUnit(s_EqHopLimit) << " = " << mO_EqHopLimit() << std::endl;
+    sstr << GF::CombineDescUnit(s_HopLimit) << " = " << mO_HopLimit() << std::endl;
     sstr << GF::CombineDescUnit(s_RndSeed) << " = " << m_RndSeed << std::endl;
     sstr << GF::CombineDescUnit(s_AttemptTime) << " = " << m_AttemptTime << std::endl;
     sstr << GF::CombineDescUnit(s_Temperature) << " = " << m_Temperature << std::endl;
@@ -107,13 +107,13 @@ std::string MC::TParamSet::WriteConstant() const
     if (c_MinStateEnergy) sstr << GF::CombineDescUnit(s_MinStateEnergy) << " = " << m_MinStateEnergy << std::endl;
     if (c_MaxStateEnergy) sstr << GF::CombineDescUnit(s_MaxStateEnergy) << " = " << m_MaxStateEnergy << std::endl;
     if (c_ChemPot) sstr << GF::CombineDescUnit(s_ChemPot) << " = " << m_ChemPot << std::endl;
-    if (c_StateCount) sstr << GF::CombineDescUnit(s_StateCount) << " = " << m_StateCount << std::endl;
+    if (c_StateCount) sstr << GF::CombineDescUnit(s_StateCount) << " = " << mO_StateCount() << std::endl;
     if (c_MinPathCount) sstr << GF::CombineDescUnit(s_MinPathCount) << " = " << m_MinPathCount << std::endl;
     if (c_DistCutoff) sstr << GF::CombineDescUnit(s_DistCutoff) << " = " << m_DistCutoff << std::endl;
     if (c_EdiffCutoff) sstr << GF::CombineDescUnit(s_EdiffCutoff) << " = " << m_EdiffCutoff << std::endl;
-    if (c_PreHopLimit) sstr << GF::CombineDescUnit(s_PreHopLimit) << " = " << m_PreHopLimit << std::endl;
-    if (c_EqHopLimit) sstr << GF::CombineDescUnit(s_EqHopLimit) << " = " << m_EqHopLimit << std::endl;
-    if (c_HopLimit) sstr << GF::CombineDescUnit(s_HopLimit) << " = " << m_HopLimit << std::endl;
+    if (c_PreHopLimit) sstr << GF::CombineDescUnit(s_PreHopLimit) << " = " << mO_PreHopLimit() << std::endl;
+    if (c_EqHopLimit) sstr << GF::CombineDescUnit(s_EqHopLimit) << " = " << mO_EqHopLimit() << std::endl;
+    if (c_HopLimit) sstr << GF::CombineDescUnit(s_HopLimit) << " = " << mO_HopLimit() << std::endl;
     if (c_RndSeed) sstr << GF::CombineDescUnit(s_RndSeed) << " = " << m_RndSeed << std::endl;
     if (c_AttemptTime) sstr << GF::CombineDescUnit(s_AttemptTime) << " = " << m_AttemptTime << std::endl;
     if (c_Temperature) sstr << GF::CombineDescUnit(s_Temperature) << " = " << m_Temperature << std::endl;
@@ -189,7 +189,7 @@ std::vector<std::string> MC::TParamSet::WriteTableLine(bool is_output) const
     }
     if (!c_StateCount)
     {
-        sstr << m_StateCount;
+        sstr << mO_StateCount();
         line.push_back(sstr.str());
         sstr.str("");
     }
@@ -213,19 +213,19 @@ std::vector<std::string> MC::TParamSet::WriteTableLine(bool is_output) const
     }
     if (!c_PreHopLimit)
     {
-        sstr << m_PreHopLimit;
+        sstr << mO_PreHopLimit();
         line.push_back(sstr.str());
         sstr.str("");
     }
     if (!c_EqHopLimit)
     {
-        sstr << m_EqHopLimit;
+        sstr << mO_EqHopLimit();
         line.push_back(sstr.str());
         sstr.str("");
     }
     if (!c_HopLimit)
     {
-        sstr << m_HopLimit;
+        sstr << mO_HopLimit();
         line.push_back(sstr.str());
         sstr.str("");
     }
@@ -430,7 +430,7 @@ bool MC::TParamSet::Read(const std::string& general, const std::string& header, 
     if (get_dbl(s_MinStateEnergy,m_MinStateEnergy,c_MinStateEnergy) == false) return false;
     if (get_dbl(s_MaxStateEnergy,m_MaxStateEnergy,c_MaxStateEnergy) == false) return false;
     if (get_dbl(s_ChemPot,m_ChemPot,c_ChemPot) == false) return false;
-    if (get_uint32(s_StateCount,m_StateCount,c_StateCount) == false) return false;
+    if (get_uint32(s_StateCount,mI_StateCount,c_StateCount) == false) return false;
 
     is_essential = false;
     if (get_uint32(s_MinPathCount,m_MinPathCount,c_MinPathCount) == false) m_MinPathCount = 0;
@@ -441,15 +441,23 @@ bool MC::TParamSet::Read(const std::string& general, const std::string& header, 
         return false;
     }
     if (get_dbl(s_EdiffCutoff,m_EdiffCutoff,c_EdiffCutoff) == false) m_EdiffCutoff = 0.0;
-    if (get_uint64(s_PreHopLimit,m_PreHopLimit,c_PreHopLimit) == false) m_PreHopLimit = 0;
-    if (get_uint64(s_EqHopLimit,m_EqHopLimit,c_EqHopLimit) == false) m_EqHopLimit = 0;
+    if (get_uint64(s_PreHopLimit,mI_PreHopLimit,c_PreHopLimit) == false) mI_PreHopLimit = 0;
+    if (get_uint64(s_EqHopLimit,mI_EqHopLimit,c_EqHopLimit) == false) mI_EqHopLimit = 0;
 
     is_essential = true;
-    if (get_uint64(s_HopLimit,m_HopLimit,c_HopLimit) == false) return false;
+    if (get_uint64(s_HopLimit,mI_HopLimit,c_HopLimit) == false) return false;
     if (get_int64(s_RndSeed,m_RndSeed,c_RndSeed) == false) return false;
     if (get_dbl(s_AttemptTime,m_AttemptTime,c_AttemptTime) == false) return false;
     if (get_dbl(s_Temperature,m_Temperature,c_Temperature) == false) return false;
     if (get_dbl(s_PhiGradient,m_PhiGradient,c_PhiGradient) == false) return false;
     if (get_dbl(s_LocRadius,m_LocRadius,c_LocRadius) == false) return false;
+
+    // Convert states and hop counts to internal values (for just one spin-type)
+    // (rounded down to avoid potential overflow in output values)
+    mI_StateCount /= 2U;
+    mI_PreHopLimit /= 2U;
+    mI_EqHopLimit /= 2U;
+    mI_HopLimit /= 2U;
+
     return true;
 }

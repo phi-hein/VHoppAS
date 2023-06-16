@@ -97,13 +97,13 @@ void MC::TController::GenerateExampleInputFiles()
     m_ParamSets[0]->m_MinStateEnergy = -0.2;
     m_ParamSets[0]->m_MaxStateEnergy = 0.2;
 	m_ParamSets[0]->m_ChemPot = 0.0;
-	m_ParamSets[0]->m_StateCount = 32768U;
+	m_ParamSets[0]->mI_StateCount = 32768U;
 	m_ParamSets[0]->m_MinPathCount = 100U;
     m_ParamSets[0]->m_DistCutoff = 0.0;
     m_ParamSets[0]->m_EdiffCutoff = 0.25;
-    m_ParamSets[0]->m_PreHopLimit = 20000U;
-    m_ParamSets[0]->m_EqHopLimit = 500000U;
-	m_ParamSets[0]->m_HopLimit = 500000U;
+    m_ParamSets[0]->mI_PreHopLimit = 20000U;
+    m_ParamSets[0]->mI_EqHopLimit = 500000U;
+	m_ParamSets[0]->mI_HopLimit = 500000U;
     m_ParamSets[0]->m_RndSeed = -6526958;
 	m_ParamSets[0]->m_AttemptTime = 1.0E-13;
 	m_ParamSets[0]->m_Temperature = 273.15;

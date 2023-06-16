@@ -47,11 +47,17 @@ void MC::TEngineData::ValidateParameters(const TParamSet& params)
     {
         throw EX::TInvalidInput("Number of repetitions out of range (1 - 100).");
     }
-	if ((params.m_StateCount < 100U) || (params.m_StateCount > 10000000U))
+	if ((params.mI_StateCount < 100U) || (params.mI_StateCount > 10000000U))
     {
-        throw EX::TInvalidInput("Number of states out of range (100 - 10000000).");
+        throw EX::TInvalidInput("Number of states out of range (200 - 20000000).");
     }
-    const std::uint32_t max_paths = static_cast<std::uint32_t>(params.m_StateCount*Constant::pi/6.0);
+    // Formula for max paths: The maximum cut-off distance is half of the cell size because otherwise
+    // the periodic boundary conditions would allow two different paths to the same target state. The
+    // respective sphere with radius d/2 (d = cell size) and volume Vsphere = 4/3*pi*(d/2)^3 has the 
+    // same state density as the cell with volume Vcell = d^3, such that the number of states in the
+    // sphere is Nsphere = Ncell * Vsphere / Vcell 
+    // (minus 1 yields the approximate maximum number of hop destinations)
+    const std::uint32_t max_paths = static_cast<std::uint32_t>(params.mI_StateCount*Constant::pi/6.0) - 1;
 	if ((params.m_DistCutoff == 0.0) &&
         ((params.m_MinPathCount < 2U) || (params.m_MinPathCount > max_paths)))
     {
@@ -65,17 +71,17 @@ void MC::TEngineData::ValidateParameters(const TParamSet& params)
     {
         throw EX::TInvalidInput("Absolute energy difference cutoff is negative.");
     }
-    if (params.m_PreHopLimit > 1000000000000U)
+    if (params.mI_PreHopLimit > 1000000000000U)
     {
-        throw EX::TInvalidInput("Pre-equilibration hops out of range (0 - 1000000000000).");
+        throw EX::TInvalidInput("Pre-equilibration hops out of range (0 - 2000000000000).");
     }
-    if (params.m_EqHopLimit > 1000000000000U)
+    if (params.mI_EqHopLimit > 1000000000000U)
     {
-        throw EX::TInvalidInput("Equilibration hops out of range (0 - 1000000000000).");
+        throw EX::TInvalidInput("Equilibration hops out of range (0 - 2000000000000).");
     }
-    if ((params.m_HopLimit < 100U) || (params.m_HopLimit > 1000000000000U))
+    if ((params.mI_HopLimit < 100U) || (params.mI_HopLimit > 1000000000000U))
     {
-        throw EX::TInvalidInput("Hop limit out of range (100 - 1000000000000).");
+        throw EX::TInvalidInput("Hop limit out of range (200 - 2000000000000).");
     }
     if (params.m_AttemptTime <= 0.0)
     {
@@ -181,9 +187,9 @@ void MC::TEngineData::SetParameters(std::unique_ptr<const TParamSet> params, std
         std::cout << "  d(Electric potential)/dx: " << m_ParamSet->m_PhiGradient << " V/cm, Voltage drop across cell: " 
             << m_GradPhiEnergy * m_DOS->GetEnergyFactor() << " V" << std::endl;
         std::cout << "  Inverse hop attempt frequency: " << m_ParamSet->m_AttemptTime << " s" << std::endl;
-        std::cout << "  Pre-equilibration hops: " << m_ParamSet->m_PreHopLimit 
-            << ", Equilibration hops: " << m_ParamSet->m_EqHopLimit 
-            << ", Simulation hops: " << m_ParamSet->m_HopLimit << std::endl;
+        std::cout << "  Pre-equilibration hops: " << m_ParamSet->mO_PreHopLimit() 
+            << ", Equilibration hops: " << m_ParamSet->mO_EqHopLimit() 
+            << ", Simulation hops: " << m_ParamSet->mO_HopLimit() << std::endl;
     }
 
     m_ParametersReady = true;
