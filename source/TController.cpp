@@ -61,6 +61,7 @@ void MC::TController::GenerateExampleInputFiles()
 		dos_file << GF::CombineDescUnit(TPiecewiseLinearDOS::s_Type) << " = " << TPiecewiseLinearDOS::m_Type << std::endl;
         dos_file << GF::CombineDescUnit(TPiecewiseLinearDOS::s_RefTemp) << " = 300" << std::endl;
         dos_file << std::endl;
+        dos_file << "<" << TPiecewiseLinearDOS::s_Data << ">" << std::endl;
         dos_file << "E-EF(eV) DOS(1/cm3eV)" << std::endl;
         dos_file << "-0.25    1.5E23" << std::endl;
         dos_file << "0.0      1.75E23" << std::endl;
@@ -420,10 +421,9 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
         }
         else throw EX::TFileAccess("Cannot open DOS file.");
 
-        if (std::regex_search(dos_content, 
-            std::regex("<" + GF::MetaEsc(XMLSection::DOS) + ">[\\s\\n\\r]*" 
-            + GF::DescRegex(TPiecewiseLinearDOS::s_Type) + "\\s*=\\s*" 
-            + GF::MetaEsc(TPiecewiseLinearDOS::m_Type))))
+        if ((std::regex_search(dos_content, std::regex("<" + GF::MetaEsc(XMLSection::DOS) + ">"))) &&
+            (std::regex_search(dos_content, std::regex(GF::DescRegex(TPiecewiseLinearDOS::s_Type) 
+            + "\\s*=\\s*" + GF::MetaEsc(TPiecewiseLinearDOS::m_Type)))))
         {
             std::unique_ptr<MC::TPiecewiseLinearDOS> dos (new MC::TPiecewiseLinearDOS());
             dos->SpecifyDOS(dos_content);

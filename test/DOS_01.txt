@@ -2,6 +2,7 @@
 Type = PiecewiseLinear
 RefTemp(K) = 300
 
+<Data>
 E-EF(eV) DOS(1/cm3eV)
 -0.35    0.9E21
 0.35     1.5E21
