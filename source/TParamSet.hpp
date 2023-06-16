@@ -85,7 +85,8 @@ public:
 	double m_ChemPot;
     
     // Number of localized states
-	std::uint32_t m_StateCount;
+	std::uint32_t mI_StateCount;
+	inline std::uint32_t mO_StateCount() const {return mI_StateCount * 2U;}
 
 	// Minimum number of paths per state (when no predefined distance cutoff)
 	std::uint32_t m_MinPathCount;
@@ -97,13 +98,16 @@ public:
 	double m_EdiffCutoff;
 
 	// Total number of pre-equilibration hops
-	std::uint64_t m_PreHopLimit;
+	std::uint64_t mI_PreHopLimit;
+	inline std::uint64_t mO_PreHopLimit() const {return mI_PreHopLimit * 2U;}
 
 	// Total number of equilibration hops
-	std::uint64_t m_EqHopLimit;
+	std::uint64_t mI_EqHopLimit;
+	inline std::uint64_t mO_EqHopLimit() const {return mI_EqHopLimit * 2U;}
 
     // Total number of hops
-	std::uint64_t m_HopLimit;
+	std::uint64_t mI_HopLimit;
+	inline std::uint64_t mO_HopLimit() const {return mI_HopLimit * 2U;}
 
     // Random generator seed (positive: seed = value; negative or zero: seed = system time + abs(value))
     std::int64_t m_RndSeed;

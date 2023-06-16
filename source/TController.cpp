@@ -97,13 +97,13 @@ void MC::TController::GenerateExampleInputFiles()
     m_ParamSets[0]->m_MinStateEnergy = -0.2;
     m_ParamSets[0]->m_MaxStateEnergy = 0.2;
 	m_ParamSets[0]->m_ChemPot = 0.0;
-	m_ParamSets[0]->m_StateCount = 32768U;
+	m_ParamSets[0]->mI_StateCount = 32768U;
 	m_ParamSets[0]->m_MinPathCount = 100U;
     m_ParamSets[0]->m_DistCutoff = 0.0;
     m_ParamSets[0]->m_EdiffCutoff = 0.25;
-    m_ParamSets[0]->m_PreHopLimit = 20000U;
-    m_ParamSets[0]->m_EqHopLimit = 500000U;
-	m_ParamSets[0]->m_HopLimit = 500000U;
+    m_ParamSets[0]->mI_PreHopLimit = 20000U;
+    m_ParamSets[0]->mI_EqHopLimit = 500000U;
+	m_ParamSets[0]->mI_HopLimit = 500000U;
     m_ParamSets[0]->m_RndSeed = -6526958;
 	m_ParamSets[0]->m_AttemptTime = 1.0E-13;
 	m_ParamSets[0]->m_Temperature = 273.15;
@@ -396,6 +396,8 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
         std::cout << "- Energy reference: E = 0 is the position of the Fermi level in the charge neutral material." << std::endl;
         std::cout << "- Chemical potential = difference betw. the Fermi level in the simulated cell and the charge neutral Fermi level (on the energy axis of the DOS)." << std::endl;
         std::cout << "- Mobile electrons = electrons with > 0 non-oscillating hops." << std::endl;
+        std::cout << "- Localized states are single-electron states." << std::endl;
+        std::cout << "- Spin-degeneracy is assumed. All input and output values (incl. the DOS) refer to spin-up and spin-down electrons together." << std::endl;
     }
 
     // Read DOS file

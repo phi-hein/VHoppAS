@@ -19,7 +19,7 @@ public:
     // Energy (relative: -1 to 0)
     const double m_Energy;
 
-	// Occupying electron (index in electron list; equals m_StateCount if empty)
+	// Occupying electron (index in electron list; equals mI_StateCount if empty)
 	mutable std::uint32_t m_ElectronID;
 
 	// Time of last occupation change (incoming or outgoing hop; in s)

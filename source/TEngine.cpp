@@ -35,7 +35,7 @@ void MC::TEngine::GenerateStructure()
     m_Structure = std::vector<TLocalState>();
     try
     {
-        m_Structure.reserve(m_ParamSet->m_StateCount);
+        m_Structure.reserve(m_ParamSet->mI_StateCount);
     }
     catch(const std::bad_alloc& e)
     {
@@ -43,7 +43,7 @@ void MC::TEngine::GenerateStructure()
     }
     
     std::uniform_real_distribution<double> position_distribution (0.0,1.0);
-    while (m_Structure.size() < m_ParamSet->m_StateCount)
+    while (m_Structure.size() < m_ParamSet->mI_StateCount)
     {
         // Random position in a unit cube
         double pos_x = position_distribution(m_RndGen);
@@ -53,7 +53,7 @@ void MC::TEngine::GenerateStructure()
         // Random state energy from DOS
         double energy = m_DOS->GetRandomEnergy(m_RndGen);
 
-        m_Structure.emplace_back(pos_x,pos_y,pos_z,energy,m_ParamSet->m_StateCount);
+        m_Structure.emplace_back(pos_x,pos_y,pos_z,energy,m_ParamSet->mI_StateCount);
     }
 
     // Reset electrons
@@ -63,7 +63,7 @@ void MC::TEngine::GenerateStructure()
     if (m_VL >= Verbosity::MEDIUM) 
     {
         std::cout << "done" << std::endl;
-        std::cout << "  Number of localized states: " << m_ParamSet->m_StateCount << std::endl;
+        std::cout << "  Number of localized states: " << m_ParamSet->mO_StateCount() << std::endl;
         std::cout << "  Cell size: " << m_DOS->GetSpatialFactor() << " nm, Cubic cell volume: " 
             << 1.0E-21*pow(m_DOS->GetSpatialFactor(),3.0) << " cm3" << std::endl;
     }
@@ -290,8 +290,8 @@ void MC::TEngine::GeneratePaths()
             double nn_z = m_Structure[k].m_Pos_z;
             if (i_z - nn_z > 0.5) nn_z += 1.0;
             if (nn_z - i_z > 0.5) nn_z -= 1.0;
-            double nn_dist = sqrt((i_x-nn_x)*(i_x-nn_x) + (i_y-nn_y)*(i_y-nn_y) + (i_z-nn_z)*(i_z-nn_z));
-            double nn_ediff = fabs(m_Structure[i].m_Energy - m_Structure[k].m_Energy);
+            const double nn_dist = sqrt((i_x-nn_x)*(i_x-nn_x) + (i_y-nn_y)*(i_y-nn_y) + (i_z-nn_z)*(i_z-nn_z));
+            const double nn_ediff = fabs(m_Structure[i].m_Energy - m_Structure[k].m_Energy);
 
             if ((nn_dist <= dist_cutoff) && (nn_ediff <= ediff_cutoff))
             {
@@ -328,7 +328,7 @@ void MC::TEngine::GeneratePaths()
         if (m_ParamSet->m_DistCutoff == 0.0)
             std::cout << "  Required number of paths per state: " << m_ParamSet->m_MinPathCount << std::endl;
         std::cout << "  Average number of paths per state: " << paths_per_state << std::endl;
-        std::cout << "  Total number of paths: " << path_count << std::endl;
+        std::cout << "  Total number of paths: " << 2U*path_count << std::endl;
     }
 
     m_SimulationReady = false;
@@ -378,11 +378,11 @@ void MC::TEngine::UpdateHoppingTimes()
             double nn_z = m_Structure[path.m_StateID].m_Pos_z;
             if (state.m_Pos_z - nn_z > 0.5) nn_z += 1.0;
             if (nn_z - state.m_Pos_z > 0.5) nn_z -= 1.0;
-            double nn_dist = sqrt((state.m_Pos_x - nn_x)*(state.m_Pos_x - nn_x) + 
+            const double nn_dist = sqrt((state.m_Pos_x - nn_x)*(state.m_Pos_x - nn_x) + 
                 (state.m_Pos_y - nn_y)*(state.m_Pos_y - nn_y) + (state.m_Pos_z - nn_z)*(state.m_Pos_z - nn_z));
 
             // Calculate time (inverse rate)
-            double energy_difference = m_Structure[path.m_StateID].m_Energy - state.m_Energy
+            const double energy_difference = m_Structure[path.m_StateID].m_Energy - state.m_Energy
                 - (nn_x - state.m_Pos_x)*m_GradPhiEnergy;
             if (energy_difference < 0.0)
             {
@@ -472,7 +472,7 @@ void MC::TEngine::GenerateElectrons()
             }
             else
             {
-                m_Structure[i].m_ElectronID = m_ParamSet->m_StateCount;
+                m_Structure[i].m_ElectronID = m_ParamSet->mI_StateCount;
             }
         }
 
@@ -494,13 +494,13 @@ void MC::TEngine::GenerateElectrons()
             if (m_Electrons.size() < expected_ecount)
             {
                 for (std::size_t i = 0; i < m_Structure.size(); ++i)
-                    if (m_Structure[i].m_ElectronID == m_ParamSet->m_StateCount)
+                    if (m_Structure[i].m_ElectronID == m_ParamSet->mI_StateCount)
                         state_list.push_back(i);
             }
             else
             {
                 for (std::size_t i = 0; i < m_Structure.size(); ++i)
-                    if (m_Structure[i].m_ElectronID != m_ParamSet->m_StateCount)
+                    if (m_Structure[i].m_ElectronID != m_ParamSet->mI_StateCount)
                         state_list.push_back(i);
             }
 
@@ -533,7 +533,7 @@ void MC::TEngine::GenerateElectrons()
                         {
                             --(m_Structure[it->m_CurrentStateID].m_ElectronID);
                         }
-                        m_Structure[state_list[i]].m_ElectronID = m_ParamSet->m_StateCount;
+                        m_Structure[state_list[i]].m_ElectronID = m_ParamSet->mI_StateCount;
                         state_list.erase(state_list.begin() + i);
                         --enforced_electrons;
                     }
@@ -574,7 +574,7 @@ void MC::TEngine::GenerateElectrons()
             }
             else
             {
-                m_Structure[state_sort[i]].m_ElectronID = m_ParamSet->m_StateCount;
+                m_Structure[state_sort[i]].m_ElectronID = m_ParamSet->mI_StateCount;
             }
         }
     }
@@ -592,7 +592,7 @@ void MC::TEngine::GenerateElectrons()
     }
     for (std::size_t i = 0; i < m_Structure.size(); ++i)
     {
-        if (m_Structure[i].m_ElectronID == m_ParamSet->m_StateCount)
+        if (m_Structure[i].m_ElectronID == m_ParamSet->mI_StateCount)
         {
             for (const auto& electron : m_Electrons)
                 if (electron.m_CurrentStateID == i)
@@ -611,7 +611,7 @@ void MC::TEngine::GenerateElectrons()
             (m_Structure[m_Electrons[i].m_CurrentStateID].m_ElectronID != i))
             throw EX::TInvalidStatus("Inconsistency in electron identification.",__func__);
     }
-    m_SimResult->m_ElectronCount = static_cast<std::uint32_t>(m_Electrons.size());
+    m_SimResult->m_ElectronCount = 2U*static_cast<std::uint32_t>(m_Electrons.size());
     
     if (m_VL >= Verbosity::MEDIUM) 
     {
@@ -630,7 +630,7 @@ void MC::TEngine::GenerateElectrons()
         const double fermilvl = (m_ParamSet->m_ChemPot - enmax)/enfac;  // in relative units
         for (const auto &state : m_Structure)
         {
-            if (state.m_ElectronID < m_ParamSet->m_StateCount)
+            if (state.m_ElectronID < m_ParamSet->mI_StateCount)
             {
                 if (state.m_Energy >= fermilvl) electrons_above_fermilvl++;
             }
@@ -647,14 +647,14 @@ void MC::TEngine::GenerateElectrons()
         else
             std::cout << "  Initial electron distribution: Step function" << std::endl;
         if ((m_ParamSet->m_EnforceECount) && (m_ParamSet->m_InitialFDDistrib))
-            std::cout << "  Enforced adjustment of electron count: " << enforced_electrons << std::endl;
-        std::cout << "  Number of electrons: " << m_Electrons.size() << " (expected from states: " 
-            << expected_ecount << ", expected from DOS: " << m_DOS->GetElectronCount(m_ThermalEnergy) << ")" << std::endl;
+            std::cout << "  Enforced adjustment of electron count: " << 2*enforced_electrons << std::endl;
+        std::cout << "  Number of electrons: " << 2U*m_Electrons.size() << " (expected from states: " 
+            << 2U*expected_ecount << ", expected from DOS: " << m_DOS->GetElectronCount(m_ThermalEnergy) << ")" << std::endl;
         std::cout << "  Occupation ratio: " 
             << static_cast<double>(m_Electrons.size())/static_cast<double>(m_Structure.size()) << std::endl;
-        std::cout << "  Initial total energy (sum of occupied state energies): " << total_energy << " eV" << std::endl;
-        std::cout << "  Initial electrons above Fermi level: " << electrons_above_fermilvl << std::endl;
-        std::cout << "  Initial holes below Fermi level: " << holes_below_fermilvl << std::endl;
+        std::cout << "  Initial total energy (sum of occupied state energies): " << 2.0*total_energy << " eV" << std::endl;
+        std::cout << "  Initial electrons above Fermi level: " << 2U*electrons_above_fermilvl << std::endl;
+        std::cout << "  Initial holes below Fermi level: " << 2U*holes_below_fermilvl << std::endl;
     }
 
     m_SimulationReady = false;
@@ -719,11 +719,11 @@ void MC::TEngine::InitializeSimulation()
         const auto& paths = m_Structure[electron.m_CurrentStateID].m_Paths;
         electron.m_MinTime = std::numeric_limits<double>::max();
         electron.m_NextMinTime = std::numeric_limits<double>::max();
-        electron.m_MinIndex = m_ParamSet->m_StateCount + 1;
-        electron.m_NextMinIndex = m_ParamSet->m_StateCount + 1;
+        electron.m_MinIndex = m_ParamSet->mI_StateCount + 1;
+        electron.m_NextMinIndex = m_ParamSet->mI_StateCount + 1;
         for (std::uint32_t i = 0; i < paths.size(); ++i)
         {
-            if (m_Structure[paths[i].m_StateID].m_ElectronID < m_ParamSet->m_StateCount)
+            if (m_Structure[paths[i].m_StateID].m_ElectronID < m_ParamSet->mI_StateCount)
             {
                 electron.m_RandomTimes[i] = std::numeric_limits<double>::max();
             }
@@ -746,14 +746,14 @@ void MC::TEngine::InitializeSimulation()
             }
         }
 
-        if (electron.m_MinIndex < m_ParamSet->m_StateCount) 
+        if (electron.m_MinIndex < m_ParamSet->mI_StateCount) 
         {
             electron.m_MinStateID = paths[electron.m_MinIndex].m_StateID;
             all_electrons_blocked = false;
         }
         else
         {
-            electron.m_MinStateID = m_ParamSet->m_StateCount;
+            electron.m_MinStateID = m_ParamSet->mI_StateCount;
         }
     }
     if (all_electrons_blocked)
@@ -810,9 +810,9 @@ void MC::TEngine::RunSimulation ()
 
     // Hop counter and limits
     std::uint64_t hop_counter {0U};
-    const std::uint64_t pre_hop_limit {m_ParamSet->m_PreHopLimit};
-    const std::uint64_t eq_hop_limit {m_ParamSet->m_EqHopLimit};
-    const std::uint64_t sim_hop_limit {m_ParamSet->m_HopLimit};
+    const std::uint64_t pre_hop_limit {m_ParamSet->mI_PreHopLimit};
+    const std::uint64_t eq_hop_limit {m_ParamSet->mI_EqHopLimit};
+    const std::uint64_t sim_hop_limit {m_ParamSet->mI_HopLimit};
     const std::uint64_t total_hop_limit {pre_hop_limit + eq_hop_limit + sim_hop_limit};
     std::uint64_t next_hop_limit {pre_hop_limit};
 
@@ -844,8 +844,8 @@ void MC::TEngine::RunSimulation ()
             // Output: End of pre-equilibration
             if ((hop_counter == pre_hop_limit) && (pre_hop_limit != 0))
             {
-                std::uint64_t mob_e_counter {0U};
-                std::uint64_t osc_e_counter {0U};
+                std::uint32_t mob_e_counter {0U};
+                std::uint32_t osc_e_counter {0U};
                 for (const TElectron& electron : m_Electrons)
                 {
                     if (electron.m_HopCount != 0)
@@ -856,9 +856,9 @@ void MC::TEngine::RunSimulation ()
                             ++osc_e_counter;
                     }
                 }
-                std::cout << "done (" << pre_hop_limit << " hops, " 
-                    << mob_e_counter << " mobile electrons + " 
-                    << osc_e_counter << " oscillating electrons)" << std::endl;
+                std::cout << "done (" << 2U*pre_hop_limit << " hops, " 
+                    << 2U*mob_e_counter << " mobile electrons + " 
+                    << 2U*osc_e_counter << " oscillating electrons)" << std::endl;
             }
 
             // Output: Progress of equilibration or simulation
@@ -869,7 +869,7 @@ void MC::TEngine::RunSimulation ()
                     m_SimResult->SaveProgress(
                         0.1*round(1000.0*static_cast<double>(hop_counter - pre_hop_limit)
                         /static_cast<double>(eq_hop_limit)),true);
-                    m_SimResult->WriteProgressLine(std::cout,eq_hop_limit, 
+                    m_SimResult->WriteProgressLine(std::cout,2U*eq_hop_limit, 
                         (m_ParamSet->m_PhiGradient != 0.0),true);
                 }
                 else
@@ -877,7 +877,7 @@ void MC::TEngine::RunSimulation ()
                     m_SimResult->SaveProgress(
                         0.1*round(1000.0*static_cast<double>(hop_counter - pre_hop_limit - eq_hop_limit)
                         /static_cast<double>(sim_hop_limit)),false);
-                    m_SimResult->WriteProgressLine(std::cout,sim_hop_limit, 
+                    m_SimResult->WriteProgressLine(std::cout,2U*sim_hop_limit, 
                         (m_ParamSet->m_PhiGradient != 0.0),false);
                 }
             }
@@ -916,11 +916,11 @@ void MC::TEngine::RunSimulation ()
                         electron.m_RandomTimes[i] -= m_TotalTime - electron.m_LastHopTime;
                     }
                 }
-                if (electron.m_MinIndex < m_ParamSet->m_StateCount)
+                if (electron.m_MinIndex < m_ParamSet->mI_StateCount)
                 {
                     electron.m_MinTime = electron.m_RandomTimes[electron.m_MinIndex];
                 }
-                if (electron.m_NextMinIndex < m_ParamSet->m_StateCount)
+                if (electron.m_NextMinIndex < m_ParamSet->mI_StateCount)
                 {
                     electron.m_NextMinTime = electron.m_RandomTimes[electron.m_NextMinIndex];
                 }
@@ -956,14 +956,14 @@ void MC::TEngine::RunSimulation ()
             if ((hop_counter == pre_hop_limit) && (eq_hop_limit != 0))
             {
                 std::cout << " --- EQUILIBRATION START ---" << std::endl;
-                m_SimResult->WriteProgressHeader(std::cout,eq_hop_limit,(m_ParamSet->m_PhiGradient != 0.0));
+                m_SimResult->WriteProgressHeader(std::cout,2U*eq_hop_limit,(m_ParamSet->m_PhiGradient != 0.0));
             }
             else
             {
                 std::cout << " --- SIMULATION START ---" << std::endl;
                 if (eq_hop_limit != 0) 
                     std::cout << " (time, hops and displacements relative to equilibration)" << std::endl;
-                m_SimResult->WriteProgressHeader(std::cout,sim_hop_limit,(m_ParamSet->m_PhiGradient != 0.0));
+                m_SimResult->WriteProgressHeader(std::cout,2U*sim_hop_limit,(m_ParamSet->m_PhiGradient != 0.0));
             }
         }
 
@@ -1013,7 +1013,7 @@ void MC::TEngine::RunSimulation ()
     // Add occupation timespan of states that are occupied at the end of simulation
     for (const auto& state: m_Structure)
     {
-        if (state.m_ElectronID < m_ParamSet->m_StateCount)
+        if (state.m_ElectronID < m_ParamSet->mI_StateCount)
             state.m_OccTime += m_TotalTime - state.m_LastHopTime;
     }
     
@@ -1033,7 +1033,7 @@ void MC::TEngine::RunSimulation ()
     if (m_VL >= Verbosity::MEDIUM) 
     {
         m_SimResult->SaveProgress(100.0,false);
-        m_SimResult->WriteProgressLine(std::cout,sim_hop_limit,(m_ParamSet->m_PhiGradient != 0.0),false);
+        m_SimResult->WriteProgressLine(std::cout,2U*sim_hop_limit,(m_ParamSet->m_PhiGradient != 0.0),false);
         std::cout << " --- SIMULATION END ---" << std::endl;
         std::cout << "(simulation runtime: ";
         GF::WriteDuration(std::cout, std::chrono::steady_clock::now() - runtime_start);
@@ -1098,8 +1098,7 @@ void MC::TEngine::RunSimulation ()
             std::cout << "  Haven ratio (parallel = Dx / Dsigma): " << m_SimResult->m_HavenRatioParallel 
                 << " [incl. eq.: " << incl_eq_result->m_HavenRatioParallel << "]" << std::endl;
             std::cout << "  Haven ratio (transverse = Dyz / Dsigma): " << m_SimResult->m_HavenRatioTransverse 
-                << " [incl. eq.: " << incl_eq_result->m_HavenRatioTransverse 
-                << "] (only valid for weak electric field)" << std::endl;
+                << " [incl. eq.: " << incl_eq_result->m_HavenRatioTransverse << "]" << std::endl;
         }
         std::cout << "  Partial entropy: " << m_SimResult->m_PartialEntropy 
             << " eV/K (expected from DOS: " 
@@ -1200,7 +1199,7 @@ void MC::TEngine::RunSimulation ()
             std::cout << "  Haven ratio (parallel = Dx / Dsigma): " 
                 << m_SimResult->m_HavenRatioParallel << std::endl;
             std::cout << "  Haven ratio (transverse = Dyz / Dsigma): " 
-                << m_SimResult->m_HavenRatioParallel << " (only valid for weak electric field)" << std::endl;
+                << m_SimResult->m_HavenRatioParallel << std::endl;
         }
         std::cout << "  Partial entropy: " << m_SimResult->m_PartialEntropy 
             << " eV/K (expected from DOS: " 
@@ -1770,10 +1769,10 @@ void MC::TEngine::CalculatePostEquilibrationStatistics()
             double new_z {m_Structure[path.m_StateID].m_Pos_z};
             if (old_z - new_z > 0.5) new_z += 1.0;
             if (new_z - old_z > 0.5) new_z -= 1.0;
-            double t_path_dist = sqrt((new_x - old_x)*(new_x - old_x) + (new_y - old_y)*
+            const double t_path_dist = sqrt((new_x - old_x)*(new_x - old_x) + (new_y - old_y)*
                 (new_y - old_y) + (new_z - old_z)*(new_z - old_z)) * spfac;
 
-            double t_path_ediff = (m_Structure[path.m_StateID].m_Energy - state.m_Energy) * enfac;
+            const double t_path_ediff = (m_Structure[path.m_StateID].m_Energy - state.m_Energy) * enfac;
 
             dist_per_used_path.check(t_path_dist);
             ediff_per_used_path.check(t_path_ediff);
@@ -1783,7 +1782,7 @@ void MC::TEngine::CalculatePostEquilibrationStatistics()
     if (m_VL >= Verbosity::MEDIUM)
     {
         std::cout << "Equilibration statistics:" << std::endl;
-        std::cout << "  Used paths during eq.: " << used_paths << " (" 
+        std::cout << "  Used paths during eq.: " << 2U*used_paths << " (" 
             << 100.0 * static_cast<double>(used_paths) / static_cast<double>(total_paths) << " %" << " of paths)" << std::endl;
         std::cout << "  Path distance range used during eq.: " << dist_per_used_path << " nm" << std::endl;
         std::cout << "  Path energy difference range used during eq.: " << ediff_per_used_path 
@@ -1848,10 +1847,10 @@ void MC::TEngine::CalculatePostEquilibrationStatistics()
                     double new_z {m_Structure[path.m_StateID].m_Pos_z};
                     if (old_z - new_z > 0.5) new_z += 1.0;
                     if (new_z - old_z > 0.5) new_z -= 1.0;
-                    double t_path_dist = sqrt((new_x - old_x)*(new_x - old_x) + (new_y - old_y)*
+                    const double t_path_dist = sqrt((new_x - old_x)*(new_x - old_x) + (new_y - old_y)*
                         (new_y - old_y) + (new_z - old_z)*(new_z - old_z));
 
-                    double t_path_ediff = fabs(m_Structure[path.m_StateID].m_Energy - state.m_Energy);
+                    const double t_path_ediff = fabs(m_Structure[path.m_StateID].m_Energy - state.m_Energy);
 
                     if ((t_path_dist <= new_dist_cutoff) && (t_path_ediff <= new_ediff_cutoff))
                         ++new_path_count;
@@ -1899,10 +1898,10 @@ void MC::TEngine::CalculatePostEquilibrationStatistics()
                         double new_z {new_state.m_Pos_z};
                         if (old_z - new_z > 0.5) new_z += 1.0;
                         if (new_z - old_z > 0.5) new_z -= 1.0;
-                        double t_path_dist = sqrt((new_x - old_x)*(new_x - old_x) + (new_y - old_y)*
+                        const double t_path_dist = sqrt((new_x - old_x)*(new_x - old_x) + (new_y - old_y)*
                             (new_y - old_y) + (new_z - old_z)*(new_z - old_z));
 
-                        double t_path_ediff = fabs(new_state.m_Energy - state.m_Energy);
+                        const double t_path_ediff = fabs(new_state.m_Energy - state.m_Energy);
 
                         if ((t_path_dist <= new_dist_cutoff) && (t_path_ediff <= new_ediff_cutoff))
                         {
@@ -1916,14 +1915,14 @@ void MC::TEngine::CalculatePostEquilibrationStatistics()
                         deleted_paths += 2;
 
                         // Update electrons that occupy these states
-                        if (state.m_ElectronID < m_ParamSet->m_StateCount)
+                        if (state.m_ElectronID < m_ParamSet->mI_StateCount)
                         {
                             auto& rndtimes = m_Electrons[state.m_ElectronID].m_RandomTimes;
 
                             // Delete m_RandomTimes[k] (list in same order as m_Paths)
                             rndtimes.erase(rndtimes.begin() + k);
                         }
-                        if (new_state.m_ElectronID < m_ParamSet->m_StateCount)
+                        if (new_state.m_ElectronID < m_ParamSet->mI_StateCount)
                         {
                             auto& rndtimes = m_Electrons[new_state.m_ElectronID].m_RandomTimes;
 
@@ -1975,8 +1974,8 @@ void MC::TEngine::CalculatePostEquilibrationStatistics()
                     const auto& paths = m_Structure[electron.m_CurrentStateID].m_Paths;
                     electron.m_MinTime = std::numeric_limits<double>::max();
                     electron.m_NextMinTime = std::numeric_limits<double>::max();
-                    electron.m_MinIndex = m_ParamSet->m_StateCount + 1;
-                    electron.m_NextMinIndex = m_ParamSet->m_StateCount + 1;
+                    electron.m_MinIndex = m_ParamSet->mI_StateCount + 1;
+                    electron.m_NextMinIndex = m_ParamSet->mI_StateCount + 1;
                     for (std::uint32_t i = 0; i < paths.size(); ++i)
                     {
                         if (electron.m_RandomTimes[i] < electron.m_MinTime)
@@ -1993,13 +1992,13 @@ void MC::TEngine::CalculatePostEquilibrationStatistics()
                         }
                     }
 
-                    if (electron.m_MinIndex < m_ParamSet->m_StateCount) 
+                    if (electron.m_MinIndex < m_ParamSet->mI_StateCount) 
                     {
                         electron.m_MinStateID = paths[electron.m_MinIndex].m_StateID;
                     }
                     else
                     {
-                        electron.m_MinStateID = m_ParamSet->m_StateCount;
+                        electron.m_MinStateID = m_ParamSet->mI_StateCount;
                     }
                 }
 
@@ -2031,9 +2030,9 @@ void MC::TEngine::CalculatePostEquilibrationStatistics()
                 }
                 if (m_VL >= Verbosity::MEDIUM)
                 {
-                    std::cout << "  Deleted paths: " << deleted_paths << " (" 
+                    std::cout << "  Deleted paths: " << 2U*deleted_paths << " (" 
                         << 100.0*static_cast<double>(deleted_paths)/static_cast<double>(total_paths) << " %)" << std::endl;
-                    std::cout << "  New total number of paths: " << new_total_paths << " (" 
+                    std::cout << "  New total number of paths: " << 2U*new_total_paths << " (" 
                         << 100.0*static_cast<double>(new_total_paths)/static_cast<double>(total_paths) << " %)" << std::endl;
                     std::cout << "  New average number of paths per state: " << paths_per_state << std::endl;
                 }
@@ -2059,7 +2058,7 @@ void MC::TEngine::CalculateEffectiveCarrierDensity(bool fit_eff)
         double sum = 0.0;
         for (const auto& state: m_Structure)
         {
-            if (state.m_ElectronID < m_ParamSet->m_StateCount)
+            if (state.m_ElectronID < m_ParamSet->mI_StateCount)
             {
                 sum += (1.0 - 1.0/(exp((state.m_Energy - t_chempot)/t_kBT) + 1.0)) *
                     (1.0 - 1.0/(exp((state.m_Energy - t_chempot)/t_kBT) + 1.0));
@@ -2146,8 +2145,8 @@ void MC::TEngine::CalculateEffectiveCarrierDensity(bool fit_eff)
     
     m_SimResult->m_EffChemPot = effChemPot;
     m_SimResult->m_EffTemp = effT;
-    m_SimResult->m_EffCarriers = effCount;
-    m_SimResult->m_EffCarrierDensity = effCount/pow(spfac,3.0)*1.0E21;
+    m_SimResult->m_EffCarriers = 2.0*effCount;
+    m_SimResult->m_EffCarrierDensity = 2.0*effCount/pow(spfac,3.0)*1.0E21;
     m_SimResult->m_PartialEntropy = Constant::kboltz * thermCount / effCount;
 }
 
@@ -2161,7 +2160,7 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
     const double enfac = m_DOS->GetEnergyFactor();
     const double fermilvl = (m_ParamSet->m_ChemPot - enmax)/enfac;  // in relative units
 
-    // Evaluation of electron statistics 
+    // Evaluation of electron statistics (internal values for just one spin-type)
     // sum_energy = sum of state energies of occupied states (in eV)
     // nzero, nosc = number of electrons with zero hops and with only osc hops
     // sum_r, sum_x, sum_y, sum_z = sum of r,x,y,z-displacements (in relative units)
@@ -2192,7 +2191,7 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
         sum_sqz += electron.m_Disp_z * electron.m_Disp_z;
     }
     
-    // Evaluation of path statistics
+    // Evaluation of path statistics (internal values for just one spin-type)
     // sum_hops = sum of hop counts
     // sum_nonosc_hops = sum of non-oscillatory hops
     // sum_in_xdir_nonosc_hops = sum of non-oscillatory hops in +x direction (dx > 0)
@@ -2208,7 +2207,7 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
     std::uint32_t electrons_above_fermilvl = 0, holes_below_fermilvl = 0;
     for (const auto& state : m_Structure)
     {
-        if (state.m_ElectronID < m_ParamSet->m_StateCount)
+        if (state.m_ElectronID < m_ParamSet->mI_StateCount)
         {
             if (state.m_Energy >= fermilvl) electrons_above_fermilvl++;
         }
@@ -2260,18 +2259,19 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
     }
 
     // Electron-related properties
-    m_SimResult->m_MobileElectrons = m_SimResult->m_ElectronCount - nzero - nosc;
+    // (for both spin-types -> each internal electron counts twice)
+    m_SimResult->m_MobileElectrons = m_SimResult->m_ElectronCount - 2U*nzero - 2U*nosc;
     if (m_SimResult->m_MobileElectrons == 0)
         throw EX::TInvalidInput("Parameters lead to only oscillating electrons.");
-    m_SimResult->m_ZeroHopElectrons = nzero;
-    m_SimResult->m_OscElectrons = nosc;
-	m_SimResult->m_MeanDisp = sum_r * spfac / m_SimResult->m_EffCarriers;
-	m_SimResult->m_MeanDisp_x = sum_x * spfac / m_SimResult->m_EffCarriers;
-	m_SimResult->m_MeanDisp_y = sum_y * spfac / m_SimResult->m_EffCarriers;
-	m_SimResult->m_MeanDisp_z = sum_z * spfac / m_SimResult->m_EffCarriers;
-	m_SimResult->m_MeanSquaredDisp_x = sum_sqx * spfac * spfac / m_SimResult->m_EffCarriers;
-    m_SimResult->m_MeanSquaredDisp_y = sum_sqy * spfac * spfac / m_SimResult->m_EffCarriers;
-	m_SimResult->m_MeanSquaredDisp_z = sum_sqz * spfac * spfac / m_SimResult->m_EffCarriers;	    
+    m_SimResult->m_ZeroHopElectrons = 2U*nzero;
+    m_SimResult->m_OscElectrons = 2U*nosc;
+	m_SimResult->m_MeanDisp = 2.0*sum_r * spfac / m_SimResult->m_EffCarriers;
+	m_SimResult->m_MeanDisp_x = 2.0*sum_x * spfac / m_SimResult->m_EffCarriers;
+	m_SimResult->m_MeanDisp_y = 2.0*sum_y * spfac / m_SimResult->m_EffCarriers;
+	m_SimResult->m_MeanDisp_z = 2.0*sum_z * spfac / m_SimResult->m_EffCarriers;
+	m_SimResult->m_MeanSquaredDisp_x = 2.0*sum_sqx * spfac * spfac / m_SimResult->m_EffCarriers;
+    m_SimResult->m_MeanSquaredDisp_y = 2.0*sum_sqy * spfac * spfac / m_SimResult->m_EffCarriers;
+	m_SimResult->m_MeanSquaredDisp_z = 2.0*sum_sqz * spfac * spfac / m_SimResult->m_EffCarriers;	    
     m_SimResult->m_MeanDispVariance_x = m_SimResult->m_MeanSquaredDisp_x 
         - m_SimResult->m_EffCarriers / static_cast<double>(m_SimResult->m_MobileElectrons)
         * m_SimResult->m_MeanDisp_x * m_SimResult->m_MeanDisp_x;
@@ -2281,14 +2281,15 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
     m_SimResult->m_MeanDispVariance_z = m_SimResult->m_MeanSquaredDisp_z 
         - m_SimResult->m_EffCarriers / static_cast<double>(m_SimResult->m_MobileElectrons)
         * m_SimResult->m_MeanDisp_z * m_SimResult->m_MeanDisp_z;
-    m_SimResult->m_TotalEnergy = sum_energy;
-    m_SimResult->m_ElectronsAboveEf = electrons_above_fermilvl;
-    m_SimResult->m_HolesBelowEf = holes_below_fermilvl;
+    m_SimResult->m_TotalEnergy = 2.0*sum_energy;
+    m_SimResult->m_ElectronsAboveEf = 2U*electrons_above_fermilvl;
+    m_SimResult->m_HolesBelowEf = 2U*holes_below_fermilvl;
 
     // Path-related properties
+    // (for both spin-types -> each internal path and hop counts twice)
     m_SimResult->m_TotalTime = m_TotalTime;
-    m_SimResult->m_TotalHops = sum_hops;
-    m_SimResult->m_NonOscHops = sum_nonosc_hops;
+    m_SimResult->m_TotalHops = 2U*sum_hops;
+    m_SimResult->m_NonOscHops = 2U*sum_nonosc_hops;
     m_SimResult->m_NonOscHopRatio = static_cast<double>(sum_nonosc_hops)/static_cast<double>(sum_hops);
     if (sum_nonosc_hops != 0)
     {
@@ -2327,7 +2328,7 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
         m_SimResult->m_NonOscHopRatio = static_cast<double>(m_SimResult->m_NonOscHops)/static_cast<double>(m_SimResult->m_TotalHops);
         if (m_SimResult->m_NonOscHops != 0)
         {
-            m_SimResult->m_InXDirNonOscRatio = (static_cast<double>(sum_in_xdir_nonosc_hops) 
+            m_SimResult->m_InXDirNonOscRatio = (static_cast<double>(2U*sum_in_xdir_nonosc_hops) 
                 / static_cast<double>(m_SimResult->m_NonOscHops))
                 - ref_result->m_InXDirNonOscRatio * (static_cast<double>(ref_result->m_NonOscHops)
                 / static_cast<double>(m_SimResult->m_NonOscHops));
@@ -2335,7 +2336,7 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
         else m_SimResult->m_InXDirNonOscRatio = 1.0;
         if (m_ParamSet->m_PhiGradient != 0.0)
         {
-            m_SimResult->m_MeanFieldContribution = avg_field_contrib * enfac * (static_cast<double>(sum_hops)
+            m_SimResult->m_MeanFieldContribution = avg_field_contrib * enfac * (static_cast<double>(2U*sum_hops)
                 / static_cast<double>(m_SimResult->m_TotalHops))
                 - ref_result->m_MeanFieldContribution * (static_cast<double>(ref_result->m_TotalHops)
                 / static_cast<double>(m_SimResult->m_TotalHops));
@@ -2421,10 +2422,10 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
     // units: cm2/s = eV/K * K * cm2/Vs / e
     // -> isotropic Haven ratio (only valid for weak electric field where Dx approx. equal to Dyz)
     //    HR = D / Dsigma
-    // -> parallel Haven ratio (parallel to electric field; for high field)
+    // -> parallel Haven ratio (parallel to electric field)
     //    HR_x = D_x / Dsigma
-    // -> transverse Haven ratio (only for weak field; D_yz = isotropic self-diffusion coefficient 
-    //                            at weak field because of inaccuracy in calculation of D_x, see above)
+    // -> transverse Haven ratio (D_yz = isotropic self-diffusion coefficient at weak field
+    //    because of inaccuracy in calculation of D_x, see above)
     //    HR_yz = D_yz / Dsigma
     if ((m_ParamSet->m_PhiGradient != 0.0) && (m_SimResult->m_DriftMobility != 0.0))
     {
@@ -2455,6 +2456,7 @@ void MC::TEngine::GenerateResults()
     const double fermilvl = (m_ParamSet->m_ChemPot - enmax)/enfac;  // in relative units
     
     // Analyze paths (e.g. min/max for histogram boundaries)
+    // (internal values for only one spin-type)
     GF::TMinMax<double> time_per_path;
     GF::TMinMax<double> time_per_hop;
     std::uint64_t total_paths = 0;
@@ -2462,13 +2464,13 @@ void MC::TEngine::GenerateResults()
     std::uint64_t nonosc_only_paths = 0;
     GF::TMinMaxMean<std::uint64_t> hops_per_path;
     GF::TMinMaxMean<std::uint64_t> oscs_per_path;
-    GF::TMinMaxMean<std::uint64_t> nonoscs_per_path;
-    GF::TMinMaxMean<std::uint32_t> used_paths_per_state;
+    GF::TMinMaxMean<std::uint64_t> nonoscs_per_path; 
     GF::TMinMaxMean<std::uint64_t> hops_per_state;
     GF::TMinMaxMean<std::uint64_t> oscs_per_state;
     GF::TMinMaxMean<std::uint64_t> nonoscs_per_state;
     std::uint32_t single_osc_states = 0;
     std::uint32_t multi_osc_states = 0;
+    GF::TMinMaxMean<std::uint32_t> used_paths_per_state;
     GF::TMinMaxMean<std::uint32_t> osc_paths_per_state;
     for (const auto& state : m_Structure)
     {
@@ -2520,6 +2522,7 @@ void MC::TEngine::GenerateResults()
     }
 
     // Analyze electrons (e.g. min/max for histogram boundaries)
+    // (internal values for only one spin-type)
     GF::TMinMaxIdx<double> disp_per_electron;
     GF::TMinMax<double> dispx_per_electron;
     GF::TMinMax<double> dispy_per_electron;
@@ -2543,7 +2546,7 @@ void MC::TEngine::GenerateResults()
 
         for (const auto& path : m_Structure[electron.m_CurrentStateID].m_Paths)
         {
-            if (m_Structure[path.m_StateID].m_ElectronID == m_ParamSet->m_StateCount)
+            if (m_Structure[path.m_StateID].m_ElectronID == m_ParamSet->mI_StateCount)
             {
                 electron_is_blocked[i] = false;
                 break;
@@ -2594,23 +2597,23 @@ void MC::TEngine::GenerateResults()
 
     if (m_VL >= Verbosity::MEDIUM)
     {
-        std::cout << "  Electrons with a single hop: " << single_hop_electrons 
-            << " (" << 100.0*static_cast<double>(single_hop_electrons)/static_cast<double>(m_SimResult->m_MobileElectrons) << " %" << " of mobile electrons)" << std::endl;
-        std::cout << "  Electrons with a single hop except osc.: " << single_nonosc_electrons 
-            << " (" << 100.0*static_cast<double>(single_nonosc_electrons)/static_cast<double>(m_SimResult->m_MobileElectrons) << " %" << " of mobile electrons)" << std::endl;
-        std::cout << "  Electrons with only non-osc. hops: " << nonosc_only_electrons 
-            << " (" << 100.0*static_cast<double>(nonosc_only_electrons)/static_cast<double>(m_SimResult->m_MobileElectrons) << " %" << " of mobile electrons)" << std::endl;
-        std::cout << "  Currently blocked mobile electrons (> 0 non-osc. hops, all paths occupied): " << blocked_mobile_electrons 
-            << " (" << 100.0*static_cast<double>(blocked_mobile_electrons)/static_cast<double>(m_SimResult->m_MobileElectrons) << " %" << " of mobile electrons)" << std::endl;
+        std::cout << "  Electrons with a single hop: " << 2U*single_hop_electrons 
+            << " (" << 100.0*static_cast<double>(2U*single_hop_electrons)/static_cast<double>(m_SimResult->m_MobileElectrons) << " %" << " of mobile electrons)" << std::endl;
+        std::cout << "  Electrons with a single hop except osc.: " << 2U*single_nonosc_electrons 
+            << " (" << 100.0*static_cast<double>(2U*single_nonosc_electrons)/static_cast<double>(m_SimResult->m_MobileElectrons) << " %" << " of mobile electrons)" << std::endl;
+        std::cout << "  Electrons with only non-osc. hops: " << 2U*nonosc_only_electrons 
+            << " (" << 100.0*static_cast<double>(2U*nonosc_only_electrons)/static_cast<double>(m_SimResult->m_MobileElectrons) << " %" << " of mobile electrons)" << std::endl;
+        std::cout << "  Currently blocked mobile electrons (> 0 non-osc. hops, all paths occupied): " << 2U*blocked_mobile_electrons 
+            << " (" << 100.0*static_cast<double>(2U*blocked_mobile_electrons)/static_cast<double>(m_SimResult->m_MobileElectrons) << " %" << " of mobile electrons)" << std::endl;
         if (m_SimResult->m_ZeroHopElectrons != 0)
         {
-            std::cout << "  Currently blocked stationary electrons (0 hops, all paths occupied): " << blocked_zerohop_electrons 
-                << " (" << 100.0*static_cast<double>(blocked_zerohop_electrons)/static_cast<double>(m_SimResult->m_ZeroHopElectrons) << " %" << " of stationary electrons)" << std::endl;
+            std::cout << "  Currently blocked stationary electrons (0 hops, all paths occupied): " << 2U*blocked_zerohop_electrons 
+                << " (" << 100.0*static_cast<double>(2U*blocked_zerohop_electrons)/static_cast<double>(m_SimResult->m_ZeroHopElectrons) << " %" << " of stationary electrons)" << std::endl;
         }
         if (m_SimResult->m_OscElectrons != 0)
         {
-            std::cout << "  Currently blocked oscillating electrons (only osc. hops, all paths occupied): " << blocked_osc_electrons 
-                << " (" << 100.0*static_cast<double>(blocked_osc_electrons)/static_cast<double>(m_SimResult->m_OscElectrons) << " %" << " of oscillating electrons)" << std::endl;
+            std::cout << "  Currently blocked oscillating electrons (only osc. hops, all paths occupied): " << 2U*blocked_osc_electrons 
+                << " (" << 100.0*static_cast<double>(2U*blocked_osc_electrons)/static_cast<double>(m_SimResult->m_OscElectrons) << " %" << " of oscillating electrons)" << std::endl;
         }
         std::cout << "  Maximum displacement per electron (Electron-ID: " 
             << disp_per_electron.max_idx + 1 << "): " << disp_per_electron.max << " nm" << std::endl;
@@ -2637,34 +2640,34 @@ void MC::TEngine::GenerateResults()
         else
             std::cout << "0 (no osc.-only electrons)" << std::endl;
 
-        std::cout << "  Used states: " << used_paths_per_state.count << " (" 
-            << 100.0 * static_cast<double>(used_paths_per_state.count) / static_cast<double>(m_ParamSet->m_StateCount) << " %" << " of states)" << std::endl;
+        std::cout << "  Used states: " << 2U*used_paths_per_state.count << " (" 
+            << 100.0 * static_cast<double>(used_paths_per_state.count) / static_cast<double>(m_ParamSet->mI_StateCount) << " %" << " of states)" << std::endl;
         std::cout << "    Average used paths per used state: " << used_paths_per_state << std::endl;
         std::cout << "    Average hops per used state: " << hops_per_state << std::endl;
         std::cout << "    Average osc. hops per used state: " << oscs_per_state << std::endl;
         std::cout << "    Average non-osc. hops per used state: " << nonoscs_per_state << std::endl;
-        std::cout << "    Used states without osc.-paths: " << used_paths_per_state.count - osc_paths_per_state.count << " ("
+        std::cout << "    Used states without osc.-paths: " << 2U*used_paths_per_state.count - 2U*osc_paths_per_state.count << " ("
             << 100.0 * static_cast<double>(used_paths_per_state.count - osc_paths_per_state.count)/static_cast<double>(used_paths_per_state.count) << " %" << " of used states)" << std::endl;
-        std::cout << "    Used states with osc.-paths: " << osc_paths_per_state.count << " ("
+        std::cout << "    Used states with osc.-paths: " << 2U*osc_paths_per_state.count << " ("
             << 100.0 * static_cast<double>(osc_paths_per_state.count)/static_cast<double>(used_paths_per_state.count) << " %" << " of used states)" << std::endl;
         if (osc_paths_per_state.count != 0)
         {
-            std::cout << "      States with one osc.-path: " << single_osc_states << std::endl;
-            std::cout << "      States with more than one osc.-path: " << multi_osc_states << std::endl;
+            std::cout << "      States with one osc.-path: " << 2U*single_osc_states << std::endl;
+            std::cout << "      States with more than one osc.-path: " << 2U*multi_osc_states << std::endl;
             std::cout << "      Average osc.-paths of states with osc.-paths: " << osc_paths_per_state << std::endl;
         }
 
-        std::cout << "  Used paths: " << hops_per_path.count << " (" 
+        std::cout << "  Used paths: " << 2U*hops_per_path.count << " (" 
             << 100.0 * static_cast<double>(hops_per_path.count) / static_cast<double>(total_paths) << " %" << " of paths)" << std::endl;
-        std::cout << "    Paths with osc. hops: " << oscs_per_path.count << " (" 
+        std::cout << "    Paths with osc. hops: " << 2U*oscs_per_path.count << " (" 
             << 100.0 * static_cast<double>(oscs_per_path.count) / static_cast<double>(hops_per_path.count) << " %" << " of used paths)" << std::endl;
-        std::cout << "      Paths with only osc. hops: " << osc_only_paths << " (" 
+        std::cout << "      Paths with only osc. hops: " << 2U*osc_only_paths << " (" 
             << 100.0 * static_cast<double>(osc_only_paths) / static_cast<double>(hops_per_path.count) << " %" << " of used paths)" << std::endl;
-        std::cout << "    Paths with non-osc. hops: " << nonoscs_per_path.count << " (" 
+        std::cout << "    Paths with non-osc. hops: " << 2U*nonoscs_per_path.count << " (" 
             << 100.0 * static_cast<double>(nonoscs_per_path.count) / static_cast<double>(hops_per_path.count) << " %" << " of used paths)" << std::endl;
-        std::cout << "      Paths with only non-osc. hops: " << nonosc_only_paths << " (" 
+        std::cout << "      Paths with only non-osc. hops: " << 2U*nonosc_only_paths << " (" 
             << 100.0 * static_cast<double>(nonosc_only_paths) / static_cast<double>(hops_per_path.count) << " %" << " of used paths)" << std::endl;
-        std::cout << "    Paths with both osc. and non-osc. hops: " << hops_per_path.count - osc_only_paths - nonosc_only_paths << " (" 
+        std::cout << "    Paths with both osc. and non-osc. hops: " << 2U*hops_per_path.count - 2U*osc_only_paths - 2U*nonosc_only_paths << " (" 
             << 100.0 * static_cast<double>(hops_per_path.count - osc_only_paths - nonosc_only_paths) / static_cast<double>(hops_per_path.count) << " %" << " of used paths)" << std::endl;
         std::cout << "    Average hops per used path: " << hops_per_path << std::endl;
         std::cout << "    Average osc. hops of paths with osc. hops: ";
@@ -2700,7 +2703,7 @@ void MC::TEngine::GenerateResults()
     m_SimResult->m_HStateEnergy.AddProperty(HP::OSC_PER_EL, HT::AVG_STDDEV, "Osc/Electron");
     m_SimResult->m_HStateEnergy.AddProperty(HP::NONOSC_PER_EL, HT::AVG_STDDEV, "NonOsc/Electron", "",
         "averages per electron refer to mobile electrons");
-    if (m_ParamSet->m_EqHopLimit != 0)
+    if (m_ParamSet->mI_EqHopLimit != 0)
     {
         m_SimResult->m_HStateEnergy.AddProperty(HP::NEWMOB_EL, HT::COUNT, "MobileElectrons(**)", "",
             "** = electrons that had their first hop after the equilibration");
@@ -2759,7 +2762,7 @@ void MC::TEngine::GenerateResults()
         "\"electron\" refers to mobile electrons (> 0 non-osc. hops)");
     m_SimResult->m_HDisp.AddProperty(HP::INCOSC_EL, HT::COUNT, "Electrons(*)", "",
         "* = including oscillating electrons");
-    if (m_ParamSet->m_EqHopLimit != 0)
+    if (m_ParamSet->mI_EqHopLimit != 0)
     {
         m_SimResult->m_HDisp.AddProperty(HP::NEW_EL, HT::COUNT, "Electrons(**)", "",
             "** = electrons that had their first hop after the equilibration");
@@ -2775,7 +2778,7 @@ void MC::TEngine::GenerateResults()
         "\"electron\" refers to mobile electrons (> 0 non-osc. hops)");
     m_SimResult->m_HDisp_x.AddProperty(HP::INCOSC_EL, HT::COUNT, "Electrons(*)", "",
         "* = including oscillating electrons");
-    if (m_ParamSet->m_EqHopLimit != 0)
+    if (m_ParamSet->mI_EqHopLimit != 0)
     {
         m_SimResult->m_HDisp_x.AddProperty(HP::NEW_EL, HT::COUNT, "Electrons(**)", "",
             "** = electrons that had their first hop after the equilibration");
@@ -2791,7 +2794,7 @@ void MC::TEngine::GenerateResults()
         "\"electron\" refers to mobile electrons (> 0 non-osc. hops)");
     m_SimResult->m_HDisp_y.AddProperty(HP::INCOSC_EL, HT::COUNT, "Electrons(*)", "",
         "* = including oscillating electrons");
-    if (m_ParamSet->m_EqHopLimit != 0)
+    if (m_ParamSet->mI_EqHopLimit != 0)
     {
         m_SimResult->m_HDisp_y.AddProperty(HP::NEW_EL, HT::COUNT, "Electrons(**)", "",
             "** = electrons that had their first hop after the equilibration");
@@ -2807,7 +2810,7 @@ void MC::TEngine::GenerateResults()
         "\"electron\" refers to mobile electrons (> 0 non-osc. hops)");
     m_SimResult->m_HDisp_z.AddProperty(HP::INCOSC_EL, HT::COUNT, "Electrons(*)", "",
         "* = including oscillating electrons");
-    if (m_ParamSet->m_EqHopLimit != 0)
+    if (m_ParamSet->mI_EqHopLimit != 0)
     {
         m_SimResult->m_HDisp_z.AddProperty(HP::NEW_EL, HT::COUNT, "Electrons(**)", "",
             "** = electrons that had their first hop after the equilibration");
@@ -2826,7 +2829,7 @@ void MC::TEngine::GenerateResults()
     m_SimResult->m_HHopCount.AddProperty(HP::INCOSC_EL, HT::COUNT, "Electrons(*)", "",
         "* = including oscillating electrons");
     m_SimResult->m_HHopCount.AddProperty(HP::OSC_EL, HT::COUNT, "OscElectrons");
-    if (m_ParamSet->m_EqHopLimit != 0)
+    if (m_ParamSet->mI_EqHopLimit != 0)
     {
         m_SimResult->m_HHopCount.AddProperty(HP::NEW_EL, HT::COUNT, "Electrons(**)", "",
             "** = electrons that had their first hop after the equilibration");
@@ -2853,7 +2856,7 @@ void MC::TEngine::GenerateResults()
         m_SimResult->m_HOscHopCount.AddProperty(HP::INCOSC_EL, HT::COUNT, "Electrons(*)", "",
             "* = including oscillating electrons");
         m_SimResult->m_HOscHopCount.AddProperty(HP::OSC_EL, HT::COUNT, "OscElectrons");
-        if (m_ParamSet->m_EqHopLimit != 0)
+        if (m_ParamSet->mI_EqHopLimit != 0)
         {
             m_SimResult->m_HOscHopCount.AddProperty(HP::NEW_EL, HT::COUNT, "Electrons(**)", "",
                 "** = electrons that had their first hop after the equilibration");
@@ -2880,7 +2883,7 @@ void MC::TEngine::GenerateResults()
             static_cast<double>(std::max(nonoscs_per_electron.max,nonoscs_per_state.max)),50);
         m_SimResult->m_HNonOscHopCount.AddProperty(HP::EL, HT::COUNT, "Electrons","",
             "\"electron\" refers to mobile electrons (> 0 non-osc. hops)");
-        if (m_ParamSet->m_EqHopLimit != 0)
+        if (m_ParamSet->mI_EqHopLimit != 0)
         {
             m_SimResult->m_HNonOscHopCount.AddProperty(HP::NEW_EL, HT::COUNT, "Electrons(**)", "",
                 "** = electrons that had their first hop after the equilibration");
@@ -2970,6 +2973,7 @@ void MC::TEngine::GenerateResults()
     // -- FILL HISTOGRAMS --
     
     // Additional statistics on energies and distances
+    // (internal values for just one spin-type)
     std::uint64_t total_hops = 0;
     std::uint64_t total_oscs = 0;
     std::uint64_t total_nonoscs = 0;
@@ -3003,7 +3007,7 @@ void MC::TEngine::GenerateResults()
     std::uint64_t nonoscs_above_fermilvl = 0;
     double xdisp_above_fermilvl = 0.0;
 
-    // Paths
+    // Paths (each counts twice)
     for (std::size_t i = 0; i < m_Structure.size(); ++i)
     {
         const TLocalState& state = m_Structure[i];
@@ -3021,10 +3025,10 @@ void MC::TEngine::GenerateResults()
             double new_z {m_Structure[path.m_StateID].m_Pos_z};
             if (old_z - new_z > 0.5) new_z += 1.0;
             if (new_z - old_z > 0.5) new_z -= 1.0;
-            double t_path_dist = sqrt((new_x - old_x)*(new_x - old_x) + (new_y - old_y)*
+            const double t_path_dist = sqrt((new_x - old_x)*(new_x - old_x) + (new_y - old_y)*
                 (new_y - old_y) + (new_z - old_z)*(new_z - old_z)) * spfac;
 
-            double t_path_ediff = (m_Structure[path.m_StateID].m_Energy - state.m_Energy) * enfac;
+            const double t_path_ediff = (m_Structure[path.m_StateID].m_Energy - state.m_Energy) * enfac;
 
             double t_field_contrib = 0.0;
             if (m_ParamSet->m_PhiGradient != 0.0)
@@ -3033,19 +3037,19 @@ void MC::TEngine::GenerateResults()
             }
 
             // Any path
-            m_SimResult->m_HPathTime.IncCount(HP::PT, path.m_Time);
-            m_SimResult->m_HHopTime.IncCount(HP::PT, path.m_Time);
+            m_SimResult->m_HPathTime.IncCount(HP::PT, path.m_Time, 2);
+            m_SimResult->m_HHopTime.IncCount(HP::PT, path.m_Time, 2);
             m_SimResult->m_HPathTime.AddValue(HP::DIST_PER_PT, path.m_Time, t_path_dist);
             m_SimResult->m_HPathTime.AddValue(HP::EDIFF_PER_PT, path.m_Time, t_path_ediff + t_field_contrib);
             //
-            m_SimResult->m_HStateEnergyDifference.IncCount(HP::PT, t_path_ediff);
+            m_SimResult->m_HStateEnergyDifference.IncCount(HP::PT, t_path_ediff, 2);
             //
             if (m_SimResult->m_HFieldEnergyContribution.m_IsConfigured)
             {
-                m_SimResult->m_HFieldEnergyContribution.IncCount(HP::PT, t_field_contrib);
+                m_SimResult->m_HFieldEnergyContribution.IncCount(HP::PT, t_field_contrib, 2);
             }
             //
-            m_SimResult->m_HDistance.IncCount(HP::PT, t_path_dist);
+            m_SimResult->m_HDistance.IncCount(HP::PT, t_path_dist, 2);
 
             // Unused path (0 hops)
             if (path.m_HopCount == 0) 
@@ -3081,23 +3085,23 @@ void MC::TEngine::GenerateResults()
             dist_per_used_path.check(t_path_dist);
             ediff_per_used_path.check(t_path_ediff);
             //
-            m_SimResult->m_HStateEnergy.IncCount(HP::OUT_HOPS, state.m_Energy * enfac + enmax, path.m_HopCount);
-            m_SimResult->m_HStateEnergy.IncCount(HP::OUT_OSC, state.m_Energy * enfac + enmax, path.m_OscHopCount);
-            m_SimResult->m_HStateEnergy.IncCount(HP::OUT_NONOSC, state.m_Energy * enfac + enmax, path.m_HopCount - path.m_OscHopCount);
-            m_SimResult->m_HStateEnergy.IncCount(HP::IN_HOPS, m_Structure[path.m_StateID].m_Energy * enfac + enmax, path.m_HopCount);
-            m_SimResult->m_HStateEnergy.IncCount(HP::IN_OSC, m_Structure[path.m_StateID].m_Energy * enfac + enmax, path.m_OscHopCount);
-            m_SimResult->m_HStateEnergy.IncCount(HP::IN_NONOSC, m_Structure[path.m_StateID].m_Energy * enfac + enmax, path.m_HopCount - path.m_OscHopCount);
+            m_SimResult->m_HStateEnergy.IncCount(HP::OUT_HOPS, state.m_Energy * enfac + enmax, 2U*path.m_HopCount);
+            m_SimResult->m_HStateEnergy.IncCount(HP::OUT_OSC, state.m_Energy * enfac + enmax, 2U*path.m_OscHopCount);
+            m_SimResult->m_HStateEnergy.IncCount(HP::OUT_NONOSC, state.m_Energy * enfac + enmax, 2U*path.m_HopCount - 2U*path.m_OscHopCount);
+            m_SimResult->m_HStateEnergy.IncCount(HP::IN_HOPS, m_Structure[path.m_StateID].m_Energy * enfac + enmax, 2U*path.m_HopCount);
+            m_SimResult->m_HStateEnergy.IncCount(HP::IN_OSC, m_Structure[path.m_StateID].m_Energy * enfac + enmax, 2U*path.m_OscHopCount);
+            m_SimResult->m_HStateEnergy.IncCount(HP::IN_NONOSC, m_Structure[path.m_StateID].m_Energy * enfac + enmax, 2U*path.m_HopCount - 2U*path.m_OscHopCount);
             //
-            m_SimResult->m_HPathTime.IncCount(HP::USED_PT, path.m_Time);
-            m_SimResult->m_HHopTime.IncCount(HP::USED_PT, path.m_Time);
+            m_SimResult->m_HPathTime.IncCount(HP::USED_PT, path.m_Time, 2);
+            m_SimResult->m_HHopTime.IncCount(HP::USED_PT, path.m_Time, 2);
             m_SimResult->m_HPathTime.AddValue(HP::USED_R, path.m_Time, 1.0);
             m_SimResult->m_HHopTime.AddValue(HP::USED_R, path.m_Time, 1.0);
-            m_SimResult->m_HPathTime.IncCount(HP::HOPS, path.m_Time, path.m_HopCount);
-            m_SimResult->m_HHopTime.IncCount(HP::HOPS, path.m_Time, path.m_HopCount);
-            m_SimResult->m_HPathTime.IncCount(HP::OSC, path.m_Time, path.m_OscHopCount);
-            m_SimResult->m_HHopTime.IncCount(HP::OSC, path.m_Time, path.m_OscHopCount);
-            m_SimResult->m_HPathTime.IncCount(HP::NONOSC, path.m_Time, path.m_HopCount - path.m_OscHopCount);
-            m_SimResult->m_HHopTime.IncCount(HP::NONOSC, path.m_Time, path.m_HopCount - path.m_OscHopCount);
+            m_SimResult->m_HPathTime.IncCount(HP::HOPS, path.m_Time, 2U*path.m_HopCount);
+            m_SimResult->m_HHopTime.IncCount(HP::HOPS, path.m_Time, 2U*path.m_HopCount);
+            m_SimResult->m_HPathTime.IncCount(HP::OSC, path.m_Time, 2U*path.m_OscHopCount);
+            m_SimResult->m_HHopTime.IncCount(HP::OSC, path.m_Time, 2U*path.m_OscHopCount);
+            m_SimResult->m_HPathTime.IncCount(HP::NONOSC, path.m_Time, 2U*path.m_HopCount - 2U*path.m_OscHopCount);
+            m_SimResult->m_HHopTime.IncCount(HP::NONOSC, path.m_Time, 2U*path.m_HopCount - 2U*path.m_OscHopCount);
             m_SimResult->m_HPathTime.AddValue(HP::OSC_R, path.m_Time, 1.0, path.m_OscHopCount);
             m_SimResult->m_HPathTime.AddValue(HP::OSC_R, path.m_Time, 0.0, path.m_HopCount - path.m_OscHopCount);
             m_SimResult->m_HHopTime.AddValue(HP::OSC_R, path.m_Time, 1.0, path.m_OscHopCount);
@@ -3109,11 +3113,11 @@ void MC::TEngine::GenerateResults()
             m_SimResult->m_HHopTime.AddValue(HP::DIST_PER_PT, path.m_Time, t_path_dist);
             m_SimResult->m_HHopTime.AddValue(HP::EDIFF_PER_PT, path.m_Time, t_path_ediff + t_field_contrib);
             //
-            m_SimResult->m_HStateEnergyDifference.IncCount(HP::USED_PT, t_path_ediff);
+            m_SimResult->m_HStateEnergyDifference.IncCount(HP::USED_PT, t_path_ediff, 2);
             m_SimResult->m_HStateEnergyDifference.AddValue(HP::USED_R, t_path_ediff, 1.0);
-            m_SimResult->m_HStateEnergyDifference.IncCount(HP::HOPS, t_path_ediff, path.m_HopCount);
-            m_SimResult->m_HStateEnergyDifference.IncCount(HP::OSC, t_path_ediff, path.m_OscHopCount);
-            m_SimResult->m_HStateEnergyDifference.IncCount(HP::NONOSC, t_path_ediff, path.m_HopCount - path.m_OscHopCount);
+            m_SimResult->m_HStateEnergyDifference.IncCount(HP::HOPS, t_path_ediff, 2U*path.m_HopCount);
+            m_SimResult->m_HStateEnergyDifference.IncCount(HP::OSC, t_path_ediff, 2U*path.m_OscHopCount);
+            m_SimResult->m_HStateEnergyDifference.IncCount(HP::NONOSC, t_path_ediff, 2U*path.m_HopCount - 2U*path.m_OscHopCount);
             m_SimResult->m_HStateEnergyDifference.AddValue(HP::OSC_R, t_path_ediff, 1.0, path.m_OscHopCount);
             m_SimResult->m_HStateEnergyDifference.AddValue(HP::OSC_R, t_path_ediff, 0.0, path.m_HopCount - path.m_OscHopCount);
             m_SimResult->m_HStateEnergyDifference.AddValue(HP::HOPS_PER_PT, t_path_ediff, static_cast<double>(path.m_HopCount));
@@ -3123,11 +3127,11 @@ void MC::TEngine::GenerateResults()
             //
             if (m_SimResult->m_HFieldEnergyContribution.m_IsConfigured)
             {
-                m_SimResult->m_HFieldEnergyContribution.IncCount(HP::USED_PT, t_field_contrib);
+                m_SimResult->m_HFieldEnergyContribution.IncCount(HP::USED_PT, t_field_contrib, 2);
                 m_SimResult->m_HFieldEnergyContribution.AddValue(HP::USED_R, t_field_contrib, 1.0);
-                m_SimResult->m_HFieldEnergyContribution.IncCount(HP::HOPS, t_field_contrib, path.m_HopCount);
-                m_SimResult->m_HFieldEnergyContribution.IncCount(HP::OSC, t_field_contrib, path.m_OscHopCount);
-                m_SimResult->m_HFieldEnergyContribution.IncCount(HP::NONOSC, t_field_contrib, path.m_HopCount - path.m_OscHopCount);
+                m_SimResult->m_HFieldEnergyContribution.IncCount(HP::HOPS, t_field_contrib, 2U*path.m_HopCount);
+                m_SimResult->m_HFieldEnergyContribution.IncCount(HP::OSC, t_field_contrib, 2U*path.m_OscHopCount);
+                m_SimResult->m_HFieldEnergyContribution.IncCount(HP::NONOSC, t_field_contrib, 2U*path.m_HopCount - 2U*path.m_OscHopCount);
                 m_SimResult->m_HFieldEnergyContribution.AddValue(HP::OSC_R, t_field_contrib, 1.0, path.m_OscHopCount);
                 m_SimResult->m_HFieldEnergyContribution.AddValue(HP::OSC_R, t_field_contrib, 0.0, path.m_HopCount - path.m_OscHopCount);
                 m_SimResult->m_HFieldEnergyContribution.AddValue(HP::HOPS_PER_PT, t_field_contrib, static_cast<double>(path.m_HopCount));
@@ -3136,11 +3140,11 @@ void MC::TEngine::GenerateResults()
                 m_SimResult->m_HFieldEnergyContribution.AddValue(HP::DIST_PER_NONOSC, t_field_contrib, t_path_dist, path.m_HopCount - path.m_OscHopCount);
             }
             //
-            m_SimResult->m_HDistance.IncCount(HP::USED_PT, t_path_dist);
+            m_SimResult->m_HDistance.IncCount(HP::USED_PT, t_path_dist, 2);
             m_SimResult->m_HDistance.AddValue(HP::USED_R, t_path_dist, 1.0);
-            m_SimResult->m_HDistance.IncCount(HP::HOPS, t_path_dist, path.m_HopCount);
-            m_SimResult->m_HDistance.IncCount(HP::OSC, t_path_dist, path.m_OscHopCount);
-            m_SimResult->m_HDistance.IncCount(HP::NONOSC, t_path_dist, path.m_HopCount - path.m_OscHopCount);
+            m_SimResult->m_HDistance.IncCount(HP::HOPS, t_path_dist, 2U*path.m_HopCount);
+            m_SimResult->m_HDistance.IncCount(HP::OSC, t_path_dist, 2U*path.m_OscHopCount);
+            m_SimResult->m_HDistance.IncCount(HP::NONOSC, t_path_dist, 2U*path.m_HopCount - 2U*path.m_OscHopCount);
             m_SimResult->m_HDistance.AddValue(HP::OSC_R, t_path_dist, 1.0, path.m_OscHopCount);
             m_SimResult->m_HDistance.AddValue(HP::OSC_R, t_path_dist, 0.0, path.m_HopCount - path.m_OscHopCount);
             m_SimResult->m_HDistance.AddValue(HP::HOPS_PER_PT, t_path_dist, static_cast<double>(path.m_HopCount));
@@ -3188,19 +3192,19 @@ void MC::TEngine::GenerateResults()
         }
     }
 
-    // States
+    // States (each counts twice)
     for (std::size_t i = 0; i < m_Structure.size(); ++i)
     {
         const TLocalState& state = m_Structure[i];
-        double t_state_energy = state.m_Energy * enfac + enmax;
+        const double t_state_energy = state.m_Energy * enfac + enmax;
 
         // Any state
         outer_states.check(state.m_Energy);
         //
-        m_SimResult->m_HStateEnergy.IncCount(HP::ST, t_state_energy);
+        m_SimResult->m_HStateEnergy.IncCount(HP::ST, t_state_energy, 2);
         m_SimResult->m_HStateEnergy.AddValue(HP::OCC_RTIME, t_state_energy, state.m_OccTime/m_TotalTime);
         //
-        m_SimResult->m_HRelOccTime.IncCount(HP::ST, state.m_OccTime/m_TotalTime);
+        m_SimResult->m_HRelOccTime.IncCount(HP::ST, state.m_OccTime/m_TotalTime, 2);
         m_SimResult->m_HRelOccTime.AddValue(HP::ST_EGY, state.m_OccTime/m_TotalTime, t_state_energy);
         m_SimResult->m_HRelOccTime.AddValue(HP::OUT_HOPS, state.m_OccTime/m_TotalTime, state_hops[i]);
         m_SimResult->m_HRelOccTime.AddValue(HP::OUT_OSC, state.m_OccTime/m_TotalTime, state_oscs[i]);
@@ -3211,18 +3215,18 @@ void MC::TEngine::GenerateResults()
         {
             outer_used_states.check(state.m_Energy);
             //
-            m_SimResult->m_HStateEnergy.IncCount(HP::USED_ST, t_state_energy);
+            m_SimResult->m_HStateEnergy.IncCount(HP::USED_ST, t_state_energy, 2);
         }
 
         // Occupied state
-        if (state.m_ElectronID < m_ParamSet->m_StateCount)
+        if (state.m_ElectronID < m_ParamSet->mI_StateCount)
         {
             m_SimResult->m_HStateEnergy.AddValue(HP::OCC_R, t_state_energy, 1.0);
             //
-            m_SimResult->m_HRelOccTime.IncCount(HP::OCC_ST, state.m_OccTime/m_TotalTime);
+            m_SimResult->m_HRelOccTime.IncCount(HP::OCC_ST, state.m_OccTime/m_TotalTime, 2);
             if ((m_Electrons[state.m_ElectronID].m_HopCount != 0) &&
                 (m_Electrons[state.m_ElectronID].m_HopCount == m_Electrons[state.m_ElectronID].m_OscHopCount))
-                m_SimResult->m_HRelOccTime.IncCount(HP::OSC_ST, state.m_OccTime/m_TotalTime);
+                m_SimResult->m_HRelOccTime.IncCount(HP::OSC_ST, state.m_OccTime/m_TotalTime, 2);
         }
         // Unoccupied state
         else
@@ -3233,46 +3237,47 @@ void MC::TEngine::GenerateResults()
         // State has outgoing hops
         if (state_hops[i] != 0) 
         {
-            m_SimResult->m_HHopCount.IncCount(HP::ST, state_hops[i]);
-            if (state.m_ElectronID < m_ParamSet->m_StateCount)
+            m_SimResult->m_HHopCount.IncCount(HP::ST, state_hops[i], 2);
+            if (state.m_ElectronID < m_ParamSet->mI_StateCount)
             {
-                m_SimResult->m_HHopCount.IncCount(HP::OCC_ST, state_hops[i]);
+                m_SimResult->m_HHopCount.IncCount(HP::OCC_ST, state_hops[i], 2);
                 if ((m_Electrons[state.m_ElectronID].m_HopCount != 0) &&
                     (m_Electrons[state.m_ElectronID].m_HopCount == m_Electrons[state.m_ElectronID].m_OscHopCount))
-                    m_SimResult->m_HHopCount.IncCount(HP::OSC_ST, state_hops[i]);
+                    m_SimResult->m_HHopCount.IncCount(HP::OSC_ST, state_hops[i], 2);
             }
         }
 
         // State has outgoing osc. hops
         if (state_oscs[i] != 0) 
         {
-            m_SimResult->m_HOscHopCount.IncCount(HP::ST, state_oscs[i]);
-            if (state.m_ElectronID < m_ParamSet->m_StateCount)
+            m_SimResult->m_HOscHopCount.IncCount(HP::ST, state_oscs[i], 2);
+            if (state.m_ElectronID < m_ParamSet->mI_StateCount)
             {
-                m_SimResult->m_HOscHopCount.IncCount(HP::OCC_ST, state_oscs[i]);
+                m_SimResult->m_HOscHopCount.IncCount(HP::OCC_ST, state_oscs[i], 2);
                 if ((m_Electrons[state.m_ElectronID].m_HopCount != 0) &&
                     (m_Electrons[state.m_ElectronID].m_HopCount == m_Electrons[state.m_ElectronID].m_OscHopCount))
-                    m_SimResult->m_HOscHopCount.IncCount(HP::OSC_ST, state_oscs[i]);
+                    m_SimResult->m_HOscHopCount.IncCount(HP::OSC_ST, state_oscs[i], 2);
             }
         }
 
         // State has outgoing non-osc. hops
         if (state_nonoscs[i] != 0) 
         {
-            m_SimResult->m_HNonOscHopCount.IncCount(HP::ST, state_nonoscs[i]);
-            if (state.m_ElectronID < m_ParamSet->m_StateCount)
+            m_SimResult->m_HNonOscHopCount.IncCount(HP::ST, state_nonoscs[i], 2);
+            if (state.m_ElectronID < m_ParamSet->mI_StateCount)
             {
-                m_SimResult->m_HNonOscHopCount.IncCount(HP::OCC_ST, state_nonoscs[i]);
+                m_SimResult->m_HNonOscHopCount.IncCount(HP::OCC_ST, state_nonoscs[i], 2);
                 if ((m_Electrons[state.m_ElectronID].m_HopCount != 0) &&
                     (m_Electrons[state.m_ElectronID].m_HopCount == m_Electrons[state.m_ElectronID].m_OscHopCount))
-                    m_SimResult->m_HNonOscHopCount.IncCount(HP::OSC_ST, state_nonoscs[i]);
+                    m_SimResult->m_HNonOscHopCount.IncCount(HP::OSC_ST, state_nonoscs[i], 2);
             }
         }
 
         // Calculated effective carriers
         m_SimResult->m_HStateEnergy.AddValue(HP::EFF_EL_CALC, t_state_energy, 
             (1.0/(exp((t_state_energy - m_SimResult->m_EffChemPot)/(Constant::kboltz*m_SimResult->m_EffTemp)) + 1.0)) *
-            (1.0 - 1.0/(exp((t_state_energy - m_SimResult->m_EffChemPot)/(Constant::kboltz*m_SimResult->m_EffTemp)) + 1.0)));
+            (1.0 - 1.0/(exp((t_state_energy - m_SimResult->m_EffChemPot)/(Constant::kboltz*m_SimResult->m_EffTemp)) + 1.0)),
+            2);
     }
 
     // Occupation fit curve
@@ -3315,10 +3320,10 @@ void MC::TEngine::GenerateResults()
     std::uint32_t assigned_neff = 0;
     for (std::size_t i = 0; (i < m_Structure.size()) && (assigned_neff < static_cast<std::uint32_t>(m_SimResult->m_EffCarriers + 0.5)); ++i)
     {
-        if (m_Structure[state_sort[0][i]].m_ElectronID < m_ParamSet->m_StateCount)
+        if (m_Structure[state_sort[0][i]].m_ElectronID < m_ParamSet->mI_StateCount)
         {
-            m_SimResult->m_HStateEnergy.IncCount(HP::EFF_EL_A, m_Structure[state_sort[0][i]].m_Energy * enfac + enmax);
-            ++assigned_neff;
+            m_SimResult->m_HStateEnergy.IncCount(HP::EFF_EL_A, m_Structure[state_sort[0][i]].m_Energy * enfac + enmax, 2);
+            assigned_neff += 2U;
         }
     }
 
@@ -3326,10 +3331,10 @@ void MC::TEngine::GenerateResults()
     assigned_neff = 0;
     for (std::size_t i = 0; (i < m_Structure.size()) && (assigned_neff < static_cast<std::uint32_t>(m_SimResult->m_EffCarriers + 0.5)); ++i)
     {
-        if (m_Structure[state_sort[1][i]].m_ElectronID < m_ParamSet->m_StateCount)
+        if (m_Structure[state_sort[1][i]].m_ElectronID < m_ParamSet->mI_StateCount)
         {
-            m_SimResult->m_HStateEnergy.IncCount(HP::EFF_EL_B, m_Structure[state_sort[1][i]].m_Energy * enfac + enmax);
-            ++assigned_neff;
+            m_SimResult->m_HStateEnergy.IncCount(HP::EFF_EL_B, m_Structure[state_sort[1][i]].m_Energy * enfac + enmax, 2);
+            assigned_neff += 2U;
         }
     }
 
@@ -3337,14 +3342,14 @@ void MC::TEngine::GenerateResults()
     assigned_neff = 0;
     for (std::size_t i = 0; (i < m_Structure.size()) && (assigned_neff < static_cast<std::uint32_t>(m_SimResult->m_EffCarriers + 0.5)); ++i)
     {
-        if (m_Structure[state_sort[2][i]].m_ElectronID < m_ParamSet->m_StateCount)
+        if (m_Structure[state_sort[2][i]].m_ElectronID < m_ParamSet->mI_StateCount)
         {
-            m_SimResult->m_HStateEnergy.IncCount(HP::EFF_EL_C, m_Structure[state_sort[2][i]].m_Energy * enfac + enmax);
-            ++assigned_neff;
+            m_SimResult->m_HStateEnergy.IncCount(HP::EFF_EL_C, m_Structure[state_sort[2][i]].m_Energy * enfac + enmax, 2);
+            assigned_neff += 2U;
         }
     }
 
-    // Electrons
+    // Electrons (each counts twice)
     for (std::size_t i = 0; i < m_Electrons.size(); ++i)
     {
         const TElectron& electron = m_Electrons[i];
@@ -3355,88 +3360,89 @@ void MC::TEngine::GenerateResults()
         // Any electron
         outer_electrons.check(m_Structure[electron.m_CurrentStateID].m_Energy);
         //
-        m_SimResult->m_HStateEnergy.IncCount(HP::EL, t_electron_energy);
+        m_SimResult->m_HStateEnergy.IncCount(HP::EL, t_electron_energy, 2);
         //
         if (!electron_is_blocked[i])
         {
             m_SimResult->m_HNextTime.IncCount(HP::EL, 
-                electron.m_MinTime - (m_TotalTime - electron.m_LastHopTime));
+                electron.m_MinTime - (m_TotalTime - electron.m_LastHopTime), 2);
         }
 
         // Stationary electron (0 hops)
         if (electron.m_HopCount == 0)
         {
-            m_SimResult->m_HStateEnergy.IncCount(HP::ZEROHOP_EL, t_electron_energy);
+            m_SimResult->m_HStateEnergy.IncCount(HP::ZEROHOP_EL, t_electron_energy, 2);
             m_SimResult->m_HStateEnergy.AddValue(HP::MOB_R, t_electron_energy, 0.0);
             //
             if (!electron_is_blocked[i])
             {
                 m_SimResult->m_HNextTime.IncCount(HP::ZEROHOP_EL, 
-                    electron.m_MinTime - (m_TotalTime - electron.m_LastHopTime));
+                    electron.m_MinTime - (m_TotalTime - electron.m_LastHopTime), 2);
             }
 
             continue;
         }
 
         // Mobile or oscillating electron (> 0 hops)
-        m_SimResult->m_HDisp.IncCount(HP::INCOSC_EL, t_electron_disp);
-        m_SimResult->m_HDisp_x.IncCount(HP::INCOSC_EL, electron.m_Disp_x * spfac);
-        m_SimResult->m_HDisp_y.IncCount(HP::INCOSC_EL, electron.m_Disp_y * spfac);
-        m_SimResult->m_HDisp_z.IncCount(HP::INCOSC_EL, electron.m_Disp_z * spfac);
+        m_SimResult->m_HDisp.IncCount(HP::INCOSC_EL, t_electron_disp, 2);
+        m_SimResult->m_HDisp_x.IncCount(HP::INCOSC_EL, electron.m_Disp_x * spfac, 2);
+        m_SimResult->m_HDisp_y.IncCount(HP::INCOSC_EL, electron.m_Disp_y * spfac, 2);
+        m_SimResult->m_HDisp_z.IncCount(HP::INCOSC_EL, electron.m_Disp_z * spfac, 2);
         //
-        m_SimResult->m_HHopCount.IncCount(HP::INCOSC_EL, static_cast<double>(electron.m_HopCount));
+        m_SimResult->m_HHopCount.IncCount(HP::INCOSC_EL, static_cast<double>(electron.m_HopCount), 2);
         m_SimResult->m_HHopCount.AddValue(HP::DISP_PER_INCOSC_EL, static_cast<double>(electron.m_HopCount), t_electron_disp);
         //
         if (m_SimResult->m_HOscHopCount.m_IsConfigured)
         {
-            m_SimResult->m_HOscHopCount.IncCount(HP::INCOSC_EL, static_cast<double>(electron.m_OscHopCount));
+            m_SimResult->m_HOscHopCount.IncCount(HP::INCOSC_EL, static_cast<double>(electron.m_OscHopCount), 2);
             m_SimResult->m_HOscHopCount.AddValue(HP::DISP_PER_INCOSC_EL, static_cast<double>(electron.m_OscHopCount), t_electron_disp);
         }
 
         // Mobile or oscillating electron (> 0 hops) that became mobile after equilibration
-        if ((m_ParamSet->m_EqHopLimit != 0) && (electron.m_FirstHopTime > m_TotalTime - m_SimResult->m_TotalTime))
+        if ((m_ParamSet->mI_EqHopLimit != 0) && (electron.m_FirstHopTime > m_TotalTime - m_SimResult->m_TotalTime))
         {
-            m_SimResult->m_HDisp.IncCount(HP::NEW_INCOSC_EL, t_electron_disp);
-            m_SimResult->m_HDisp_x.IncCount(HP::NEW_INCOSC_EL, electron.m_Disp_x * spfac);
-            m_SimResult->m_HDisp_y.IncCount(HP::NEW_INCOSC_EL, electron.m_Disp_y * spfac);
-            m_SimResult->m_HDisp_z.IncCount(HP::NEW_INCOSC_EL, electron.m_Disp_z * spfac);
+            m_SimResult->m_HDisp.IncCount(HP::NEW_INCOSC_EL, t_electron_disp, 2);
+            m_SimResult->m_HDisp_x.IncCount(HP::NEW_INCOSC_EL, electron.m_Disp_x * spfac, 2);
+            m_SimResult->m_HDisp_y.IncCount(HP::NEW_INCOSC_EL, electron.m_Disp_y * spfac, 2);
+            m_SimResult->m_HDisp_z.IncCount(HP::NEW_INCOSC_EL, electron.m_Disp_z * spfac, 2);
             //
-            m_SimResult->m_HHopCount.IncCount(HP::NEW_INCOSC_EL, static_cast<double>(electron.m_HopCount));
+            m_SimResult->m_HHopCount.IncCount(HP::NEW_INCOSC_EL, static_cast<double>(electron.m_HopCount), 2);
             //
             if (m_SimResult->m_HOscHopCount.m_IsConfigured)
             {
-                m_SimResult->m_HOscHopCount.IncCount(HP::NEW_INCOSC_EL, static_cast<double>(electron.m_OscHopCount));
+                m_SimResult->m_HOscHopCount.IncCount(HP::NEW_INCOSC_EL, static_cast<double>(electron.m_OscHopCount), 2);
             }
         }
 
         // Oscillating electron (only osc. hops)
         if (electron.m_HopCount == electron.m_OscHopCount)
         {
-            m_SimResult->m_HStateEnergy.IncCount(HP::OSC_EL, t_electron_energy);
+            m_SimResult->m_HStateEnergy.IncCount(HP::OSC_EL, t_electron_energy, 2);
+            m_SimResult->m_HStateEnergy.AddValue(HP::MOB_R, t_electron_energy, 0.0);
             //
-            m_SimResult->m_HHopCount.IncCount(HP::OSC_EL, static_cast<double>(electron.m_HopCount));
+            m_SimResult->m_HHopCount.IncCount(HP::OSC_EL, static_cast<double>(electron.m_HopCount), 2);
             //
             if (m_SimResult->m_HOscHopCount.m_IsConfigured)
             {
-                m_SimResult->m_HOscHopCount.IncCount(HP::OSC_EL, static_cast<double>(electron.m_OscHopCount));
+                m_SimResult->m_HOscHopCount.IncCount(HP::OSC_EL, static_cast<double>(electron.m_OscHopCount), 2);
             }
             //
             if (!electron_is_blocked[i])
             {
                 m_SimResult->m_HNextTime.IncCount(HP::OSC_EL, 
-                    electron.m_MinTime - (m_TotalTime - electron.m_LastHopTime));
+                    electron.m_MinTime - (m_TotalTime - electron.m_LastHopTime), 2);
             }
 
             // Oscillating electron (only osc. hops) that became mobile after equilibration
-            if ((m_ParamSet->m_EqHopLimit != 0) && (electron.m_FirstHopTime > m_TotalTime - m_SimResult->m_TotalTime))
+            if ((m_ParamSet->mI_EqHopLimit != 0) && (electron.m_FirstHopTime > m_TotalTime - m_SimResult->m_TotalTime))
             {
-                m_SimResult->m_HStateEnergy.IncCount(HP::NEWOSC_EL, t_electron_energy);
+                m_SimResult->m_HStateEnergy.IncCount(HP::NEWOSC_EL, t_electron_energy, 2);
                 //
-                m_SimResult->m_HHopCount.IncCount(HP::NEWOSC_EL, static_cast<double>(electron.m_HopCount));
+                m_SimResult->m_HHopCount.IncCount(HP::NEWOSC_EL, static_cast<double>(electron.m_HopCount), 2);
                 //
                 if (m_SimResult->m_HOscHopCount.m_IsConfigured)
                 {
-                    m_SimResult->m_HOscHopCount.IncCount(HP::NEWOSC_EL, static_cast<double>(electron.m_OscHopCount));
+                    m_SimResult->m_HOscHopCount.IncCount(HP::NEWOSC_EL, static_cast<double>(electron.m_OscHopCount), 2);
                 }
             }
 
@@ -3446,35 +3452,35 @@ void MC::TEngine::GenerateResults()
         // Zero-displacement electron (but not zero-hop and not osc.-only)
         if (t_electron_disp < 0.5 * dist_per_used_path.min)
         {
-            m_SimResult->m_HStateEnergy.IncCount(HP::ZERODISP_EL, t_electron_energy);
+            m_SimResult->m_HStateEnergy.IncCount(HP::ZERODISP_EL, t_electron_energy, 2);
             //
-            m_SimResult->m_HHopCount.IncCount(HP::ZERODISP_EL, static_cast<double>(electron.m_HopCount));
+            m_SimResult->m_HHopCount.IncCount(HP::ZERODISP_EL, static_cast<double>(electron.m_HopCount), 2);
             //
             if (m_SimResult->m_HOscHopCount.m_IsConfigured)
             {
-                m_SimResult->m_HOscHopCount.IncCount(HP::ZERODISP_EL, static_cast<double>(electron.m_OscHopCount));
+                m_SimResult->m_HOscHopCount.IncCount(HP::ZERODISP_EL, static_cast<double>(electron.m_OscHopCount), 2);
             }
             //
             if (m_SimResult->m_HNonOscHopCount.m_IsConfigured)
             {
                 m_SimResult->m_HNonOscHopCount.IncCount(HP::ZERODISP_EL, 
-                    static_cast<double>(electron.m_HopCount - electron.m_OscHopCount));
+                    static_cast<double>(electron.m_HopCount - electron.m_OscHopCount), 2);
             }
         }
         
         // Mobile electron (> 0 non-osc. hops)
         outer_mobile_electrons.check(m_Structure[electron.m_CurrentStateID].m_Energy);
         //
-        m_SimResult->m_HStateEnergy.IncCount(HP::MOB_EL, t_electron_energy);
+        m_SimResult->m_HStateEnergy.IncCount(HP::MOB_EL, t_electron_energy, 2);
         m_SimResult->m_HStateEnergy.AddValue(HP::MOB_R, t_electron_energy, 1.0);
         m_SimResult->m_HStateEnergy.AddValue(HP::HOPS_PER_EL, t_electron_energy, static_cast<double>(electron.m_HopCount));
         m_SimResult->m_HStateEnergy.AddValue(HP::OSC_PER_EL, t_electron_energy, static_cast<double>(electron.m_OscHopCount));
         m_SimResult->m_HStateEnergy.AddValue(HP::NONOSC_PER_EL, t_electron_energy, static_cast<double>(electron.m_HopCount - electron.m_OscHopCount));
         //
-        m_SimResult->m_HDisp.IncCount(HP::EL, t_electron_disp);
-        m_SimResult->m_HDisp_x.IncCount(HP::EL, electron.m_Disp_x * spfac);
-        m_SimResult->m_HDisp_y.IncCount(HP::EL, electron.m_Disp_y * spfac);
-        m_SimResult->m_HDisp_z.IncCount(HP::EL, electron.m_Disp_z * spfac);
+        m_SimResult->m_HDisp.IncCount(HP::EL, t_electron_disp, 2);
+        m_SimResult->m_HDisp_x.IncCount(HP::EL, electron.m_Disp_x * spfac, 2);
+        m_SimResult->m_HDisp_y.IncCount(HP::EL, electron.m_Disp_y * spfac, 2);
+        m_SimResult->m_HDisp_z.IncCount(HP::EL, electron.m_Disp_z * spfac, 2);
         m_SimResult->m_HDisp.AddValue(HP::HOPS_PER_EL, t_electron_disp, static_cast<double>(electron.m_HopCount));
         m_SimResult->m_HDisp_x.AddValue(HP::HOPS_PER_EL, electron.m_Disp_x * spfac, static_cast<double>(electron.m_HopCount));
         m_SimResult->m_HDisp_y.AddValue(HP::HOPS_PER_EL, electron.m_Disp_y * spfac, static_cast<double>(electron.m_HopCount));
@@ -3492,14 +3498,14 @@ void MC::TEngine::GenerateResults()
         m_SimResult->m_HDisp_z.AddValue(HP::NONOSC_PER_EL, electron.m_Disp_z * spfac, 
             static_cast<double>(electron.m_HopCount - electron.m_OscHopCount));
         //
-        m_SimResult->m_HHopCount.IncCount(HP::EL, static_cast<double>(electron.m_HopCount));
+        m_SimResult->m_HHopCount.IncCount(HP::EL, static_cast<double>(electron.m_HopCount), 2);
         m_SimResult->m_HHopCount.AddValue(HP::OSC_R, static_cast<double>(electron.m_HopCount), 1.0, electron.m_OscHopCount);
         m_SimResult->m_HHopCount.AddValue(HP::OSC_R, static_cast<double>(electron.m_HopCount), 0.0, electron.m_HopCount - electron.m_OscHopCount);
         m_SimResult->m_HHopCount.AddValue(HP::DISP_PER_EL, static_cast<double>(electron.m_HopCount), t_electron_disp);
         //
         if (m_SimResult->m_HOscHopCount.m_IsConfigured)
         {
-            m_SimResult->m_HOscHopCount.IncCount(HP::EL, static_cast<double>(electron.m_OscHopCount));
+            m_SimResult->m_HOscHopCount.IncCount(HP::EL, static_cast<double>(electron.m_OscHopCount), 2);
             m_SimResult->m_HOscHopCount.AddValue(HP::OSC_R, static_cast<double>(electron.m_OscHopCount), 1.0, electron.m_OscHopCount);
             m_SimResult->m_HOscHopCount.AddValue(HP::OSC_R, static_cast<double>(electron.m_OscHopCount), 0.0, electron.m_HopCount - electron.m_OscHopCount);
             m_SimResult->m_HOscHopCount.AddValue(HP::DISP_PER_EL, static_cast<double>(electron.m_OscHopCount), t_electron_disp);
@@ -3508,7 +3514,7 @@ void MC::TEngine::GenerateResults()
         if (m_SimResult->m_HNonOscHopCount.m_IsConfigured)
         {
             m_SimResult->m_HNonOscHopCount.IncCount(HP::EL, 
-                static_cast<double>(electron.m_HopCount - electron.m_OscHopCount));
+                static_cast<double>(electron.m_HopCount - electron.m_OscHopCount), 2);
             m_SimResult->m_HNonOscHopCount.AddValue(HP::NONOSC_R, 
                 static_cast<double>(electron.m_HopCount - electron.m_OscHopCount),
                 0.0, electron.m_OscHopCount);
@@ -3522,30 +3528,30 @@ void MC::TEngine::GenerateResults()
         if (!electron_is_blocked[i])
         {
             m_SimResult->m_HNextTime.IncCount(HP::MOB_EL, 
-                electron.m_MinTime - (m_TotalTime - electron.m_LastHopTime));
+                electron.m_MinTime - (m_TotalTime - electron.m_LastHopTime), 2);
         }
 
         // Mobile electron (> 0 non-osc. hops) that became mobile after equilibration
-        if ((m_ParamSet->m_EqHopLimit != 0) && (electron.m_FirstHopTime > m_TotalTime - m_SimResult->m_TotalTime))
+        if ((m_ParamSet->mI_EqHopLimit != 0) && (electron.m_FirstHopTime > m_TotalTime - m_SimResult->m_TotalTime))
         {
-            m_SimResult->m_HStateEnergy.IncCount(HP::NEWMOB_EL, t_electron_energy);
+            m_SimResult->m_HStateEnergy.IncCount(HP::NEWMOB_EL, t_electron_energy, 2);
             //
-            m_SimResult->m_HDisp.IncCount(HP::NEW_EL, t_electron_disp);
-            m_SimResult->m_HDisp_x.IncCount(HP::NEW_EL, electron.m_Disp_x * spfac);
-            m_SimResult->m_HDisp_y.IncCount(HP::NEW_EL, electron.m_Disp_y * spfac);
-            m_SimResult->m_HDisp_z.IncCount(HP::NEW_EL, electron.m_Disp_z * spfac);
+            m_SimResult->m_HDisp.IncCount(HP::NEW_EL, t_electron_disp, 2);
+            m_SimResult->m_HDisp_x.IncCount(HP::NEW_EL, electron.m_Disp_x * spfac, 2);
+            m_SimResult->m_HDisp_y.IncCount(HP::NEW_EL, electron.m_Disp_y * spfac, 2);
+            m_SimResult->m_HDisp_z.IncCount(HP::NEW_EL, electron.m_Disp_z * spfac, 2);
             //
-            m_SimResult->m_HHopCount.IncCount(HP::NEW_EL, static_cast<double>(electron.m_HopCount));
+            m_SimResult->m_HHopCount.IncCount(HP::NEW_EL, static_cast<double>(electron.m_HopCount), 2);
             //
             if (m_SimResult->m_HOscHopCount.m_IsConfigured)
             {
-                m_SimResult->m_HOscHopCount.IncCount(HP::NEW_EL, static_cast<double>(electron.m_OscHopCount));
+                m_SimResult->m_HOscHopCount.IncCount(HP::NEW_EL, static_cast<double>(electron.m_OscHopCount), 2);
             }
             //
             if (m_SimResult->m_HNonOscHopCount.m_IsConfigured)
             {
                 m_SimResult->m_HNonOscHopCount.IncCount(HP::NEW_EL, 
-                    static_cast<double>(electron.m_HopCount - electron.m_OscHopCount));
+                    static_cast<double>(electron.m_HopCount - electron.m_OscHopCount), 2);
             }
         }
     }
@@ -3585,7 +3591,7 @@ void MC::TEngine::GenerateResults()
         std::cout << "done" << std::endl;
         
         std::cout << "  Used path distance range: " << dist_per_used_path
-            << " nm (sufficient minimum path count: " << sufficient_path_count << ")" << std::endl;
+            << " nm (sufficient minimum path count per state: " << sufficient_path_count << ")" << std::endl;
         std::cout << "  Used path energy difference range: " << ediff_per_used_path 
             << " eV (without electric field contribution)" << std::endl;
         std::cout << "  Used path time range: " << time_per_hop 
@@ -3593,50 +3599,50 @@ void MC::TEngine::GenerateResults()
         std::cout << "  Used state energy range: [" << m_SimResult->m_MinUsedStateEnergy << ", " 
             << m_SimResult->m_MaxUsedStateEnergy << "] eV" << std::endl;
 
-        std::cout << "  Hops with distance > 90 %" << " of cut-off: " << outer_distance_hops.upper << " (" 
+        std::cout << "  Hops with distance > 90 %" << " of cut-off: " << 2U*outer_distance_hops.upper << " (" 
             << 100.0 * static_cast<double>(outer_distance_hops.upper) / static_cast<double>(total_hops) << " %" << " of hops)" << std::endl;
-        std::cout << "  Hops with state energy difference in outer 5 %" << "s of cut-off range: " << outer_ediff_hops.lower << " (" 
+        std::cout << "  Hops with state energy difference in outer 5 %" << "s of cut-off range: " << 2U*outer_ediff_hops.lower << " (" 
             << 100.0 * static_cast<double>(outer_ediff_hops.lower) / static_cast<double>(total_hops) << " %)"
-            << " <--> " << outer_ediff_hops.upper << " (" 
+            << " <--> " << 2U*outer_ediff_hops.upper << " (" 
             << 100.0 * static_cast<double>(outer_ediff_hops.upper) / static_cast<double>(total_hops) << " %) [% = of hops]" << std::endl;
-        std::cout << "  Hops starting in outer 5 %" << "s of state energy range: " << outer_energy_hops.lower << " (" 
+        std::cout << "  Hops starting in outer 5 %" << "s of state energy range: " << 2U*outer_energy_hops.lower << " (" 
             << 100.0 * static_cast<double>(outer_energy_hops.lower) / static_cast<double>(total_hops) << " %)"
-            << " <--> " << outer_energy_hops.upper << " (" 
+            << " <--> " << 2U*outer_energy_hops.upper << " (" 
             << 100.0 * static_cast<double>(outer_energy_hops.upper) / static_cast<double>(total_hops) << " %) [% = of hops]" << std::endl;
         
-        std::cout << "  Mobile electrons in outer 5 %" << "s of energy range: " << outer_mobile_electrons.lower;
+        std::cout << "  Mobile electrons in outer 5 %" << "s of energy range: " << 2U*outer_mobile_electrons.lower;
         if (outer_electrons.lower != 0) std::cout << " (" << 100.0 * static_cast<double>(outer_mobile_electrons.lower) / static_cast<double>(outer_electrons.lower) << " %)";
-        std::cout << " <--> " << outer_mobile_electrons.upper;
+        std::cout << " <--> " << 2U*outer_mobile_electrons.upper;
         if (outer_electrons.upper != 0) std::cout << " (" << 100.0 * static_cast<double>(outer_mobile_electrons.upper) / static_cast<double>(outer_electrons.upper) << " %)";
         if ((outer_electrons.lower != 0) || (outer_electrons.upper != 0)) std::cout << " [% = of outer electrons]";
         std::cout << std::endl;
-        std::cout << "  Used states in outer 5 %" << "s of energy range: " << outer_used_states.lower;
+        std::cout << "  Used states in outer 5 %" << "s of energy range: " << 2U*outer_used_states.lower;
         if (outer_states.lower != 0) std::cout << " (" << 100.0 * static_cast<double>(outer_used_states.lower) / static_cast<double>(outer_states.lower) << " %)";
-        std::cout << " <--> " << outer_used_states.upper;
+        std::cout << " <--> " << 2U*outer_used_states.upper;
         if (outer_states.upper != 0) std::cout << " (" << 100.0 * static_cast<double>(outer_used_states.upper) / static_cast<double>(outer_states.upper) << " %)";
         if ((outer_states.lower != 0) || (outer_states.upper != 0)) std::cout << " [% = of outer states]";
         std::cout << std::endl;
 
         std::cout << "Hops with start and end below the Fermi level [% = of total value]:" << std::endl;
-        std::cout << "  Hops: " << hops_below_fermilvl << " (" << 100.0 * static_cast<double>(hops_below_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
-        std::cout << "  Osc. hops: " << oscs_below_fermilvl << " (" << 100.0 * static_cast<double>(oscs_below_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
-        std::cout << "  Non-osc. hops: " << nonoscs_below_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_below_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
-        std::cout << "  Mean x-disp. of eff. charge carriers: " << xdisp_below_fermilvl * spfac / m_SimResult->m_EffCarriers << " nm (" << 100.0 * xdisp_below_fermilvl / total_xdisp << " %)" << std::endl;
+        std::cout << "  Hops: " << 2U*hops_below_fermilvl << " (" << 100.0 * static_cast<double>(hops_below_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
+        std::cout << "  Osc. hops: " << 2U*oscs_below_fermilvl << " (" << 100.0 * static_cast<double>(oscs_below_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
+        std::cout << "  Non-osc. hops: " << 2U*nonoscs_below_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_below_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
+        std::cout << "  Mean x-disp. of eff. charge carriers: " << 2.0*xdisp_below_fermilvl * spfac / m_SimResult->m_EffCarriers << " nm (" << 100.0 * xdisp_below_fermilvl / total_xdisp << " %)" << std::endl;
 
         std::cout << "Hops across the Fermi level [% = of total value]:" << std::endl;
-        std::cout << "  Hops (upwards): " << hops_up_across_fermilvl << " (" << 100.0 * static_cast<double>(hops_up_across_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
-        std::cout << "  Hops (downwards): " << hops_down_across_fermilvl << " (" << 100.0 * static_cast<double>(hops_down_across_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
-        std::cout << "  Osc. hops (upwards): " << oscs_up_across_fermilvl << " (" << 100.0 * static_cast<double>(oscs_up_across_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
-        std::cout << "  Osc. hops (downwards): " << oscs_down_across_fermilvl << " (" << 100.0 * static_cast<double>(oscs_down_across_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
-        std::cout << "  Non-osc. hops (upwards): " << nonoscs_up_across_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_up_across_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
-        std::cout << "  Non-osc. hops (downwards): " << nonoscs_down_across_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_down_across_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
-        std::cout << "  Mean x-disp. of eff. charge carriers: " << xdisp_across_fermilvl * spfac / m_SimResult->m_EffCarriers << " nm (" << 100.0 * xdisp_across_fermilvl / total_xdisp << " %)" << std::endl;
+        std::cout << "  Hops (upwards): " << 2U*hops_up_across_fermilvl << " (" << 100.0 * static_cast<double>(hops_up_across_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
+        std::cout << "  Hops (downwards): " << 2U*hops_down_across_fermilvl << " (" << 100.0 * static_cast<double>(hops_down_across_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
+        std::cout << "  Osc. hops (upwards): " << 2U*oscs_up_across_fermilvl << " (" << 100.0 * static_cast<double>(oscs_up_across_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
+        std::cout << "  Osc. hops (downwards): " << 2U*oscs_down_across_fermilvl << " (" << 100.0 * static_cast<double>(oscs_down_across_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
+        std::cout << "  Non-osc. hops (upwards): " << 2U*nonoscs_up_across_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_up_across_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
+        std::cout << "  Non-osc. hops (downwards): " << 2U*nonoscs_down_across_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_down_across_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
+        std::cout << "  Mean x-disp. of eff. charge carriers: " << 2.0*xdisp_across_fermilvl * spfac / m_SimResult->m_EffCarriers << " nm (" << 100.0 * xdisp_across_fermilvl / total_xdisp << " %)" << std::endl;
     
         std::cout << "Hops with start and end above the Fermi level [% = of total value]:" << std::endl;
-        std::cout << "  Hops: " << hops_above_fermilvl << " (" << 100.0 * static_cast<double>(hops_above_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
-        std::cout << "  Osc. hops: " << oscs_above_fermilvl << " (" << 100.0 * static_cast<double>(oscs_above_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
-        std::cout << "  Non-osc. hops: " << nonoscs_above_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_above_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
-        std::cout << "  Mean x-disp. of eff. charge carriers: " << xdisp_above_fermilvl * spfac / m_SimResult->m_EffCarriers << " nm (" << 100.0 * xdisp_above_fermilvl / total_xdisp << " %)" << std::endl;
+        std::cout << "  Hops: " << 2U*hops_above_fermilvl << " (" << 100.0 * static_cast<double>(hops_above_fermilvl) / static_cast<double>(total_hops) << " %)" << std::endl;
+        std::cout << "  Osc. hops: " << 2U*oscs_above_fermilvl << " (" << 100.0 * static_cast<double>(oscs_above_fermilvl) / static_cast<double>(total_oscs) << " %)" << std::endl;
+        std::cout << "  Non-osc. hops: " << 2U*nonoscs_above_fermilvl << " (" << 100.0 * static_cast<double>(nonoscs_above_fermilvl) / static_cast<double>(total_nonoscs) << " %)" << std::endl;
+        std::cout << "  Mean x-disp. of eff. charge carriers: " << 2.0*xdisp_above_fermilvl * spfac / m_SimResult->m_EffCarriers << " nm (" << 100.0 * xdisp_above_fermilvl / total_xdisp << " %)" << std::endl;
     }
 
     // Additional analysis of different electron types
@@ -3651,7 +3657,7 @@ void MC::TEngine::GenerateResults()
         {
             if ((electron.m_HopCount == 0) || (electron.m_HopCount == electron.m_OscHopCount)) continue;
             
-            double disp = sqrt(electron.m_Disp_x * electron.m_Disp_x + electron.m_Disp_y * 
+            const double disp = sqrt(electron.m_Disp_x * electron.m_Disp_x + electron.m_Disp_y * 
                 electron.m_Disp_y + electron.m_Disp_z * electron.m_Disp_z) * spfac;
 
             if (disp < 0.5 * dist_per_used_path.min)
@@ -3662,7 +3668,7 @@ void MC::TEngine::GenerateResults()
                 zd_nonoscs_per_electron.check(electron.m_HopCount - electron.m_OscHopCount);
             }
         }
-        std::cout << "  Electrons: " << zd_electrons << std::endl;
+        std::cout << "  Electrons: " << 2U*zd_electrons << std::endl;
         if (zd_electrons != 0)
         {
             std::cout << "  Average hops per electron: " << zd_hops_per_electron << std::endl;
@@ -3670,7 +3676,7 @@ void MC::TEngine::GenerateResults()
             std::cout << "  Average non-osc. hops per electron: " << zd_nonoscs_per_electron << std::endl;
         }
 
-        if (m_ParamSet->m_EqHopLimit != 0)
+        if (m_ParamSet->mI_EqHopLimit != 0)
         {
             std::cout << "Analysis of electrons with first hop after equilibration:" << std::endl;
             std::uint32_t nw_electrons = 0, nw_osc = 0, nw_single = 0, nw_single_osc = 0;
@@ -3695,13 +3701,13 @@ void MC::TEngine::GenerateResults()
                         electron.m_Disp_y + electron.m_Disp_z * electron.m_Disp_z) * spfac);
                 }
             }
-            std::cout << "  Electrons: " << nw_electrons << std::endl;
+            std::cout << "  Electrons: " << 2U*nw_electrons << std::endl;
             if (nw_electrons != 0)
             {
-                std::cout << "  - mobile: " << nw_electrons - nw_osc << std::endl;
-                std::cout << "    - one hop: " << nw_single << std::endl;
-                std::cout << "    - one hop except osc. hops: " << nw_single_osc << std::endl;
-                std::cout << "  - oscillating: " << nw_osc << std::endl;
+                std::cout << "  - mobile: " << 2U*nw_electrons - 2U*nw_osc << std::endl;
+                std::cout << "    - one hop: " << 2U*nw_single << std::endl;
+                std::cout << "    - one hop except osc. hops: " << 2U*nw_single_osc << std::endl;
+                std::cout << "  - oscillating: " << 2U*nw_osc << std::endl;
                 std::cout << "  Average hops per electron: " << nw_hops_per_electron << std::endl;
                 std::cout << "  Average osc. hops per electron: " << nw_oscs_per_electron << std::endl;
                 std::cout << "  Average non-osc. hops per electron: " << nw_nonoscs_per_electron << std::endl;

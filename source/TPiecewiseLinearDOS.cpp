@@ -252,7 +252,7 @@ void MC::TPiecewiseLinearDOS::ApplyParameters(const TParamSet& pset, std::string
         ++dos_it;
         ++dos_next;
     }
-    m_SpatialFactor = std::cbrt(pset.m_StateCount/(integral*(m_MaxEnergy - m_MinEnergy)));
+    m_SpatialFactor = std::cbrt(static_cast<double>(pset.mO_StateCount())/(integral*(m_MaxEnergy - m_MinEnergy)));
 
     m_Ready = true;
 }
