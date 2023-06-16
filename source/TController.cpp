@@ -396,6 +396,8 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
         std::cout << "- Energy reference: E = 0 is the position of the Fermi level in the charge neutral material." << std::endl;
         std::cout << "- Chemical potential = difference betw. the Fermi level in the simulated cell and the charge neutral Fermi level (on the energy axis of the DOS)." << std::endl;
         std::cout << "- Mobile electrons = electrons with > 0 non-oscillating hops." << std::endl;
+        std::cout << "- Localized states are single-electron states." << std::endl;
+        std::cout << "- Spin-degeneracy is assumed. All input and output values (incl. the DOS) refer to spin-up and spin-down electrons together." << std::endl;
     }
 
     // Read DOS file
