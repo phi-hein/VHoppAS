@@ -19,20 +19,20 @@ Description = This is a test project with different chemical potentials
 <Parameters>
 Repetitions = 2
 Temp(K) = 273.15
-GradPhi(V/cm) = 40000
-States = 20000
-MinPaths = 100
-DistCutoff = 2.2
-PreHops = 100000
-EqHops = 200000
-HopLimit = 600000
+GradPhi(V/cm) = 60000
+States = 40000
+MinPaths = 40
+DistCutoff = 2.1
+PreHops = 200000
+EqHops = 1000000
+HopLimit = 2000000
 Seed = -16863268
 AttTime(s) = 1e-13
-LocRadius(nm) = 1.0
+LocRadius(nm) = 0.25
 </Parameters>
 
 <VariedParameters>
 Emin  Emax ChemPot
--0.25 0.25 0.0
--0.3  0.2  -0.05
--0.35 0.15 -0.1
+-0.45 0.45 0.0
+-0.5  0.4  -0.05
+-0.55 0.35 -0.1

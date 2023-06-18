@@ -19,18 +19,18 @@ Description = This is a test project with multiple MC hopping simulations,
 <Parameters>
 Repetitions = 2
 ChemPot = 0
-Emin = -0.25
-Emax = 0.25
-GradPhi(V/cm) = 40000
-States = 20000
-MinPaths = 100
-DistCutoff = 2.2
-PreHops = 100000
-EqHops = 500000
-HopLimit = 500000
+Emin = -0.45
+Emax = 0.45
+GradPhi(V/cm) = 60000
+States = 40000
+MinPaths = 40
+DistCutoff = 2.1
+PreHops = 200000
+EqHops = 2000000
+HopLimit = 2000000
 Seed = -6863258
 AttTime(s) = 1e-13
-LocRadius(nm) = 1.0
+LocRadius(nm) = 0.2
 </Parameters>
 
 <VariedParameters>

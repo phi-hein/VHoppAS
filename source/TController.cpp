@@ -8,6 +8,7 @@
 #include <chrono>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include "TEngine.hpp"
 #include "Constants.hpp"
@@ -52,6 +53,60 @@ void MC::TController::GenerateExampleInputFiles()
 {
     std::cout << "Creating input file examples ..." << std::endl;
 
+    // DOS values for example file
+    const std::vector<std::string> dos_values 
+    {
+        "-0.600337388449707 9.05894434765998E20",
+        "-0.575337388449706 2.94995011059433E20",
+        "-0.550337388449707 6.68777509544678E19",
+        "-0.525337388449707 1.00936363849894E19",
+        "-0.500337388449707 1.15756171676226E18",
+        "-0.475337388449707 2.14590817325295E18",
+        "-0.450337388449706 1.58329437795509E19",
+        "-0.425337388449707 7.74941223791496E19",
+        "-0.400337388449707 2.51236160314044E20",
+        "-0.375337388449707 5.63691599503411E20",
+        "-0.350337388449707 9.27450518877027E20",
+        "-0.325337388449706 1.20929631862873E21",
+        "-0.300337388449707 1.37851157890031E21",
+        "-0.275337388449707 1.52347624454698E21",
+        "-0.250337388449707 1.70778076369628E21",
+        "-0.225337388449707 1.93034733214266E21",
+        "-0.199337388449707 2.18363132044725E21",
+        "-0.174337388449707 2.39865325945476E21",
+        "-0.149337388449707 2.51721172206542E21",
+        "-0.124337388449707 2.72091671691465E21",
+        "-0.0993373884497064 3.22964030193494E21",
+        "-0.0743373884497069 3.94853570703776E21",
+        "-0.0493373884497066 4.67659244788777E21",
+        "-0.0243373884497071 5.3486033700491E21",
+        "6.62611550293235E-4 5.84708781511664E21",
+        "0.0256626115502936 6.08959376136572E21",
+        "0.0506626115502931 6.22431928705966E21",
+        "0.0756626115502934 6.35365579172583E21",
+        "0.100662611550293 6.39137893892013E21",
+        "0.125662611550293 6.39137893892013E21",
+        "0.150662611550294 6.48838131741976E21",
+        "0.175662611550293 6.57460565386388E21",
+        "0.200662611550293 6.53149348564182E21",
+        "0.225662611550293 6.45604719125322E21",
+        "0.250662611550293 6.48838131741976E21",
+        "0.275662611550294 6.67699705339127E21",
+        "0.300662611550293 7.17278698794494E21",
+        "0.325662611550293 7.9595840579975E21",
+        "0.350662611550293 8.63321168646716E21",
+        "0.375662611550293 8.78949329627212E21",
+        "0.400662611550294 8.49848616077323E21",
+        "0.425662611550293 8.10508762574694E21",
+        "0.450662611550293 7.8464146164146E21",
+        "0.475662611550293 7.73324517483169E21",
+        "0.500662611550293 7.71707811174842E21",
+        "0.525662611550294 7.83563657435908E21",
+        "0.550662611550293 8.05658643649713E21",
+        "0.575662611550293 8.148199793969E21",
+        "0.600662611550293 7.82485853230357E21"
+    };
+
     // DOS file
     if (m_VL >= Verbosity::MEDIUM) std::cout << "Writing DOS file (ExampleDOS.txt): " << std::flush;
     std::ofstream dos_file ("ExampleDOS.txt", std::ofstream::trunc);
@@ -63,9 +118,10 @@ void MC::TController::GenerateExampleInputFiles()
         dos_file << std::endl;
         dos_file << "<" << TPiecewiseLinearDOS::s_Data << ">" << std::endl;
         dos_file << "E-EF(eV) DOS(1/cm3eV)" << std::endl;
-        dos_file << "-0.25    1.5E23" << std::endl;
-        dos_file << "0.0      1.75E23" << std::endl;
-        dos_file << "0.25     2.0E23" << std::endl;
+        for (auto const &dos_entry: dos_values)
+        {
+            dos_file << dos_entry << std::endl;
+        }
 		dos_file.close();
         if (m_VL >= Verbosity::MEDIUM) std::cout << "done" << std::endl;
 	}
@@ -83,9 +139,9 @@ void MC::TController::GenerateExampleInputFiles()
     m_InitialFDDistrib = true;
     m_TeffFit = false;
     m_EnforceECount = true;
-    m_CutoffAutoAdjust = false;
-    m_DistCutoffAdjustPercentage = 5.0;
-    m_EdiffCutoffAdjustPercentage = 10.0;
+    m_CutoffAutoAdjust = true;
+    m_DistCutoffAdjustPercentage = 10.0;
+    m_EdiffCutoffAdjustPercentage = 25.0;
     m_OnlyCompareSimID = false;
     m_UseYZVariance = false;
     m_ParallelizeReps = false;
@@ -95,21 +151,21 @@ void MC::TController::GenerateExampleInputFiles()
     m_ParamSets.push_back(std::unique_ptr<TParamSet>(new TParamSet()));
     m_ParamSets[0]->m_SimID = 1;
     m_ParamSets[0]->m_Repetitions = 3;
-    m_ParamSets[0]->m_MinStateEnergy = -0.2;
-    m_ParamSets[0]->m_MaxStateEnergy = 0.2;
+    m_ParamSets[0]->m_MinStateEnergy = -0.5;
+    m_ParamSets[0]->m_MaxStateEnergy = 0.5;
 	m_ParamSets[0]->m_ChemPot = 0.0;
-	m_ParamSets[0]->mI_StateCount = 32768U;
-	m_ParamSets[0]->m_MinPathCount = 100U;
+	m_ParamSets[0]->mI_StateCount = 20000;
+	m_ParamSets[0]->m_MinPathCount = 40;
     m_ParamSets[0]->m_DistCutoff = 0.0;
-    m_ParamSets[0]->m_EdiffCutoff = 0.25;
-    m_ParamSets[0]->mI_PreHopLimit = 20000U;
-    m_ParamSets[0]->mI_EqHopLimit = 500000U;
-	m_ParamSets[0]->mI_HopLimit = 500000U;
-    m_ParamSets[0]->m_RndSeed = -6526958;
+    m_ParamSets[0]->m_EdiffCutoff = 0.75;
+    m_ParamSets[0]->mI_PreHopLimit = 100000;
+    m_ParamSets[0]->mI_EqHopLimit = 1000000;
+	m_ParamSets[0]->mI_HopLimit = 1000000;
+    m_ParamSets[0]->m_RndSeed = -6522861958;
 	m_ParamSets[0]->m_AttemptTime = 1.0E-13;
 	m_ParamSets[0]->m_Temperature = 273.15;
 	m_ParamSets[0]->m_PhiGradient = 0.0;
-	m_ParamSets[0]->m_LocRadius = 0.25;
+	m_ParamSets[0]->m_LocRadius = 0.2;
 
     // Write single simulation file
     WriteInputFile("ExampleSingle.txt");
@@ -119,14 +175,18 @@ void MC::TController::GenerateExampleInputFiles()
     m_ProjectName = "MultiExample";
     m_OutputFile = "ExampleMultiResult.txt";
     m_ProjectDescription = "This is an example project for\n multiple MC hopping simulations.";
+    m_ParamSets[0]->m_Repetitions = 2;
+    m_ParamSets[0]->m_DistCutoff = 2.1;
+    m_ParamSets[0]->m_LocRadius = 0.25;
     m_ParamSets[0]->c_PhiGradient = false;
+    m_ParamSets[0]->m_PhiGradient = 60000.0;
     m_ParamSets[0]->c_Temperature = false;
-    m_ParamSets[0]->m_PhiGradient = 0.125;
+    m_ParamSets[0]->m_Temperature = 300.0;
     for (std::uint32_t i = 1; i < 3; ++i)
     {
         m_ParamSets.push_back(std::unique_ptr<TParamSet>(new TParamSet(*(m_ParamSets[0]))));
         m_ParamSets[i]->m_SimID = i + 1;
-        m_ParamSets[i]->m_PhiGradient *= pow(10.0,i);
+        m_ParamSets[i]->m_PhiGradient += 20000.0*i;
         m_ParamSets[i]->m_Temperature -= 20.0*i;
     }
 
@@ -399,6 +459,7 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
         std::cout << "- Mobile electrons = electrons with > 0 non-oscillating hops." << std::endl;
         std::cout << "- Localized states are single-electron states." << std::endl;
         std::cout << "- Spin-degeneracy is assumed. All input and output values (incl. the DOS) refer to spin-up and spin-down electrons together." << std::endl;
+        std::cout << "- Resulting tracer diffusion coefficients are equal to chemical diffusion coefficients because of effective charge carrier formalism." << std::endl;
     }
 
     // Read DOS file
