@@ -14,11 +14,12 @@
 
 // Result descriptors and units (without white-spaces)
 const std::array<std::string,2> MC::TResult::s_RepID = {"RepID",""};
-const std::array<std::string,2> MC::TResult::s_DriftConductivity = {"DriftCond","S/m"};
-const std::array<std::string,2> MC::TResult::s_DriftMobility = {"DriftMob","cm2/Vs"};
-const std::array<std::string,2> MC::TResult::s_DiffusionCoefficient = {"DiffCoeff","cm2/s"};
-const std::array<std::string,2> MC::TResult::s_DiffusionCoefficientParallel = {"DiffCoeffP","cm2/s"};
-const std::array<std::string,2> MC::TResult::s_DiffusionCoefficientTransverse = {"DiffCoeffT","cm2/s"};
+const std::array<std::string,2> MC::TResult::s_Conductivity = {"Conductivity","S/m"};
+const std::array<std::string,2> MC::TResult::s_DriftMobility = {"Mobility","cm2/Vs"};
+const std::array<std::string,2> MC::TResult::s_DiffusionCoefficient = {"TracerDCoeff","cm2/s"};
+const std::array<std::string,2> MC::TResult::s_DiffusionCoefficientParallel = {"TracerDCoeffP","cm2/s"};
+const std::array<std::string,2> MC::TResult::s_DiffusionCoefficientTransverse = {"TracerDCoeffT","cm2/s"};
+const std::array<std::string,2> MC::TResult::s_ChargeDiffusionCoefficient = {"ChargeDCoeff","cm2/s"};
 const std::array<std::string,2> MC::TResult::s_HavenRatio = {"HavenRatio",""};
 const std::array<std::string,2> MC::TResult::s_HavenRatioParallel = {"HavenRatioP",""};
 const std::array<std::string,2> MC::TResult::s_HavenRatioTransverse = {"HavenRatioT",""};
@@ -62,8 +63,9 @@ const std::array<std::string,2> MC::TResult::s_HolesBelowEf = {"HolesBelowEf",""
 // Default constructor
 MC::TResult::TResult()
     : m_TotalHops(0), m_RepID(0), 
-    m_DriftConductivity(0.0), m_DriftMobility(0.0), m_DiffusionCoefficient(0.0),
-    m_DiffusionCoefficientParallel(0.0), m_DiffusionCoefficientTransverse(0.0), 
+    m_Conductivity(0.0), m_DriftMobility(0.0), 
+    m_DiffusionCoefficient(0.0), m_DiffusionCoefficientParallel(0.0), 
+    m_DiffusionCoefficientTransverse(0.0), m_ChargeDiffusionCoefficient(0.0),
     m_HavenRatio(0.0), m_HavenRatioParallel(0.0), m_HavenRatioTransverse(0.0), m_PartialEntropy(0.0), 
     m_EffChemPot(0.0), m_EffTemp(0.0), m_EffCarriers(0.0), m_EffCarrierDensity(0.0), 
     m_ElectronCount(0), m_MobileElectrons(0), m_ZeroHopElectrons(0), m_OscElectrons(0), 
@@ -98,11 +100,12 @@ std::unique_ptr<MC::TResult> MC::TResult::ValueCopy(const TResult* const result)
 
     temp.m_TotalHops = result->m_TotalHops;
     temp.m_RepID = result->m_RepID;
-    temp.m_DriftConductivity = result->m_DriftConductivity;
+    temp.m_Conductivity = result->m_Conductivity;
     temp.m_DriftMobility = result->m_DriftMobility;
     temp.m_DiffusionCoefficient = result->m_DiffusionCoefficient;
 	temp.m_DiffusionCoefficientParallel = result->m_DiffusionCoefficientParallel;
 	temp.m_DiffusionCoefficientTransverse = result->m_DiffusionCoefficientTransverse;
+    temp.m_ChargeDiffusionCoefficient = result->m_ChargeDiffusionCoefficient;
     temp.m_HavenRatio = result->m_HavenRatio;
     temp.m_HavenRatioParallel = result->m_HavenRatioParallel;
     temp.m_HavenRatioTransverse = result->m_HavenRatioTransverse;
@@ -151,11 +154,12 @@ void MC::TResult::Write(std::ostream& o_str) const
 {
     o_str << "<" << XMLSection::Results << ">" << std::endl;
     o_str << GF::CombineDescUnit(s_RepID) << " = " << m_RepID << std::endl;
-    o_str << GF::CombineDescUnit(s_DriftConductivity) << " = " << m_DriftConductivity << std::endl;
+    o_str << GF::CombineDescUnit(s_Conductivity) << " = " << m_Conductivity << std::endl;
     o_str << GF::CombineDescUnit(s_DriftMobility) << " = " << m_DriftMobility << std::endl;
     o_str << GF::CombineDescUnit(s_DiffusionCoefficient) << " = " << m_DiffusionCoefficient << std::endl;
     o_str << GF::CombineDescUnit(s_DiffusionCoefficientParallel) << " = " << m_DiffusionCoefficientParallel << std::endl;
     o_str << GF::CombineDescUnit(s_DiffusionCoefficientTransverse) << " = " << m_DiffusionCoefficientTransverse << std::endl;
+    o_str << GF::CombineDescUnit(s_ChargeDiffusionCoefficient) << " = " << m_ChargeDiffusionCoefficient << std::endl;
     o_str << GF::CombineDescUnit(s_HavenRatio) << " = " << m_HavenRatio << std::endl;
     o_str << GF::CombineDescUnit(s_HavenRatioParallel) << " = " << m_HavenRatioParallel << std::endl;
     o_str << GF::CombineDescUnit(s_HavenRatioTransverse) << " = " << m_HavenRatioTransverse << std::endl;
@@ -315,11 +319,12 @@ std::vector<std::array<std::string,2>> MC::TResult::WriteTableHeader()
 {
     std::vector<std::array<std::string,2>> header;
     header.push_back(s_RepID);
-    header.push_back(s_DriftConductivity);
+    header.push_back(s_Conductivity);
     header.push_back(s_DriftMobility);
     header.push_back(s_DiffusionCoefficient);
     header.push_back(s_DiffusionCoefficientParallel);
     header.push_back(s_DiffusionCoefficientTransverse);
+    header.push_back(s_ChargeDiffusionCoefficient);
     header.push_back(s_HavenRatio);
     header.push_back(s_HavenRatioParallel);
     header.push_back(s_HavenRatioTransverse);
@@ -378,7 +383,7 @@ std::vector<std::string> MC::TResult::WriteTableLine() const
     line.push_back(sstr.str());
     sstr.str("");
 
-    sstr << m_DriftConductivity;
+    sstr << m_Conductivity;
     line.push_back(sstr.str());
     sstr.str("");
 
@@ -395,6 +400,10 @@ std::vector<std::string> MC::TResult::WriteTableLine() const
     sstr.str("");
 
     sstr << m_DiffusionCoefficientTransverse;
+    line.push_back(sstr.str());
+    sstr.str("");
+
+    sstr << m_ChargeDiffusionCoefficient;
     line.push_back(sstr.str());
     sstr.str("");
 
@@ -605,12 +614,13 @@ bool MC::TResult::Read(const std::string& str, bool raise_errors)
     m_TotalHops = 0;
     if (get_uint32(s_RepID,m_RepID) == false) return false;
     if (m_RepID == 0) return false;
-    if (get_dbl(s_DriftConductivity,m_DriftConductivity) == false) return false;
+    if (get_dbl(s_Conductivity,m_Conductivity) == false) return false;
     if (get_dbl(s_DriftMobility,m_DriftMobility) == false) return false;
     if (get_dbl(s_DiffusionCoefficient,m_DiffusionCoefficient) == false) return false;
     if (get_dbl(s_DiffusionCoefficientParallel,m_DiffusionCoefficientParallel) == false) return false;
     if (get_dbl(s_DiffusionCoefficientTransverse,m_DiffusionCoefficientTransverse) == false) return false;
-	if (get_dbl(s_HavenRatio,m_HavenRatio) == false) return false;
+	if (get_dbl(s_ChargeDiffusionCoefficient,m_ChargeDiffusionCoefficient) == false) return false;
+    if (get_dbl(s_HavenRatio,m_HavenRatio) == false) return false;
     if (get_dbl(s_HavenRatioParallel,m_HavenRatioParallel) == false) return false;
     if (get_dbl(s_HavenRatioTransverse,m_HavenRatioTransverse) == false) return false;
     if (get_dbl(s_PartialEntropy,m_PartialEntropy) == false) return false;
@@ -755,11 +765,12 @@ void MC::TResult::WriteMultiAnalysis(std::ostream& o_str, const std::vector<std:
     };
 
     // Analysis
-    write_dbl_analysis(s_DriftConductivity,&TResult::m_DriftConductivity);
+    write_dbl_analysis(s_Conductivity,&TResult::m_Conductivity);
     write_dbl_analysis(s_DriftMobility,&TResult::m_DriftMobility);
     write_dbl_analysis(s_DiffusionCoefficient,&TResult::m_DiffusionCoefficient);
     write_dbl_analysis(s_DiffusionCoefficientParallel,&TResult::m_DiffusionCoefficientParallel);
     write_dbl_analysis(s_DiffusionCoefficientTransverse,&TResult::m_DiffusionCoefficientTransverse);
+    write_dbl_analysis(s_ChargeDiffusionCoefficient,&TResult::m_ChargeDiffusionCoefficient);
     write_dbl_analysis(s_HavenRatio,&TResult::m_HavenRatio);
     write_dbl_analysis(s_HavenRatioParallel,&TResult::m_HavenRatioParallel);
     write_dbl_analysis(s_HavenRatioTransverse,&TResult::m_HavenRatioTransverse);
@@ -920,11 +931,12 @@ void MC::TResult::WriteMultiAnalysis(std::ostream& o_str, const std::vector<std:
     };
 
     // Analysis
-    write_dbl_analysis(s_DriftConductivity,&TResult::m_DriftConductivity);
+    write_dbl_analysis(s_Conductivity,&TResult::m_Conductivity);
     write_dbl_analysis(s_DriftMobility,&TResult::m_DriftMobility);
     write_dbl_analysis(s_DiffusionCoefficient,&TResult::m_DiffusionCoefficient);
     write_dbl_analysis(s_DiffusionCoefficientParallel,&TResult::m_DiffusionCoefficientParallel);
     write_dbl_analysis(s_DiffusionCoefficientTransverse,&TResult::m_DiffusionCoefficientTransverse);
+    write_dbl_analysis(s_ChargeDiffusionCoefficient,&TResult::m_ChargeDiffusionCoefficient);
     write_dbl_analysis(s_HavenRatio,&TResult::m_HavenRatio);
     write_dbl_analysis(s_HavenRatioParallel,&TResult::m_HavenRatioParallel);
     write_dbl_analysis(s_HavenRatioTransverse,&TResult::m_HavenRatioTransverse);
@@ -970,8 +982,8 @@ void MC::TResult::WriteMultiAnalysis(std::ostream& o_str, const std::vector<std:
 std::vector<std::array<std::string,2>> MC::TResult::WriteMultiTableHeader()
 {
     std::vector<std::array<std::string,2>> header;
-    header.push_back(s_DriftConductivity);
-    header.push_back(GF::StdDevDescUnit(s_DriftConductivity));
+    header.push_back(s_Conductivity);
+    header.push_back(GF::StdDevDescUnit(s_Conductivity));
     header.push_back(s_DriftMobility);
     header.push_back(GF::StdDevDescUnit(s_DriftMobility));
     header.push_back(s_DiffusionCoefficient);
@@ -980,6 +992,8 @@ std::vector<std::array<std::string,2>> MC::TResult::WriteMultiTableHeader()
     header.push_back(GF::StdDevDescUnit(s_DiffusionCoefficientParallel));
     header.push_back(s_DiffusionCoefficientTransverse);
     header.push_back(GF::StdDevDescUnit(s_DiffusionCoefficientTransverse));
+    header.push_back(s_ChargeDiffusionCoefficient);
+    header.push_back(GF::StdDevDescUnit(s_ChargeDiffusionCoefficient));
     header.push_back(s_HavenRatio);
     header.push_back(GF::StdDevDescUnit(s_HavenRatio));
     header.push_back(s_HavenRatioParallel);
@@ -1215,11 +1229,12 @@ std::vector<std::string> MC::TResult::WriteMultiTableLine(const std::vector<std:
     };
 
     // Analysis
-    write_dbl_analysis(&TResult::m_DriftConductivity);
+    write_dbl_analysis(&TResult::m_Conductivity);
     write_dbl_analysis(&TResult::m_DriftMobility);
     write_dbl_analysis(&TResult::m_DiffusionCoefficient);
     write_dbl_analysis(&TResult::m_DiffusionCoefficientParallel);
     write_dbl_analysis(&TResult::m_DiffusionCoefficientTransverse);
+    write_dbl_analysis(&TResult::m_ChargeDiffusionCoefficient);
     write_dbl_analysis(&TResult::m_HavenRatio);
     write_dbl_analysis(&TResult::m_HavenRatioParallel);
     write_dbl_analysis(&TResult::m_HavenRatioTransverse);
@@ -1283,7 +1298,7 @@ void MC::TResult::SaveProgress(double percentage, bool is_eq)
     new_progress->m_NonOscHops = m_NonOscHops;
     new_progress->m_NonOscHopRatio = m_NonOscHopRatio;
     new_progress->m_TotalTime = m_TotalTime;
-	new_progress->m_DriftConductivity = m_DriftConductivity;
+	new_progress->m_Conductivity = m_Conductivity;
 	new_progress->m_DriftMobility = m_DriftMobility;
     new_progress->m_DiffusionCoefficient = m_DiffusionCoefficient;
 	new_progress->m_DiffusionCoefficientParallel = m_DiffusionCoefficientParallel;
@@ -1393,7 +1408,7 @@ void MC::TResult::WriteProgressLine(std::ostream& o_str, std::uint64_t maxhops, 
     
     if (has_field)
     {
-        o_str << std::setw(std::max(pos_dbl_width,10)) << last->m_DriftConductivity << " ";
+        o_str << std::setw(std::max(pos_dbl_width,10)) << last->m_Conductivity << " ";
         o_str << std::setw(std::max(pos_dbl_width,9)) << last->m_DiffusionCoefficientParallel << " ";
         o_str << std::setw(std::max(pos_dbl_width,10)) << last->m_DiffusionCoefficientTransverse << " ";
     }
@@ -1446,7 +1461,7 @@ void MC::TResult::WriteConvergenceTable(std::ostream& o_str, bool is_eq) const
     header.push_back(std::array<std::string,2>{"MeanNonOscHops",""});
     header.push_back(s_NonOscHopRatio);
     header.push_back(s_TotalTime);
-    header.push_back(s_DriftConductivity);
+    header.push_back(s_Conductivity);
     header.push_back(s_DriftMobility);
     header.push_back(s_DiffusionCoefficient);
     header.push_back(s_DiffusionCoefficientParallel);
@@ -1539,7 +1554,7 @@ void MC::TResult::WriteConvergenceTable(std::ostream& o_str, bool is_eq) const
         table.back().push_back(sstr.str());
         sstr.str("");
 
-        sstr << it->m_DriftConductivity;
+        sstr << it->m_Conductivity;
         table.back().push_back(sstr.str());
         sstr.str("");
 

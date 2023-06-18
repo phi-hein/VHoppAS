@@ -29,19 +29,19 @@ struct TProgress
 	// Simulated timespan (in s)
 	double m_TotalTime;
 
-	// Drift conductivity (in S/m = A/Vm)
-	double m_DriftConductivity;
+	// Conductivity (in S/m = A/Vm)
+	double m_Conductivity;
 
 	// Drift mobility (in cm2/Vs; based on effective carrier density)
 	double m_DriftMobility;
 
-	// Diffusion coefficient (average of all directions; in cm2/s; based on effective carrier density)
+	// Tracer diffusion coefficient (average of all directions; in cm2/s; based on effective carrier density)
 	double m_DiffusionCoefficient;
 
-	// Diffusion coefficient parallel to electric field (in cm2/s; based on effective carrier density)
+	// Tracer diffusion coefficient parallel to electric field (in cm2/s; based on effective carrier density)
 	double m_DiffusionCoefficientParallel;
 
-	// Diffusion coefficient perpendicular to electric field (in cm2/s; based on effective carrier density)
+	// Tracer diffusion coefficient perpendicular to electric field (in cm2/s; based on effective carrier density)
 	double m_DiffusionCoefficientTransverse;
 
 	// Partial entropy of electrons (in eV/K)
@@ -107,11 +107,12 @@ class TResult
 public:
     // Result descriptors and units (without white-spaces)
 	static const std::array<std::string,2> s_RepID;
-	static const std::array<std::string,2> s_DriftConductivity;
+	static const std::array<std::string,2> s_Conductivity;
 	static const std::array<std::string,2> s_DriftMobility;
 	static const std::array<std::string,2> s_DiffusionCoefficient;
 	static const std::array<std::string,2> s_DiffusionCoefficientParallel;
 	static const std::array<std::string,2> s_DiffusionCoefficientTransverse;
+	static const std::array<std::string,2> s_ChargeDiffusionCoefficient;
 	static const std::array<std::string,2> s_HavenRatio;
 	static const std::array<std::string,2> s_HavenRatioParallel;
 	static const std::array<std::string,2> s_HavenRatioTransverse;
@@ -200,20 +201,23 @@ public:
 	// Repetition-ID
 	std::uint32_t m_RepID;
 
-	// Drift conductivity (in S/m = A/Vm)
-	double m_DriftConductivity;
+	// Conductivity (in S/m = A/Vm)
+	double m_Conductivity;
 
 	// Drift mobility (in cm2/Vs; based on effective carrier density)
 	double m_DriftMobility;
 
-	// Diffusion coefficient (average of all directions; in cm2/s; based on effective carrier density)
+	// Tracer diffusion coefficient (average of all directions; in cm2/s; based on effective carrier density)
 	double m_DiffusionCoefficient;
 
-	// Diffusion coefficient parallel to electric field (in cm2/s; based on effective carrier density)
+	// Tracer diffusion coefficient parallel to electric field (in cm2/s; based on effective carrier density)
 	double m_DiffusionCoefficientParallel;
 
-	// Diffusion coefficient perpendicular to electric field (in cm2/s; based on effective carrier density)
+	// Tracer diffusion coefficient perpendicular to electric field (in cm2/s; based on effective carrier density)
 	double m_DiffusionCoefficientTransverse;
+
+	// Charge diffusion coefficient (in cm2/s; calculated from conductivity via Nernst-Einstein relation)
+	double m_ChargeDiffusionCoefficient;
 
 	// Haven ratio (average of all directions)
 	double m_HavenRatio;
