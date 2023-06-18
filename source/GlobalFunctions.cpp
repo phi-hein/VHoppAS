@@ -191,8 +191,8 @@ std::string MC::GF::CombineDescUnit(const std::array<std::string,2>& desc)
 // Construct regex string that matches both property descriptor alone and with unit
 std::string MC::GF::DescRegex(const std::array<std::string,2>& desc)
 {
-    if (desc[1].empty()) return MetaEsc(desc[0]);
-    return "(?:" + MetaEsc(CombineDescUnit(desc)) + "|" + MetaEsc(desc[0]) + ")";
+    if (desc[1].empty()) return "\\b" + MetaEsc(desc[0]) + "\\b";
+    return "(?:\\b" + MetaEsc(CombineDescUnit(desc)) + "|\\b" + MetaEsc(desc[0]) + "\\b)";
 }
 
 // Extract an XML block that is delimited by <identifier> ... </identifier>
