@@ -371,18 +371,25 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
             m_OutputFile = str;
             if (!m_OutputFile.has_filename())
             {
-                m_OutputFile = "DefaultOutput.txt";
-                std::cout << "Invalid output file name -> set to default." << std::endl;
+                m_OutputFile /= "DefaultOutput.txt";
+                std::cout << "No output filename -> added default filename." << std::endl;
             }
             if (!m_OutputFile.has_extension())
             {
                 m_OutputFile += ".txt";
             }
+            std::filesystem::path base_dir = m_OutputFile;
+            base_dir.remove_filename();
+            if ((!base_dir.empty()) && (!std::filesystem::exists(base_dir)))
+            {
+                m_OutputFile = m_OutputFile.filename();
+                std::cout << "Output directory does not exist -> set to input directory." << std::endl;
+            }
         }
         else
         {
             m_OutputFile = "DefaultOutput.txt";
-            std::cout << "Output file name not specified -> set to default." << std::endl;
+            std::cout << "Output filename not specified -> set to default." << std::endl;
         }
     }
     {
