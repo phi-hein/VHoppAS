@@ -42,7 +42,7 @@ MC::TController::TController()
     m_VL(Verbosity::MAXIMUM), m_EFTAdjust(true), m_InitialFDDistrib(true), 
     m_TeffFit(true), m_EnforceECount(true), m_CutoffAutoAdjust(false), 
     m_DistCutoffAdjustPercentage(0.0), m_EdiffCutoffAdjustPercentage(0.0),
-    m_OnlyCompareSimID(false), m_UseYZVariance(false), m_ParallelizeReps(false),
+    m_OnlyCompareSimID(false), m_UseYZVariance(true), m_ParallelizeReps(false),
     m_ProjectDescription("")
 {
 
@@ -209,7 +209,7 @@ void MC::TController::GenerateExampleInputFiles()
     m_DistCutoffAdjustPercentage = 0.0;
     m_EdiffCutoffAdjustPercentage = 0.0;
     m_OnlyCompareSimID = false;
-    m_UseYZVariance = false;
+    m_UseYZVariance = true;
     m_ParallelizeReps = false;
     m_ProjectDescription = "";
     m_ParamSets.clear();
@@ -306,10 +306,10 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
                 val = 0.0;
                 if (show_msg) std::cout << desc[0] << " setting has invalid value -> set to default." << std::endl;
             }
-            else if (val <= 0.0)
+            else if (val < 0.0)
             {
                 val = 0.0;
-                if (show_msg) std::cout << desc[0] << " setting is zero or negative -> default is used." << std::endl;
+                if (show_msg) std::cout << desc[0] << " setting is negative -> default is used." << std::endl;
             }
         }
         else
@@ -437,7 +437,7 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
     get_optional_perc(s_DistCutoffAdjustPercentage, m_DistCutoffAdjustPercentage, m_CutoffAutoAdjust);
     get_optional_perc(s_EdiffCutoffAdjustPercentage, m_EdiffCutoffAdjustPercentage, m_CutoffAutoAdjust);
     get_optional_bool(s_OnlyCompareSimID, m_OnlyCompareSimID, false);
-    get_optional_bool(s_UseYZVariance, m_UseYZVariance, false);
+    get_optional_bool(s_UseYZVariance, m_UseYZVariance, true);
     get_optional_bool(s_ParallelizeReps, m_ParallelizeReps, false);
 
     {

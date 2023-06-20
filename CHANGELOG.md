@@ -22,6 +22,7 @@ Syntax for links to issues (or pull requests):
 ### Changed:
 - **Breaking:** Rename several output values
 - **Breaking:** Add `<Data>` tag to the DOS file specification (to signal the beginning of DOS values) ([#11])
+- **Breaking:** Change default value of UseYZVariance setting from no to yes
 
 ### Added:
 - **Breaking:** Result files contain charge diffusion coefficient
