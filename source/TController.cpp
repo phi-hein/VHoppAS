@@ -117,7 +117,7 @@ void MC::TController::GenerateExampleInputFiles()
         dos_file << GF::CombineDescUnit(TPiecewiseLinearDOS::s_RefTemp) << " = 300" << std::endl;
         dos_file << std::endl;
         dos_file << "<" << TPiecewiseLinearDOS::s_Data << ">" << std::endl;
-        dos_file << "E-EF(eV) DOS(1/cm3eV)" << std::endl;
+        dos_file << "E(eV) DOS(1/cm3eV)" << std::endl;
         for (auto const &dos_entry: dos_values)
         {
             dos_file << dos_entry << std::endl;
