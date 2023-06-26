@@ -2167,7 +2167,7 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
     const double spfac = m_DOS->GetSpatialFactor();
     const double enmax = m_ParamSet->m_MaxStateEnergy;
     const double enfac = m_DOS->GetEnergyFactor();
-    const double fermilvl = (m_ParamSet->m_ChemPot - enmax)/enfac;  // in relative units
+    const double fermilvl = (m_SimResult->m_EffChemPot - enmax)/enfac;  // in relative units
 
     // Evaluation of electron statistics (internal values for just one spin-type)
     // sum_energy = sum of state energies of occupied states (in eV)
@@ -2464,7 +2464,7 @@ void MC::TEngine::GenerateResults()
     const double spfac = m_DOS->GetSpatialFactor();
     const double enmax = m_ParamSet->m_MaxStateEnergy;
     const double enfac = m_DOS->GetEnergyFactor();
-    const double fermilvl = (m_ParamSet->m_ChemPot - enmax)/enfac;  // in relative units
+    const double fermilvl = (m_SimResult->m_EffChemPot - enmax)/enfac;  // in relative units
     
     // Analyze paths (e.g. min/max for histogram boundaries)
     // (internal values for only one spin-type)
