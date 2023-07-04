@@ -20,6 +20,7 @@ public:
     // Parameter descriptors and units (without white-spaces)
     static const std::array<std::string,2> s_Type;
     static const std::array<std::string,2> s_RefTemp;
+    static const std::string s_Data;
 
     // Default constructor
     TPiecewiseLinearDOS();

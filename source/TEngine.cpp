@@ -647,7 +647,11 @@ void MC::TEngine::GenerateElectrons()
         else
             std::cout << "  Initial electron distribution: Step function" << std::endl;
         if ((m_ParamSet->m_EnforceECount) && (m_ParamSet->m_InitialFDDistrib))
-            std::cout << "  Enforced adjustment of electron count: " << 2*enforced_electrons << std::endl;
+        {
+            std::cout << "  Enforced adjustment of electron count: ";
+            if (enforced_electrons > 0) std::cout << "+";
+            std::cout << 2*enforced_electrons << std::endl;
+        }
         std::cout << "  Number of electrons: " << 2U*m_Electrons.size() << " (expected from states: " 
             << 2U*expected_ecount << ", expected from DOS: " << m_DOS->GetElectronCount(m_ThermalEnergy) << ")" << std::endl;
         std::cout << "  Occupation ratio: " 
@@ -1051,7 +1055,7 @@ void MC::TEngine::RunSimulation ()
         }
         else
         {
-            std::cout << "Sigma = " << m_SimResult->m_DriftConductivity << " S/m, Dx = " 
+            std::cout << "Sigma = " << m_SimResult->m_Conductivity << " S/m, Dx = " 
             << m_SimResult->m_DiffusionCoefficientParallel << " cm2/s, Dyz = "
             << m_SimResult->m_DiffusionCoefficientTransverse << " cm2/s" << std::endl;
         }
@@ -1074,24 +1078,27 @@ void MC::TEngine::RunSimulation ()
             << incl_eq_result->m_TotalTime << " s]" << std::endl;
         if (m_ParamSet->m_PhiGradient == 0.0)
         {
-            std::cout << "  Self-diffusion coefficient D: " << m_SimResult->m_DiffusionCoefficient 
+            std::cout << "  Tracer diffusion coefficient D: " << m_SimResult->m_DiffusionCoefficient 
                 << " cm2/s [incl. eq.: " << incl_eq_result->m_DiffusionCoefficient << " cm2/s]" << std::endl;
         }
         else
         {
-            std::cout << "  Drift conductivity: " << m_SimResult->m_DriftConductivity 
-                << " S/m [incl. eq.: " << incl_eq_result->m_DriftConductivity << " S/m]" << std::endl;
+            std::cout << "  Conductivity: " << m_SimResult->m_Conductivity 
+                << " S/m [incl. eq.: " << incl_eq_result->m_Conductivity << " S/m]" << std::endl;
             std::cout << "  Drift mobility: " << m_SimResult->m_DriftMobility 
                 << " cm2/Vs [incl. eq.: " << incl_eq_result->m_DriftMobility << " cm2/Vs]" << std::endl;
-            std::cout << "  Self-diffusion coefficient D: " << m_SimResult->m_DiffusionCoefficient 
+            std::cout << "  Tracer diffusion coefficient D: " << m_SimResult->m_DiffusionCoefficient 
                 << " cm2/s [incl. eq.: " << incl_eq_result->m_DiffusionCoefficient 
                 << " cm2/s] (only valid if Dx approx. equal to Dyz)" << std::endl;
-            std::cout << "  Self-diffusion coefficient Dx (parallel): " 
+            std::cout << "  Tracer diffusion coefficient Dx (parallel): " 
                 << m_SimResult->m_DiffusionCoefficientParallel << " cm2/s [incl. eq.: " 
                 << incl_eq_result->m_DiffusionCoefficientParallel << " cm2/s]" << std::endl;
-            std::cout << "  Self-diffusion coefficient Dyz (transverse): " 
+            std::cout << "  Tracer diffusion coefficient Dyz (transverse): " 
                 << m_SimResult->m_DiffusionCoefficientTransverse << " cm2/s [incl. eq.: " 
                 << incl_eq_result->m_DiffusionCoefficientTransverse << " cm2/s]" << std::endl;
+            std::cout << "  Charge diffusion coefficient Dsigma: " << m_SimResult->m_ChargeDiffusionCoefficient 
+                << " cm2/s [incl. eq.: " << incl_eq_result->m_ChargeDiffusionCoefficient 
+                << " cm2/s] (calculated via Nernst-Einstein relation)" << std::endl;
             std::cout << "  Haven ratio (D / Dsigma): " << m_SimResult->m_HavenRatio 
                 << " [incl. eq.: " << incl_eq_result->m_HavenRatio 
                 << "] (only valid if Dx approx. equal to Dyz)" << std::endl;
@@ -1182,18 +1189,20 @@ void MC::TEngine::RunSimulation ()
         std::cout << "  Simulated timespan: " << m_SimResult->m_TotalTime << " s" << std::endl;
         if (m_ParamSet->m_PhiGradient == 0.0)
         {
-            std::cout << "  Self-diffusion coefficient D: " << m_SimResult->m_DiffusionCoefficient << " cm2/s" << std::endl;
+            std::cout << "  Tracer diffusion coefficient D: " << m_SimResult->m_DiffusionCoefficient << " cm2/s" << std::endl;
         }
         else
         {
-            std::cout << "  Drift conductivity: " << m_SimResult->m_DriftConductivity << " S/m" << std::endl;
+            std::cout << "  Conductivity: " << m_SimResult->m_Conductivity << " S/m" << std::endl;
             std::cout << "  Drift mobility: " << m_SimResult->m_DriftMobility << " cm2/Vs" << std::endl;
-            std::cout << "  Self-diffusion coefficient D: " << m_SimResult->m_DiffusionCoefficient 
+            std::cout << "  Tracer diffusion coefficient D: " << m_SimResult->m_DiffusionCoefficient 
                 << " cm2/s (only valid if Dx approx. equal to Dyz)" << std::endl;
-            std::cout << "  Self-diffusion coefficient Dx (parallel): " 
+            std::cout << "  Tracer diffusion coefficient Dx (parallel): " 
                 << m_SimResult->m_DiffusionCoefficientParallel << " cm2/s" << std::endl;
-            std::cout << "  Self-diffusion coefficient Dyz (transverse): " 
+            std::cout << "  Tracer diffusion coefficient Dyz (transverse): " 
                 << m_SimResult->m_DiffusionCoefficientTransverse << " cm2/s" << std::endl;
+            std::cout << "  Charge diffusion coefficient Dsigma: " << m_SimResult->m_ChargeDiffusionCoefficient 
+                << " cm2/s (calculated via Nernst-Einstein relation)" << std::endl;
             std::cout << "  Haven ratio (D / Dsigma): " << m_SimResult->m_HavenRatio 
                 << " (only valid if Dx approx. equal to Dyz)" << std::endl;
             std::cout << "  Haven ratio (parallel = Dx / Dsigma): " 
@@ -2158,7 +2167,7 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
     const double spfac = m_DOS->GetSpatialFactor();
     const double enmax = m_ParamSet->m_MaxStateEnergy;
     const double enfac = m_DOS->GetEnergyFactor();
-    const double fermilvl = (m_ParamSet->m_ChemPot - enmax)/enfac;  // in relative units
+    const double fermilvl = (m_SimResult->m_EffChemPot - enmax)/enfac;  // in relative units
 
     // Evaluation of electron statistics (internal values for just one spin-type)
     // sum_energy = sum of state energies of occupied states (in eV)
@@ -2345,35 +2354,35 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
 
     // Calculation of drift properties
     // drift_flux_density = - eff_carrier_density * drift_mobility * grad(phi)
-    // drift_conductivity = - electron_charge * eff_carrier_density * drift_mobility
-    // drift_flux_density = drift_conductivity/electron_charge * grad(phi)
+    // conductivity = - electron_charge * eff_carrier_density * drift_mobility
+    // drift_flux_density = conductivity/electron_charge * grad(phi)
     // units: 1/cm2s = A/Vcm * 1/C * V/cm
     // drift_flux_density = eff_carrier_density * <disp_x> / total_time
     // units: 1/cm2s = cm/(s*cm3)
     // grad(phi) has to be multiplied by energy_factor / spatial_factor (when using relative value)
-    // -> drift conductivity (including scaling):
+    // -> conductivity (including scaling):
     // = <disp_x> * electron_charge * eff_carrier_density * spatial_factor / (total_time * grad(phi) * energy_factor)
     // units: A/Vcm = cm * C / (cm3 s V/cm)
     // -> drift mobility (including scaling):
-    // = - drift_conductivity / (electron_charge * eff_carrier_density)
+    // = - conductivity / (electron_charge * eff_carrier_density)
     // units: cm2/Vs = A/Vcm * cm3 / C
     if (m_ParamSet->m_PhiGradient != 0.0)
     {
-        m_SimResult->m_DriftConductivity = m_SimResult->m_MeanDisp_x 
+        m_SimResult->m_Conductivity = m_SimResult->m_MeanDisp_x 
             * (Constant::echarge * m_SimResult->m_EffCarrierDensity) 
             * spfac / (1.0E14 * m_SimResult->m_TotalTime * m_GradPhiEnergy * enfac);
 
-        m_SimResult->m_DriftMobility = - m_SimResult->m_DriftConductivity 
+        m_SimResult->m_DriftMobility = - m_SimResult->m_Conductivity 
             / (Constant::echarge * m_SimResult->m_EffCarrierDensity);
     }
     else
     {
-        m_SimResult->m_DriftConductivity = 0.0;
+        m_SimResult->m_Conductivity = 0.0;
 	    m_SimResult->m_DriftMobility = 0.0; 
     }
 
     // Convert conductivity unit from S/cm to S/m
-    m_SimResult->m_DriftConductivity *= 100.0;
+    m_SimResult->m_Conductivity *= 100.0;
     
     // Calculation of self-diffusion properties
     // -> self-diffusion coefficient in x-direction (parallel to electric field):
@@ -2417,7 +2426,7 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
     m_SimResult->m_DiffusionCoefficient = (m_SimResult->m_DiffusionCoefficientParallel + 
         2.0 * m_SimResult->m_DiffusionCoefficientTransverse) / 3.0;
 
-    // Calculation of Haven ratio (self-diffusion coefficient divided by conductivity diffusion coefficient)
+    // Calculation of Haven ratio (self-diffusion coefficient divided by charge diffusion coefficient)
     // Nernst-Einstein relation: Dsigma = - k_boltz * eff_T * drift_mobility / electron_charge
     // units: cm2/s = eV/K * K * cm2/Vs / e
     // -> isotropic Haven ratio (only valid for weak electric field where Dx approx. equal to Dyz)
@@ -2429,13 +2438,15 @@ void MC::TEngine::CalculateResultValues(const MC::TResult* const ref_result)
     //    HR_yz = D_yz / Dsigma
     if ((m_ParamSet->m_PhiGradient != 0.0) && (m_SimResult->m_DriftMobility != 0.0))
     {
-        const double Dsigma = - Constant::kboltz * m_SimResult->m_EffTemp * m_SimResult->m_DriftMobility;
-        m_SimResult->m_HavenRatio = m_SimResult->m_DiffusionCoefficient / Dsigma;
-        m_SimResult->m_HavenRatioParallel = m_SimResult->m_DiffusionCoefficientParallel / Dsigma;
-        m_SimResult->m_HavenRatioTransverse = m_SimResult->m_DiffusionCoefficientTransverse / Dsigma;
+        m_SimResult->m_ChargeDiffusionCoefficient = - Constant::kboltz 
+            * m_SimResult->m_EffTemp * m_SimResult->m_DriftMobility;
+        m_SimResult->m_HavenRatio = m_SimResult->m_DiffusionCoefficient / m_SimResult->m_ChargeDiffusionCoefficient;
+        m_SimResult->m_HavenRatioParallel = m_SimResult->m_DiffusionCoefficientParallel / m_SimResult->m_ChargeDiffusionCoefficient;
+        m_SimResult->m_HavenRatioTransverse = m_SimResult->m_DiffusionCoefficientTransverse / m_SimResult->m_ChargeDiffusionCoefficient;
     }
     else
     {
+        m_SimResult->m_ChargeDiffusionCoefficient = 0.0;
         m_SimResult->m_HavenRatio = 0.0;
         m_SimResult->m_HavenRatioParallel = 0.0;
         m_SimResult->m_HavenRatioTransverse = 0.0;
@@ -2453,7 +2464,7 @@ void MC::TEngine::GenerateResults()
     const double spfac = m_DOS->GetSpatialFactor();
     const double enmax = m_ParamSet->m_MaxStateEnergy;
     const double enfac = m_DOS->GetEnergyFactor();
-    const double fermilvl = (m_ParamSet->m_ChemPot - enmax)/enfac;  // in relative units
+    const double fermilvl = (m_SimResult->m_EffChemPot - enmax)/enfac;  // in relative units
     
     // Analyze paths (e.g. min/max for histogram boundaries)
     // (internal values for only one spin-type)

@@ -1,5 +1,5 @@
 # VHoppAS: Variable-range Hopping in Amorphous Solids
-DOS-based kinetic Monte-Carlo simulation of 3D variable-range hopping for conductivity and self-diffusion coefficients of electrons in amorphous compounds.
+DOS-based kinetic Monte-Carlo simulation of 3D variable-range hopping for conductivity and diffusion coefficients of electrons in amorphous compounds.
 
 ## Features
 - Randomized 3D positions and energies of localized states generated from an arbitrary user-supplied DOS
@@ -15,17 +15,17 @@ DOS-based kinetic Monte-Carlo simulation of 3D variable-range hopping for conduc
 - _and more_
 
 ## Documentation
-- [User manual](USER_MANUAL.md): installation instructions and usage guide with examples
-- [Technical notes](TECHNICAL_NOTES.md): theoretical background of the simulations and implementation details
-- [Developer manual](DEV_MANUAL.md): guides for working on this project
+- [User manual](USER_MANUAL.md): Installation instructions and usage guide with examples
+- [Technical notes](TECHNICAL_NOTES.md): Theoretical background of the simulations and implementation details
+- [Developer manual](DEV_MANUAL.md): Guides for working on this project
 - [Changelog](CHANGELOG.md)
 
 ## License information
-This code is &copy; P. Hein, 2022, and it is made available under the GPL license enclosed with the software.
+This code is &copy; P. Hein, 2023, and it is made available under the GPL license enclosed with the software.
 
-Over and above the legal restrictions imposed by this license, if you use this software or modified variants of it for an academic publication then you are obliged to provide proper attribution. This can be to this code directly,
+Over and above the legal restrictions imposed by this license, if you use this software or modified variants of it, for example for an academic publication, then you are obliged to provide proper attribution. This can be to this code directly,
 
-- P. Hein. VHoppAS: Variable-range Hopping in Amorphous Solids, _\<version\>_ (2022). github.com/phi-hein/VHoppAS.
+- P. Hein. VHoppAS: Variable-range Hopping in Amorphous Solids, _\<version\>_ (2023). github.com/phi-hein/VHoppAS.
 
 or to the paper that describes it
 

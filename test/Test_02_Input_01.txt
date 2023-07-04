@@ -19,21 +19,21 @@ Description = This is a test project with
 <Parameters>
 Repetitions = 1
 ChemPot(eV) = 0
-States = 20000
-MinPaths = 100
+States = 40000
+MinPaths = 40
 DistCutoff(nm) = 0
-EdiffCutoff(eV) = 0.15
-PreHops = 100000
-EqHops = 500000
-HopLimit = 500000
+EdiffCutoff(eV) = 0.75
+PreHops = 200000
+EqHops = 2000000
+HopLimit = 2000000
 Seed = -65216958
 AttTime(s) = 1e-13
-LocRadius(nm) = 1
+LocRadius(nm) = 0.25
 </Parameters>
 
 <VariedParameters>
-Emin Emax Temp   GradPhi 
-eV   eV   K      V/cm    
--0.3 0.3  273.15 15000   
--0.2 0.2  263.15 20000   
--0.1 0.1  253.15 30000   
+Emin  Emax Temp   GradPhi 
+eV    eV   K      V/cm    
+-0.5  0.5  273.15 60000   
+-0.45 0.45 263.15 70000   
+-0.4  0.4  253.15 80000   

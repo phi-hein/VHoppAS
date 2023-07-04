@@ -19,6 +19,7 @@ const std::string MC::TPiecewiseLinearDOS::m_Type = "PiecewiseLinear";
 // Parameter descriptors
 const std::array<std::string,2> MC::TPiecewiseLinearDOS::s_Type = {"Type",""};
 const std::array<std::string,2> MC::TPiecewiseLinearDOS::s_RefTemp = {"RefTemp","K"};
+const std::string MC::TPiecewiseLinearDOS::s_Data = "Data";
 
 // Default constructor
 MC::TPiecewiseLinearDOS::TPiecewiseLinearDOS()
@@ -60,10 +61,16 @@ void MC::TPiecewiseLinearDOS::SpecifyDOS(const std::string& dos_content)
     }
     else throw EX::TInvalidInput("DOS file does not contain reference temperature.");
 
+    // Find beginning of DOS values
+    if (!std::regex_search(dos_content, match, std::regex("<" + GF::MetaEsc(s_Data) + ">")))
+    {
+        throw EX::TInvalidInput("DOS file does not contain data section.");
+    }
+
     // Read DOS values
     try
     {
-        std::string::const_iterator start(dos_content.cbegin());
+        std::string::const_iterator start(match.suffix().first);
         while (std::regex_search(start,dos_content.cend(), match,
             std::regex("(" + Constant::dblex + ")\\s+(" + Constant::dblex + ")")))
         {

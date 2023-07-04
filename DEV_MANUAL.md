@@ -123,58 +123,18 @@ This section describes how to configure the coding and build toolchain, using th
         ```
     - Select the _CMake_ compiler kit: `View` &rarr; `Command Palette` &rarr; `CMake: Select a Kit` &rarr; `GCC (General)` (_should refer to the GCC compiler in WSL that supports C++17_)
 - Specify VHoppAS input files for debug mode (which define what simulation parameters to use when the VHoppAS is started for example by `Run` &rarr; `Start Debugging`; adapt these files later as needed for debugging):
-    - Create a `debug` folder in the `VHoppAS` root directory (_this folder name is already included in the `.gitignore` file to exclude it from source control_)
-    - Create a `DebugDOS.txt` file in the `debug` folder, containing a valid DOS specification. For example, copy and rename a DOS file from the `test` folder or use the following DOS file content:
-        ```
-        <DOS>
-        Type = PiecewiseLinear
-        RefTemp(K) = 300
-
-        E-EF(eV) DOS(1/cm3eV)
-        -0.35    1.0E21
-        0.35     1.0E21
-        ```
-    - Create a `DebugInput.txt` file in the `debug` folder, containing valid simulation parameters. For example, copy and rename an input file from the `test` folder or use the following input file content:
+    - Create a `debug` folder in the `VHoppAS` root directory (_this folder name is already included in the `.gitignore` file to exclude it from source control_).
+    - Create a `DebugDOS.txt` file in the `debug` folder, containing a valid DOS specification. For example, copy and rename a DOS file from the `test` folder.
+    - Create a `DebugInput.txt` file in the `debug` folder, containing valid simulation parameters. For example, copy and rename an input file from the `test` folder. Set the following file paths in the input file:
         ```
         <MC-Project>
-        ProjectID = 001
-        Name = DebugProject
+        ...
         DOS-File = "DebugDOS.txt"   
         Output-File = "DebugResult.txt"
-        Verbosity(0-2) = 2
-        EFTAdjust(y/n) = y
-        InitialFDDistrib(y/n) = y
-        TeffFit(y/n) = n
-        EnforceECount(y/n) = y
-        CutoffAutoAdjust(y/n) = y
-        DistAdjustPercentage = 5
-        EdiffAdjustPercentage = 5
-        OnlyCompareSimID(y/n) = n
-        UseYZVariance(y/n) = n
-        Description = This project is used for debugging. 
+        ... 
         </MC-Project>
 
-        <Parameters>
-        Repetitions = 1
-        ChemPot(eV) = 0
-        States = 20000
-        MinPaths = 100
-        DistCutoff(nm) = 0
-        EdiffCutoff(eV) = 0.15
-        PreHops = 100000
-        EqHops = 1000000
-        HopLimit = 1000000
-        Seed = -65261958
-        AttTime(s) = 1e-13
-        LocRadius(nm) = 0.25
-        </Parameters>
-
-        <VariedParameters>
-        Emin  Emax Temp    GradPhi
-        eV    eV   K       V/cm 
-        -0.3  0.3  273.15  1.5e+4
-        -0.2  0.2  263.15  2.0e+4
-        -0.1  0.1  253.15  3.0e+4
+        ...
         ```
 - Choose a build variant: `View` &rarr; `Command Palette` &rarr; `CMake: Select Variant` &rarr; `Debug` or `Release` (_the resulting build folders `build_${buildType}` are already included in the `.gitignore` file to exclude them from source control_)
 - Prepare the build files for _CMake_: `View` &rarr; `Command Palette` &rarr; `CMake: Configure` (_this is done automatically for example when the build variant was switched or upon startup of VS Code_)
