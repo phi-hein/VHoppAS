@@ -17,12 +17,13 @@ Syntax for links to issues (or pull requests):
 ([#1](https://github.com/phi-hein/VHoppAS/issues/1))
 --->
 
-## [1.9.0] - June 2023
+## [1.9.0] - Juli 2023
 
 ### Changed:
 - **Breaking:** Rename several output values
 - **Breaking:** Add `<Data>` tag to the DOS file specification (to signal the beginning of DOS values) ([#11])
 - **Breaking:** Change default value of UseYZVariance setting from no to yes
+- Fermi level statistics refer to effective chemical potential as Fermi level
 
 ### Added:
 - **Breaking:** Result files contain charge diffusion coefficient
