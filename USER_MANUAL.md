@@ -183,7 +183,7 @@ Project description, e.g. for comments towards the purpose of the project. If sp
 **List of input parameters**:  
 Each of the following parameters can be either present in the `<Parameters>`-block or in the `<VariedParameters>`-table. See also [technical notes](TECHNICAL_NOTES.md) for further definitions.
 - `Repetitions` (optional, default $`= 1`$):  
-_Type: Unsigned integer; Unit: None; Allowed values: $1$ - $100$._  
+_Type: Unsigned integer; Unit: None; Allowed values: $`1`$ - $`100`$._  
 Specifies how often each parameter set shall be simulated. Averaging over several repetitions with different random structure (see `Seed` parameter) is important for meaningful results with error bars.
 
 - `Emin` (mandatory):  
@@ -199,31 +199,31 @@ _Type: Real number; Unit: eV; Allowed values: Unrestricted (= can even be outsid
 Chemical potential $\mu$ of the electrons, i.e. the position of the used Fermi level on the DOS energy axis (= relative to the charge-neutral Fermi level). This parameter determines the number of electrons initially placed in the simulation cell. Under weak-field conditions, it corresponds to the actual (relative) chemical potential of the electrons, while in the high-field regime the effective chemical potential of electrons (= steady-state Fermi level) can differ due to a higher effective temperature of the electrons. `ChemPot` $`= 0`$ leads to simulation of the charge-neutral material, while `ChemPot` $`> 0`$ shifts the Fermi level to higher energy (= more electrons = negatively charged material) and `ChemPot` $`< 0`$ shifts the Fermi level to lower energy (= less electrons = positively charged material).
 
 - `States` (mandatory):  
-_Type: Unsigned integer; Unit: None; Allowed values: $200$ - $20000000$ (actual maximum depends on available memory)._  
+_Type: Unsigned integer; Unit: None; Allowed values: $`200`$ - $`20000000`$ (actual maximum depends on available memory)._  
 Number of localized states $`N_{\text{st}}`$ (determines the cell volume).
 
 - `MinPaths` (either this or `DistCutoff` must be specified and non-zero):  
-_Type: Unsigned integer; Unit: None; Allowed values: $2$ - theoretical maximum for given cell volume (actual maximum depends on available memory)._  
+_Type: Unsigned integer; Unit: None; Allowed values: $`2`$ - theoretical maximum for given cell volume (actual maximum depends on available memory)._  
 Minimum number of hopping paths per localized state. The spatial cutoff gets determined by finding the radius that yields at least `MinPaths` paths for each state. This parameter is ignored, when `DistCutoff` is specified and non-zero.
 
 - `DistCutoff` (either this or `MinPaths` must be specified and non-zero):  
-_Type: Real number; Unit: nm; Allowed values: $0.0$ - half cell size (actual maximum depends on available memory)._  
+_Type: Real number; Unit: nm; Allowed values: $`0.0`$ - half cell size (actual maximum depends on available memory)._  
 Spatial path cutoff $`r_{\text{cut}}`$ (= maximum state-to-state distance considered for hopping). Is increased automatically if it does not lead to at least two paths for each state. If `DistCutoff` is specified and non-zero, then the `MinPaths` parameter is ignored.
 
 - `EdiffCutoff` (optional, default $`= 0.0`$):  
-_Type: Real number; Unit: eV; Allowed values: $0.0$ - width of the DOS range (Emax minus Emin)._  
+_Type: Real number; Unit: eV; Allowed values: $`0.0`$ - width of the DOS range (Emax minus Emin)._  
 Energetic path cutoff $`E_{\text{cut}}`$ (= maximum state energy difference considered for hopping). This constraint is applied after the spatial cutoff (and may lead to states with less paths than `MinPaths`). It is increased automatically if it does not leave at least two paths for each state. The value `EdiffCutoff` $`= 0`$ corresponds to no energetic cutoff (as if `EdiffCutoff` $`= E_{\text{max}} - E_{\text{min}}`$).
 
 - `PreHops` (optional, default $`= 0`$):  
-_Type: Unsigned integer; Unit: None; Allowed values: $0$ - $2000000000000$._  
+_Type: Unsigned integer; Unit: None; Allowed values: $`0`$ - $`2000000000000`$._  
 Number of hops $`N_{\text{pre}}`$ during pre-equilibration (to reach steady-state electron distribution). No pre-equilibration if `PreHops` $`= 0`$.
 
 - `EqHops` (optional, default $`= 0`$):  
-_Type: Unsigned integer; Unit: None; Allowed values: $0$ - $2000000000000$._  
+_Type: Unsigned integer; Unit: None; Allowed values: $`0`$ - $`2000000000000`$._  
 Number of hops $`N_{\text{eq}}`$ during equilibration (to reach proper displacement distributions and linear relation between displacement averages and time). No equilibration if `EqHops` $`= 0`$.
 
 - `HopLimit` (mandatory):  
-_Type: Unsigned integer; Unit: None; Allowed values: $200$ - $2000000000000$._  
+_Type: Unsigned integer; Unit: None; Allowed values: $`200`$ - $`2000000000000`$._  
 Number of hops $`N_{\text{sim}}`$ during the main simulation (after pre-equilibration and equilibration).
 
 - `Seed` (mandatory):  
