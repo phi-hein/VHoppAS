@@ -1,6 +1,8 @@
 # VHoppAS: Variable-range Hopping in Amorphous Solids
 DOS-based kinetic Monte-Carlo simulation of 3D variable-range hopping for conductivity and diffusion coefficients of electrons in amorphous compounds.
 
+This code was developed by Philipp Hein at the Institute of Physical Chemistry, RWTH Aachen University, Germany, under the supervision of Prof. Manfred Martin.
+
 ## Features
 - Randomized 3D positions and energies of localized states generated from an arbitrary user-supplied DOS
 - Flexible cut-off definitions for DOS range, hop distance and hop energy (incl. auto-adjustment)
