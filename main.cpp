@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 {
 	std::cout << " -- VHoppAS: Variable-range Hopping in Amorphous Solids --" << std::endl; 
 	std::cout << "    DOS-based kinetic Monte-Carlo simulation" << std::endl;
-	std::cout << "    (by Philipp Hein, version 1.9.0";
+	std::cout << "    (by Philipp Hein, version 2.0.0";
 	#ifndef NDEBUG
 	std::cout << ", DEBUG build";
 	#endif

@@ -29,7 +29,7 @@ LocRadius(nm) = 0.25
 </Parameters>
 
 <VariedParameters>
-Emin  Emax Temp   GradPhi 
+Emin  Emax Temp   EField 
 eV    eV   K      V/cm    
 -0.5  0.5  273.15 60000   
 -0.45 0.45 263.15 70000   

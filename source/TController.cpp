@@ -466,7 +466,6 @@ void MC::TController::ReadInputFile(const std::string& filename, const std::uint
         std::cout << "- Mobile electrons = electrons with > 0 non-oscillating hops." << std::endl;
         std::cout << "- Localized states are single-electron states." << std::endl;
         std::cout << "- Spin-degeneracy is assumed. All input and output values (incl. the DOS) refer to spin-up and spin-down electrons together." << std::endl;
-        std::cout << "- Resulting tracer diffusion coefficients are equal to chemical diffusion coefficients because of effective charge carrier formalism." << std::endl;
     }
 
     // Read DOS file

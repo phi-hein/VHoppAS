@@ -25,7 +25,7 @@ const std::array<std::string,2> MC::TParamSet::s_HopLimit = {"HopLimit",""};
 const std::array<std::string,2> MC::TParamSet::s_RndSeed = {"Seed",""};
 const std::array<std::string,2> MC::TParamSet::s_AttemptTime = {"AttTime","s"};
 const std::array<std::string,2> MC::TParamSet::s_Temperature = {"Temp","K"};
-const std::array<std::string,2> MC::TParamSet::s_PhiGradient = {"GradPhi","V/cm"};
+const std::array<std::string,2> MC::TParamSet::s_PhiGradient = {"EField","V/cm"};
 const std::array<std::string,2> MC::TParamSet::s_LocRadius = {"LocRadius","nm"};
 
 // Default constructor

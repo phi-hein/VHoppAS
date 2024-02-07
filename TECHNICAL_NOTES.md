@@ -7,11 +7,11 @@ The simulations are based on the [Miller-Abrahams rate equation](https://doi.org
 ```math
 \nu_{ij} = \left\{
 \begin{array}{ll}
-\nu_0\exp\left(-\frac{2|\vec{r}_{ij}|}{\alpha}-\frac{E_{ij}-\mathrm{e}\vec{r}_{ij}\vec{F}}{k_{\text{B}}T}\right) & \text{for } E_{ij}-\mathrm{e}\vec{r}_{ij}\vec{F} > 0 \\
-\nu_0\exp\left(-\frac{2|\vec{r}_{ij}|}{\alpha}\right) & \, \text{for } E_{ij}-\mathrm{e}\vec{r}_{ij}\vec{F} \leq 0 \\
+\nu_0\exp\left(-\frac{2|\vec{r}_{ij}|}{\alpha}-\frac{E_{ij}+e\vec{r}_{ij}\vec{F}}{k_{\text{B}}T}\right) & \text{for } E_{ij}+e\vec{r}_{ij}\vec{F} > 0 \\
+\nu_0\exp\left(-\frac{2|\vec{r}_{ij}|}{\alpha}\right) & \, \text{for } E_{ij}+e\vec{r}_{ij}\vec{F} \leq 0 \\
 \end{array}\right.
 ```
-which describes the expected hopping rate $\nu_{ij}$ from an occupied localized state $i$ to an unoccupied localized state $j$, depending on the distance $`\vec{r}_{ij}=\vec{r}_{j}-\vec{r}_{i}`$ and the energy difference $`E_{ij}=E_{j}-E_{i}`$ between the states. The involved parameters are the attempt frequency $\nu_0$, the localization radius $\alpha$, the electric potential gradient $\vec{F}=\vec{\nabla}\varphi$ and the temperature $T$ ($\mathrm{e}$ is the elementary charge, $k_{\text{B}}$ is the Boltzmann constant).
+which describes the expected hopping rate $\nu_{ij}$ from an occupied localized state $i$ to an unoccupied localized state $j$, depending on the distance $`\vec{r}_{ij}=\vec{r}_{j}-\vec{r}_{i}`$ and the energy difference $`E_{ij}=E_{j}-E_{i}`$ between the states. The involved parameters are the attempt frequency $\nu_0$, the localization radius $\alpha$, the electric field $\vec{F}=-\nabla\varphi$ and the temperature $T$ ($e$ is the elementary charge, $k_{\text{B}}$ is the Boltzmann constant).
 
 Furthermore, the simulations are based on the effective charge carrier formalism. In general, only a fraction of the electrons in a system, i.e. those close to the Fermi level, can contribute to charge transport at a time (e.g. due to the Pauli exclusion principle). Since not the same electrons act as charge carriers all the time (e.g. due to trapping/de-trapping in deeper states) and since electrons are indistinguishable, the electron movement observed in the simulation must be re-interpreted as the movement of effective charge carriers, whose amount is given by the [effective charge carrier density](https://doi.org/10.1063/1.4871757 "V. Palenskis, AIP Advances, 2014, 4, 047119.")
 ```math
@@ -20,15 +20,15 @@ n_{\text{eff}} = \int_{\infty}^{-\infty} g(E)f_{\text{FD}}(E)\left[1-f_{\text{FD
 where $g(E)$ is the density of states (DOS) and $f_{\text{FD}}(E)$ is the Fermi-Dirac distribution.
 
 ## Spatial and energetic axes
-The simulated KMC cell that contains the localized states is cubic with periodic boundary conditions in the three directions $x$, $y$ and $z$. The electric potential gradient is oriented in $x$-direction according to 
+The simulated KMC cell that contains the localized states is cubic with periodic boundary conditions in the three directions $x$, $y$ and $z$. The electric field is oriented in ${-}x$-direction according to 
 ```math
-\vec{F} = \vec{\nabla}\varphi = \left(
+\vec{F} = -\nabla\varphi = \left(
 \begin{array}{ccc}
-F \\ 0 \\ 0 
+-F \\ 0 \\ 0 
 \end{array}
 \right)
 ```
-such that $|F|$ is the electric field strength and for $F > 0$ the electrons flow in $x$-direction ($F$ is the `GradPhi` input value). The cell is considered homogeneous in the sense of spatially constant input parameters, for example constant temperature ($\vec{\nabla}T=0$), constant electric field ($\vec{\nabla}^2\varphi=0$) and position-independent DOS ($\vec{\nabla}g(E)=0$).
+such that $F=|\vec{F}|$ is the electric field strength and for $F > 0$ the electrons flow in ${+}x$-direction ($F$ is the `EField` input value). The cell is considered homogeneous in the sense of spatially constant input parameters, for example constant temperature ($\nabla T=0$), constant electric field ($\nabla^2\varphi=0$) and position-independent DOS ($\nabla g(E)=0$).
 
 The energy axis $E$ is supplied with the DOS (in the DOS input file). $E=0$ there corresponds to the position of the reference Fermi level, i.e. the Fermi level of the charge-neutral material at a certain reference temperature $T_{\text{ref}}$. Depending on the `EFTAdjust` input setting, this reference Fermi level gets adjusted to the simulation temperature $T$ by finding $\Delta{}E$ (bisection search algorithm) such that
 ```math
@@ -42,7 +42,7 @@ The energy axis $E$ is supplied with the DOS (in the DOS input file). $E=0$ ther
 \quad\text{if}\quad
 T_{\text{ref}} = 0\text{ K})
 ```
-and shifting the energy axis according to $E \rightarrow E + \Delta{}E$, such that $E=0$ then corresponds to the charge-neutral Fermi level at the simulation temperature $T$ (under the assumption of a temperature-independent DOS). The actual Fermi level in the simulations may differ from this reference Fermi level in order to simulate the material in a charged state (= more or less electrons than normal). Note that in the KMC cell the Fermi level (= the electrochemical potential of electrons) is not spatially constant due to the linearly changing electric potential $\varphi(x)$, but it still has a constant position on the energy axis $E$ of the DOS since the state energies are similarly shifted by the electric potential. $E$ here always corresponds to energies without the contribution from the electric potential. In contrast to the Fermi level and the electric potential, the chemical potential of the electrons is constant throughout the KMC cell. A certain "position of the Fermi level on the axis $E$" therefore corresponds to a certain chemical potential of the electrons. It is then possible to define a relative chemical potential $\mu$ (relative to the chemical potential of the charge-neutral material) such that $E=\mu$ is the position of the Fermi level throughout the KMC cell (`ChemPot` input value). $\mu \neq 0$ then leads to simulations with a charged material.
+and shifting the energy axis according to $E \rightarrow E + \Delta{}E$, such that $E=0$ then corresponds to the charge-neutral Fermi level at the simulation temperature $T$ (under the assumption of a temperature-independent DOS). The actual Fermi level in the simulations may differ from this reference Fermi level in order to simulate the material in a charged state (= more or less electrons than normal). Note that in the KMC cell the Fermi level (= the electrochemical potential of electrons) is not spatially constant due to the linearly changing external electric potential $\varphi(x)$, but it still has a constant position on the energy axis $E$ of the DOS since the state energies are similarly shifted by the electric potential. $E$ here always corresponds to energies without the contribution from the electric potential. In contrast to the Fermi level and the electric potential, the chemical potential of the electrons is constant throughout the KMC cell. A certain "position of the Fermi level on the axis $E$" therefore corresponds to a certain chemical potential of the electrons. It is then possible to define a relative chemical potential $\mu$ (relative to the chemical potential of the charge-neutral material) such that $E=\mu$ is the position of the Fermi level throughout the KMC cell (`ChemPot` input value). $\mu \neq 0$ then leads to simulations with a charged material.
 
 Since only the region around the Fermi level is relevant for hopping (due to the simulaneous presence of occupied and unoccupied states), only localized states in a chosen energy range $`[E_{\text{min}},E_{\text{max}}]`$ on the axis $E$ are regarded (`Emin` and `Emax` input values; in most cases symmetric around `ChemPot`). For a given total number of localized states $N_{\text{st}}$ (`States` input value) the volume of the simulated KMC cell is then
 ```math
@@ -75,7 +75,7 @@ For a hopping path from state $i$ to state $j$ this yields $`E_{ij}=E_j-E_i=f_{\
 
 The relative values of further input quantities are:
 - Inverse localization radius ($\alpha$ is the `LocRadius` input value): $`\hat{\alpha}^{-1} = f_{\text{sp}}/\alpha`$
-- Electric potential gradient ($F$ is the `GradPhi` input value): $`\hat{F} = \mathrm{e}F f_{\text{sp}}/f_{\text{en}}`$
+- Electric field strength ($F$ is the `EField` input value): $`\hat{F} = eF f_{\text{sp}}/f_{\text{en}}`$
 - Thermal energy ($T$ is the `Temp` input value): $`\hat{E}_{\text{th}} = k_{\text{B}}T/f_{\text{en}}`$ 
 - Spatial cutoff ($r_{\text{cut}}$ is the `DistCutoff` input value): $`\hat{r}_{\text{cut}} = r_{\text{cut}}/f_{\text{sp}}`$
 - Energetic cutoff ($E_{\text{cut}}$ is the `EdiffCutoff` input value): $`\hat{E}_{\text{cut}} = E_{\text{cut}}/f_{\text{en}}`$
@@ -313,13 +313,13 @@ The individual displacements $`(\hat{X}_k, \hat{Y}_k, \hat{Z}_k)`$ of the electr
 
 **Displacement variances of effective charge carriers**:
 ```math
-\langle(X-\langle X\rangle_{\text{mob}})^2\rangle 
+\mathrm{Var}(X) = \langle(X-\langle X\rangle_{\text{mob}})^2\rangle 
 = \langle X^2\rangle - \frac{N_{\text{eff}}}{N_{\text{mob}}}\langle X\rangle^2
 \;,\quad
-\langle(Y-\langle Y\rangle_{\text{mob}})^2\rangle 
+\mathrm{Var}(Y) = \langle(Y-\langle Y\rangle_{\text{mob}})^2\rangle 
 = \langle Y^2\rangle - \frac{N_{\text{eff}}}{N_{\text{mob}}}\langle Y\rangle^2
 \quad\text{and}\quad
-\langle(Z-\langle Z\rangle_{\text{mob}})^2\rangle 
+\mathrm{Var}(Z) = \langle(Z-\langle Z\rangle_{\text{mob}})^2\rangle 
 = \langle Z^2\rangle - \frac{N_{\text{eff}}}{N_{\text{mob}}}\langle Z\rangle^2
 ```
 
@@ -347,13 +347,11 @@ When an equilibration step is used (`EqHops` $\neq 0$), then the displacement av
 
 **Displacement variances of effective charge carriers** (`MeanDispVarx`, `MeanDispVary` and `MeanDispVarz` output values):
 ```math
-\langle(X-\langle X\rangle_{\text{mob}})^2\rangle_{\text{sim}} = \langle(X-\langle X\rangle_{\text{mob}})^2\rangle - \frac{N_{\text{eff}}^{\text{eq}}}{N_{\text{eff}}}\langle(X-\langle X\rangle_{\text{mob}})^2\rangle_{\text{eq}}
+\mathrm{Var}(X)_{\text{sim}} = \mathrm{Var}(X) - \frac{N_{\text{eff}}^{\text{eq}}}{N_{\text{eff}}}\mathrm{Var}(X)_{\text{eq}}
 \;,\quad
-\langle(Y-\langle Y\rangle_{\text{mob}})^2\rangle_{\text{sim}} = \langle(Y-\langle Y\rangle_{\text{mob}})^2\rangle - \frac{N_{\text{eff}}^{\text{eq}}}{N_{\text{eff}}}\langle(Y-\langle Y\rangle_{\text{mob}})^2\rangle_{\text{eq}}
-```
-```math
+\mathrm{Var}(Y)_{\text{sim}} = \mathrm{Var}(Y) - \frac{N_{\text{eff}}^{\text{eq}}}{N_{\text{eff}}}\mathrm{Var}(Y)_{\text{eq}}
 \quad\text{and}\quad
-\langle(Z-\langle Z\rangle_{\text{mob}})^2\rangle_{\text{sim}} = \langle(Z-\langle Z\rangle_{\text{mob}})^2\rangle - \frac{N_{\text{eff}}^{\text{eq}}}{N_{\text{eff}}}\langle(Z-\langle Z\rangle_{\text{mob}})^2\rangle_{\text{eq}}
+\mathrm{Var}(Z)_{\text{sim}} = \mathrm{Var}(Z) - \frac{N_{\text{eff}}^{\text{eq}}}{N_{\text{eff}}}\mathrm{Var}(Z)_{\text{eq}}
 ```
 
 Similarly, the **simulated timespan** must be related to the equilibration (`Time` output value): $`\tau_{\text{sim}} = \tau - \tau_{\text{eq}}`$
@@ -363,41 +361,39 @@ Based on the aforementioned quantities, the following major result values can be
 
 **Conductivity** (`Conductivity` output value):
 ```math
-\sigma = \mathrm{e}n_{\text{eff}}\frac{\langle X \rangle_{\text{sim}}}{F \tau_{\text{sim}}}
+\sigma = en_{\text{eff}}\frac{\langle X \rangle_{\text{sim}}}{F \tau_{\text{sim}}}
 ```
-If there is no electric field (`GradPhi` $=0$), then $\sigma$ is set to zero.
+If there is no electric field (`EField` $=0$), then $\sigma$ is set to zero.
 
 **Drift mobility** (`Mobility` output value):
 ```math
-u = -\frac{\langle X \rangle_{\text{sim}}}{F \tau_{\text{sim}}} = -\frac{\sigma}{\mathrm{e}n_{\text{eff}}}
+u = \frac{\langle X \rangle_{\text{sim}}}{F \tau_{\text{sim}}} = \frac{\sigma}{en_{\text{eff}}}
 ```
-If there is no electric field (`GradPhi` $=0$), then $u$ is set to zero.
+If there is no electric field (`EField` $=0$), then $u$ is set to zero.
 
-**Tracer diffusion coefficients** (`TracerDCoeff`, `TracerDCoeffP` and `TracerDCoeffT` output values): 
+**Fickian diffusion coefficients** (`DCoeff` and `DCoeffP` output values): 
 ```math
-D = \frac{D_x + 2 D_{yz}}{3}
-\;,\quad
 D_x = \frac{\langle(X-\langle X\rangle_{\text{mob}})^2\rangle_{\text{sim}}}{2\tau_{\text{sim}}}
 \quad\text{and}\quad
 D_{yz} 
 = \frac{\langle Y^2 \rangle_{\text{sim}} + \langle Z^2 \rangle_{\text{sim}}}{4\tau_{\text{sim}}}
 ```
-As explained in the supplement of our paper, these tracer diffusion coefficients equal the chemical diffusion coefficients, because they contain the thermodynamic factor through the use of effective charge carriers. If `UseYZVariance = yes`, then $D_{yz}$ is calculated with the variances $`\langle(Y-\langle Y\rangle_{\text{mob}})^2\rangle_{\text{sim}}`$ and $`\langle(Z-\langle Z\rangle_{\text{mob}})^2\rangle_{\text{sim}}`$ instead of the mean squared displacements. If there is no electric field (`GradPhi` $=0$), then both $D_x$ and $D_{yz}$ are calculated with mean squared displacements, i.e. with $`\langle X^2 \rangle_{\text{sim}}`$ and $`\langle Y^2 \rangle_{\text{sim}} + \langle Z^2 \rangle_{\text{sim}}`$, respectively (irrespective of `UseYZVariance`).
-
-**Charge diffusion coefficient** (`ChargeDCoeff` output value):  
+For `EField` $\neq 0$:
 ```math
-D_{\sigma} = -\frac{k_{\text{B}}T_{\text{eff}}u}{\mathrm{e}}
+D = D_{yz}
 ```
-If there is no electric field (`GradPhi` $=0$), then $D_{\sigma}$ is set to zero.
-
-**Haven ratios** (`HavenRatio`, `HavenRatioP` and `HavenRatioT` output values):
+For `EField` $=0$:
 ```math
-H_{\mathrm{R}}=\frac{D}{D_{\sigma}}
-\;,\quad
-H_{\mathrm{R},x}=\frac{D_x}{D_{\sigma}}
+D = D_{xyz} = \frac{D_x + 2 D_{yz}}{3}
+```
+As explained in the supplement of our paper, these are the Fickian diffusion coefficients because they contain the thermodynamic factor through the use of effective charge carriers. If `UseYZVariance = yes`, then $D_{yz}$ is calculated with the variances $`\mathrm{Var}(Y)_{\text{sim}}`$ and $`\mathrm{Var}(Z)_{\text{sim}}`$ instead of the mean squared displacements. If there is no electric field (`EField` $=0$), then both $D_x$ and $D_{yz}$ are calculated with mean squared displacements, i.e. with $`\langle X^2 \rangle_{\text{sim}}`$ and $`\langle Y^2 \rangle_{\text{sim}} + \langle Z^2 \rangle_{\text{sim}}`$, respectively (irrespective of `UseYZVariance`).
+
+**Nernst-Einstein ratios** (`NERatio` and `NERatioP` output values):
+```math
+H_{\mathrm{R}}=\frac{eD}{uk_{\text{B}}T_{\text{eff}}}
 \quad\text{and}\quad
-H_{\mathrm{R},yz}=\frac{D_{yz}}{D_{\sigma}}
+H_{\mathrm{R},x}=\frac{eD_x}{uk_{\text{B}}T_{\text{eff}}}
 ```
-From a theoretical point of view, the Haven ratios should equal unity (because the tracer diffusion coefficients equal the chemical diffusion coefficients), such that these values should scatter around unity and serve more as a consistency check. Deviations might occur for example in the case of anormalous diffusion (= non-linear relation between displacement variance and time), e.g. for $D_x$ at high field strength. If there is no electric field (`GradPhi` $=0$), then $H_{\mathrm{R}}$, $H_{\mathrm{R},x}$ and $H_{\mathrm{R},yz}$ are set to zero.
+From a theoretical point of view, these ratios equal unity, such that these values should scatter around unity and serve more as a validation check for the Nernst-Einstein relation. $H_{\mathrm{R},x}$ is like $D_x$ not a reliable value, especially at high electric field strength. If there is no electric field (`EField` $=0$), then $H_{\mathrm{R}}$ and $H_{\mathrm{R},x}$ are set to zero.
 
 All these output values are not only determined at the end of the main simulation but also in 2.5 % intervals over the course of equilibration and main simulation (if `Verbosity` $\geq 1$). This everytime includes a fitting of the electron distribution if `TeffFit = yes`. For the equilibration, the displacement averages and the simulated timespan are of course not relative but the total values (e.g. $\langle X \rangle$ and $\tau$ used to calculate $\sigma$). In the output file, the `<Results>` block refers to the final values at the end of the main simulation, while the convergence tables (and the log output) contain also the intermediate values. If `TeffFit = yes`, then the repetitive fitting typically leads to slightly differing numbers of effective charge carriers for each intermediate result. This causes an additional noise for the intermediate quantities based on $N_{\text{eff}}$. While the progress table in the log output contains these variations (since it is written live during the simulation), in both convergence tables of the output file all affected quantities are corrected to the final $N_{\text{eff}}$ at the end of the main simulation (by multiplication with the factor $`N_{\text{eff},i}/N_{\text{eff}}`$ for each intermediate result $i$). This means for example that the last line of the equilibration progress table in the log output contains the $\langle X\rangle_{\text{eq}}$ value, while the corresponding last line of the `<EquilibrationConvergence>` table in the output file contains the corrected value $`\langle X\rangle_{\text{eq}}N_{\text{eff}}^{\text{eq}}/N_{\text{eff}}`$.

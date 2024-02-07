@@ -16,13 +16,10 @@
 const std::array<std::string,2> MC::TResult::s_RepID = {"RepID",""};
 const std::array<std::string,2> MC::TResult::s_Conductivity = {"Conductivity","S/m"};
 const std::array<std::string,2> MC::TResult::s_DriftMobility = {"Mobility","cm2/Vs"};
-const std::array<std::string,2> MC::TResult::s_DiffusionCoefficient = {"TracerDCoeff","cm2/s"};
-const std::array<std::string,2> MC::TResult::s_DiffusionCoefficientParallel = {"TracerDCoeffP","cm2/s"};
-const std::array<std::string,2> MC::TResult::s_DiffusionCoefficientTransverse = {"TracerDCoeffT","cm2/s"};
-const std::array<std::string,2> MC::TResult::s_ChargeDiffusionCoefficient = {"ChargeDCoeff","cm2/s"};
-const std::array<std::string,2> MC::TResult::s_HavenRatio = {"HavenRatio",""};
-const std::array<std::string,2> MC::TResult::s_HavenRatioParallel = {"HavenRatioP",""};
-const std::array<std::string,2> MC::TResult::s_HavenRatioTransverse = {"HavenRatioT",""};
+const std::array<std::string,2> MC::TResult::s_DiffusionCoefficient = {"DCoeff","cm2/s"};
+const std::array<std::string,2> MC::TResult::s_DiffusionCoefficientParallel = {"DCoeffP","cm2/s"};
+const std::array<std::string,2> MC::TResult::s_NernstEinsteinRatio = {"NERatio",""};
+const std::array<std::string,2> MC::TResult::s_NernstEinsteinRatioParallel = {"NERatioP",""};
 const std::array<std::string,2> MC::TResult::s_PartialEntropy = {"PartialEntropy","eV/K"};
 const std::array<std::string,2> MC::TResult::s_EffChemPot = {"EffChemPot","eV"};
 const std::array<std::string,2> MC::TResult::s_EffTemp = {"EffTemp","K"};
@@ -65,8 +62,7 @@ MC::TResult::TResult()
     : m_TotalHops(0), m_RepID(0), 
     m_Conductivity(0.0), m_DriftMobility(0.0), 
     m_DiffusionCoefficient(0.0), m_DiffusionCoefficientParallel(0.0), 
-    m_DiffusionCoefficientTransverse(0.0), m_ChargeDiffusionCoefficient(0.0),
-    m_HavenRatio(0.0), m_HavenRatioParallel(0.0), m_HavenRatioTransverse(0.0), m_PartialEntropy(0.0), 
+    m_NernstEinsteinRatio(0.0), m_NernstEinsteinRatioParallel(0.0), m_PartialEntropy(0.0), 
     m_EffChemPot(0.0), m_EffTemp(0.0), m_EffCarriers(0.0), m_EffCarrierDensity(0.0), 
     m_ElectronCount(0), m_MobileElectrons(0), m_ZeroHopElectrons(0), m_OscElectrons(0), 
     m_TotalTime(0.0), 
@@ -104,11 +100,8 @@ std::unique_ptr<MC::TResult> MC::TResult::ValueCopy(const TResult* const result)
     temp.m_DriftMobility = result->m_DriftMobility;
     temp.m_DiffusionCoefficient = result->m_DiffusionCoefficient;
 	temp.m_DiffusionCoefficientParallel = result->m_DiffusionCoefficientParallel;
-	temp.m_DiffusionCoefficientTransverse = result->m_DiffusionCoefficientTransverse;
-    temp.m_ChargeDiffusionCoefficient = result->m_ChargeDiffusionCoefficient;
-    temp.m_HavenRatio = result->m_HavenRatio;
-    temp.m_HavenRatioParallel = result->m_HavenRatioParallel;
-    temp.m_HavenRatioTransverse = result->m_HavenRatioTransverse;
+    temp.m_NernstEinsteinRatio = result->m_NernstEinsteinRatio;
+    temp.m_NernstEinsteinRatioParallel = result->m_NernstEinsteinRatioParallel;
     temp.m_PartialEntropy = result->m_PartialEntropy;
     temp.m_EffChemPot = result->m_EffChemPot;
     temp.m_EffTemp = result->m_EffTemp;
@@ -158,11 +151,8 @@ void MC::TResult::Write(std::ostream& o_str) const
     o_str << GF::CombineDescUnit(s_DriftMobility) << " = " << m_DriftMobility << std::endl;
     o_str << GF::CombineDescUnit(s_DiffusionCoefficient) << " = " << m_DiffusionCoefficient << std::endl;
     o_str << GF::CombineDescUnit(s_DiffusionCoefficientParallel) << " = " << m_DiffusionCoefficientParallel << std::endl;
-    o_str << GF::CombineDescUnit(s_DiffusionCoefficientTransverse) << " = " << m_DiffusionCoefficientTransverse << std::endl;
-    o_str << GF::CombineDescUnit(s_ChargeDiffusionCoefficient) << " = " << m_ChargeDiffusionCoefficient << std::endl;
-    o_str << GF::CombineDescUnit(s_HavenRatio) << " = " << m_HavenRatio << std::endl;
-    o_str << GF::CombineDescUnit(s_HavenRatioParallel) << " = " << m_HavenRatioParallel << std::endl;
-    o_str << GF::CombineDescUnit(s_HavenRatioTransverse) << " = " << m_HavenRatioTransverse << std::endl;
+    o_str << GF::CombineDescUnit(s_NernstEinsteinRatio) << " = " << m_NernstEinsteinRatio << std::endl;
+    o_str << GF::CombineDescUnit(s_NernstEinsteinRatioParallel) << " = " << m_NernstEinsteinRatioParallel << std::endl;
     o_str << GF::CombineDescUnit(s_PartialEntropy) << " = " << m_PartialEntropy << std::endl;
     o_str << GF::CombineDescUnit(s_EffChemPot) << " = " << m_EffChemPot << std::endl;
     o_str << GF::CombineDescUnit(s_EffTemp) << " = " << m_EffTemp << std::endl;
@@ -323,11 +313,8 @@ std::vector<std::array<std::string,2>> MC::TResult::WriteTableHeader()
     header.push_back(s_DriftMobility);
     header.push_back(s_DiffusionCoefficient);
     header.push_back(s_DiffusionCoefficientParallel);
-    header.push_back(s_DiffusionCoefficientTransverse);
-    header.push_back(s_ChargeDiffusionCoefficient);
-    header.push_back(s_HavenRatio);
-    header.push_back(s_HavenRatioParallel);
-    header.push_back(s_HavenRatioTransverse);
+    header.push_back(s_NernstEinsteinRatio);
+    header.push_back(s_NernstEinsteinRatioParallel);
     header.push_back(s_PartialEntropy);
     header.push_back(s_EffChemPot);
     header.push_back(s_EffTemp);
@@ -399,23 +386,11 @@ std::vector<std::string> MC::TResult::WriteTableLine() const
     line.push_back(sstr.str());
     sstr.str("");
 
-    sstr << m_DiffusionCoefficientTransverse;
+    sstr << m_NernstEinsteinRatio;
     line.push_back(sstr.str());
     sstr.str("");
 
-    sstr << m_ChargeDiffusionCoefficient;
-    line.push_back(sstr.str());
-    sstr.str("");
-
-    sstr << m_HavenRatio;
-    line.push_back(sstr.str());
-    sstr.str("");
-
-    sstr << m_HavenRatioParallel;
-    line.push_back(sstr.str());
-    sstr.str("");
-
-    sstr << m_HavenRatioTransverse;
+    sstr << m_NernstEinsteinRatioParallel;
     line.push_back(sstr.str());
     sstr.str("");
 
@@ -618,11 +593,8 @@ bool MC::TResult::Read(const std::string& str, bool raise_errors)
     if (get_dbl(s_DriftMobility,m_DriftMobility) == false) return false;
     if (get_dbl(s_DiffusionCoefficient,m_DiffusionCoefficient) == false) return false;
     if (get_dbl(s_DiffusionCoefficientParallel,m_DiffusionCoefficientParallel) == false) return false;
-    if (get_dbl(s_DiffusionCoefficientTransverse,m_DiffusionCoefficientTransverse) == false) return false;
-	if (get_dbl(s_ChargeDiffusionCoefficient,m_ChargeDiffusionCoefficient) == false) return false;
-    if (get_dbl(s_HavenRatio,m_HavenRatio) == false) return false;
-    if (get_dbl(s_HavenRatioParallel,m_HavenRatioParallel) == false) return false;
-    if (get_dbl(s_HavenRatioTransverse,m_HavenRatioTransverse) == false) return false;
+    if (get_dbl(s_NernstEinsteinRatio,m_NernstEinsteinRatio) == false) return false;
+    if (get_dbl(s_NernstEinsteinRatioParallel,m_NernstEinsteinRatioParallel) == false) return false;
     if (get_dbl(s_PartialEntropy,m_PartialEntropy) == false) return false;
     if (get_dbl(s_EffChemPot,m_EffChemPot) == false) return false;
     if (get_dbl(s_EffTemp,m_EffTemp) == false) return false;
@@ -769,11 +741,8 @@ void MC::TResult::WriteMultiAnalysis(std::ostream& o_str, const std::vector<std:
     write_dbl_analysis(s_DriftMobility,&TResult::m_DriftMobility);
     write_dbl_analysis(s_DiffusionCoefficient,&TResult::m_DiffusionCoefficient);
     write_dbl_analysis(s_DiffusionCoefficientParallel,&TResult::m_DiffusionCoefficientParallel);
-    write_dbl_analysis(s_DiffusionCoefficientTransverse,&TResult::m_DiffusionCoefficientTransverse);
-    write_dbl_analysis(s_ChargeDiffusionCoefficient,&TResult::m_ChargeDiffusionCoefficient);
-    write_dbl_analysis(s_HavenRatio,&TResult::m_HavenRatio);
-    write_dbl_analysis(s_HavenRatioParallel,&TResult::m_HavenRatioParallel);
-    write_dbl_analysis(s_HavenRatioTransverse,&TResult::m_HavenRatioTransverse);
+    write_dbl_analysis(s_NernstEinsteinRatio,&TResult::m_NernstEinsteinRatio);
+    write_dbl_analysis(s_NernstEinsteinRatioParallel,&TResult::m_NernstEinsteinRatioParallel);
     write_dbl_analysis(s_PartialEntropy,&TResult::m_PartialEntropy);
     write_dbl_analysis(s_EffChemPot,&TResult::m_EffChemPot);
     write_dbl_analysis(s_EffTemp,&TResult::m_EffTemp);
@@ -935,11 +904,8 @@ void MC::TResult::WriteMultiAnalysis(std::ostream& o_str, const std::vector<std:
     write_dbl_analysis(s_DriftMobility,&TResult::m_DriftMobility);
     write_dbl_analysis(s_DiffusionCoefficient,&TResult::m_DiffusionCoefficient);
     write_dbl_analysis(s_DiffusionCoefficientParallel,&TResult::m_DiffusionCoefficientParallel);
-    write_dbl_analysis(s_DiffusionCoefficientTransverse,&TResult::m_DiffusionCoefficientTransverse);
-    write_dbl_analysis(s_ChargeDiffusionCoefficient,&TResult::m_ChargeDiffusionCoefficient);
-    write_dbl_analysis(s_HavenRatio,&TResult::m_HavenRatio);
-    write_dbl_analysis(s_HavenRatioParallel,&TResult::m_HavenRatioParallel);
-    write_dbl_analysis(s_HavenRatioTransverse,&TResult::m_HavenRatioTransverse);
+    write_dbl_analysis(s_NernstEinsteinRatio,&TResult::m_NernstEinsteinRatio);
+    write_dbl_analysis(s_NernstEinsteinRatioParallel,&TResult::m_NernstEinsteinRatioParallel);
     write_dbl_analysis(s_PartialEntropy,&TResult::m_PartialEntropy);
     write_dbl_analysis(s_EffChemPot,&TResult::m_EffChemPot);
     write_dbl_analysis(s_EffTemp,&TResult::m_EffTemp);
@@ -990,16 +956,10 @@ std::vector<std::array<std::string,2>> MC::TResult::WriteMultiTableHeader()
     header.push_back(GF::StdDevDescUnit(s_DiffusionCoefficient));
     header.push_back(s_DiffusionCoefficientParallel);
     header.push_back(GF::StdDevDescUnit(s_DiffusionCoefficientParallel));
-    header.push_back(s_DiffusionCoefficientTransverse);
-    header.push_back(GF::StdDevDescUnit(s_DiffusionCoefficientTransverse));
-    header.push_back(s_ChargeDiffusionCoefficient);
-    header.push_back(GF::StdDevDescUnit(s_ChargeDiffusionCoefficient));
-    header.push_back(s_HavenRatio);
-    header.push_back(GF::StdDevDescUnit(s_HavenRatio));
-    header.push_back(s_HavenRatioParallel);
-    header.push_back(GF::StdDevDescUnit(s_HavenRatioParallel));
-    header.push_back(s_HavenRatioTransverse);
-    header.push_back(GF::StdDevDescUnit(s_HavenRatioTransverse));
+    header.push_back(s_NernstEinsteinRatio);
+    header.push_back(GF::StdDevDescUnit(s_NernstEinsteinRatio));
+    header.push_back(s_NernstEinsteinRatioParallel);
+    header.push_back(GF::StdDevDescUnit(s_NernstEinsteinRatioParallel));
     header.push_back(s_PartialEntropy);
     header.push_back(GF::StdDevDescUnit(s_PartialEntropy));
     header.push_back(s_EffChemPot);
@@ -1233,11 +1193,8 @@ std::vector<std::string> MC::TResult::WriteMultiTableLine(const std::vector<std:
     write_dbl_analysis(&TResult::m_DriftMobility);
     write_dbl_analysis(&TResult::m_DiffusionCoefficient);
     write_dbl_analysis(&TResult::m_DiffusionCoefficientParallel);
-    write_dbl_analysis(&TResult::m_DiffusionCoefficientTransverse);
-    write_dbl_analysis(&TResult::m_ChargeDiffusionCoefficient);
-    write_dbl_analysis(&TResult::m_HavenRatio);
-    write_dbl_analysis(&TResult::m_HavenRatioParallel);
-    write_dbl_analysis(&TResult::m_HavenRatioTransverse);
+    write_dbl_analysis(&TResult::m_NernstEinsteinRatio);
+    write_dbl_analysis(&TResult::m_NernstEinsteinRatioParallel);
     write_dbl_analysis(&TResult::m_PartialEntropy);
     write_dbl_analysis(&TResult::m_EffChemPot);
     write_dbl_analysis(&TResult::m_EffTemp);
@@ -1302,7 +1259,6 @@ void MC::TResult::SaveProgress(double percentage, bool is_eq)
 	new_progress->m_DriftMobility = m_DriftMobility;
     new_progress->m_DiffusionCoefficient = m_DiffusionCoefficient;
 	new_progress->m_DiffusionCoefficientParallel = m_DiffusionCoefficientParallel;
-	new_progress->m_DiffusionCoefficientTransverse = m_DiffusionCoefficientTransverse;
 	new_progress->m_PartialEntropy = m_PartialEntropy;
     new_progress->m_TotalEnergy = m_TotalEnergy;
     new_progress->m_EffChemPot = m_EffChemPot;
@@ -1349,14 +1305,9 @@ void MC::TResult::WriteProgressHeader(std::ostream& o_str, std::uint64_t maxhops
     if (has_field)
     {
         o_str << std::setw(std::max(pos_dbl_width,10)) << "Sigma(S/m)" << " ";
-        o_str << std::setw(std::max(pos_dbl_width,9)) << "Dx(cm2/s)" << " ";
-        o_str << std::setw(std::max(pos_dbl_width,10)) << "Dyz(cm2/s)" << " ";
     }
-    else
-    {
-        o_str << std::setw(std::max(pos_dbl_width,8)) << "D(cm2/s)" << " ";
-    }
-
+    
+    o_str << std::setw(std::max(pos_dbl_width,8)) << "D(cm2/s)" << " ";
     o_str << std::setw(std::max(pos_dbl_width + 1,10)) << "Etotal(eV)" << " ";
     o_str << std::setw(std::max(pos_dbl_width,4)) << "Neff" << " ";
     o_str << std::setw(std::max(el_width,4)) << "Nmob" << " ";
@@ -1365,13 +1316,13 @@ void MC::TResult::WriteProgressHeader(std::ostream& o_str, std::uint64_t maxhops
 
     if (has_field)
     {
-        o_str << std::setw(std::max(pos_dbl_width + 1,7)) << "<x>(nm)" << " ";
-        o_str << std::setw(std::max(pos_dbl_width,19)) << "<(x-<x>mob)^2>(nm2)" << " ";
-        o_str << std::setw(std::max(pos_dbl_width,20)) << "(<y^2>+<z^2>)/2(nm2)";
+        o_str << std::setw(std::max(pos_dbl_width + 1,7)) << "<X>(nm)" << " ";
+        o_str << std::setw(std::max(pos_dbl_width,11)) << "Var(X)(nm2)" << " ";
+        o_str << std::setw(std::max(pos_dbl_width,20)) << "(<Y^2>+<Z^2>)/2(nm2)";
     }
     else
     {
-        o_str << std::setw(std::max(pos_dbl_width,26)) << "(<x^2>+<y^2>+<z^2>)/3(nm2)";
+        o_str << std::setw(std::max(pos_dbl_width,26)) << "(<X^2>+<Y^2>+<Z^2>)/3(nm2)";
     }
     o_str << std::endl;
 }
@@ -1409,14 +1360,9 @@ void MC::TResult::WriteProgressLine(std::ostream& o_str, std::uint64_t maxhops, 
     if (has_field)
     {
         o_str << std::setw(std::max(pos_dbl_width,10)) << last->m_Conductivity << " ";
-        o_str << std::setw(std::max(pos_dbl_width,9)) << last->m_DiffusionCoefficientParallel << " ";
-        o_str << std::setw(std::max(pos_dbl_width,10)) << last->m_DiffusionCoefficientTransverse << " ";
     }
-    else
-    {
-        o_str << std::setw(std::max(pos_dbl_width,8)) << last->m_DiffusionCoefficient << " ";
-    }
-
+    
+    o_str << std::setw(std::max(pos_dbl_width,8)) << last->m_DiffusionCoefficient << " ";
     o_str << std::setw(std::max(pos_dbl_width + 1,10)) << last->m_TotalEnergy << " ";
     o_str << std::setw(std::max(pos_dbl_width,4)) << last->m_EffCarriers << " ";
     o_str << std::setw(std::max(el_width,4)) << last->m_MobileElectrons << " ";
@@ -1426,7 +1372,7 @@ void MC::TResult::WriteProgressLine(std::ostream& o_str, std::uint64_t maxhops, 
     if (has_field)
     {
         o_str << std::setw(std::max(pos_dbl_width + 1,7)) << last->m_MeanDisp_x << " ";
-        o_str << std::setw(std::max(pos_dbl_width,19)) << last->m_MeanDispVariance_x << " ";
+        o_str << std::setw(std::max(pos_dbl_width,11)) << last->m_MeanDispVariance_x << " ";
         o_str << std::setw(std::max(pos_dbl_width,20)) 
             << (last->m_MeanSquaredDisp_y + last->m_MeanSquaredDisp_z)/2.0;
     }
@@ -1465,7 +1411,6 @@ void MC::TResult::WriteConvergenceTable(std::ostream& o_str, bool is_eq) const
     header.push_back(s_DriftMobility);
     header.push_back(s_DiffusionCoefficient);
     header.push_back(s_DiffusionCoefficientParallel);
-    header.push_back(s_DiffusionCoefficientTransverse);
     header.push_back(s_PartialEntropy);
     header.push_back(s_TotalEnergy);
     header.push_back(s_EffChemPot);
@@ -1567,10 +1512,6 @@ void MC::TResult::WriteConvergenceTable(std::ostream& o_str, bool is_eq) const
         sstr.str("");
 
         sstr << it->m_DiffusionCoefficientParallel * density_factor;
-        table.back().push_back(sstr.str());
-        sstr.str("");
-
-        sstr << it->m_DiffusionCoefficientTransverse * density_factor;
         table.back().push_back(sstr.str());
         sstr.str("");
 

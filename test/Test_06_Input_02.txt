@@ -19,7 +19,7 @@ Description = This is a test project with different chemical potentials
 <Parameters>
 Repetitions = 4
 Temp(K) = 273.15
-GradPhi(V/cm) = 60000
+EField(V/cm) = 60000
 States = 40000
 MinPaths = 40
 DistCutoff = 2.1

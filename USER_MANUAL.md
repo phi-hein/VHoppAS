@@ -104,7 +104,7 @@ LocRadius(nm) = 0.15
 </Parameters>
 
 <VariedParameters>
-Temp    GradPhi
+Temp    EField
 K       V/cm 
 273.15  0.0
 320     60000
@@ -170,7 +170,7 @@ Determines whether different simulation results should be compared only based on
 
 - `UseYZVariance` (optional, default = `y`):  
 _Type: Switch; Allowed values: `yes` (`y`|`yes`|`t`|`true`) or `no` (`n`|`no`|`f`|`false`)._  
-Determines whether the tracer diffusion coefficient $`D_{yz}`$ (perpendicular to the electric field) should be calculated from the $y$- and $z$-displacement variances (= `yes`) or from the mean squared displacements in $y$- and $z$-direction (= `no`). `UseYZVariance = yes` is necessary especially in the high-field regime, because spurious imbalances in the random structure (for example slightly more or longer paths in $`({+}x,{+}y)`$-direction than in $`({+}x,{-}y)`$-direction) can lead to an artificial small flux perpendicular to the high electric field.
+Determines whether the Fickian diffusion coefficient $`D = D_{yz}`$ (perpendicular to the electric field) should be calculated from the $y$- and $z$-displacement variances (= `yes`) or from the mean squared displacements in $y$- and $z$-direction (= `no`). `UseYZVariance = yes` is necessary especially in the high-field regime, because spurious imbalances in the random structure (for example slightly more or longer paths in $`({+}x,{+}y)`$-direction than in $`({+}x,{-}y)`$-direction) can lead to an artificial small flux perpendicular to the high electric field.
 
 - `ParallelizeReps` (optional, default = `n`):  
 _Type: Switch; Allowed values: `yes` (`y`|`yes`|`t`|`true`) or `no` (`n`|`no`|`f`|`false`)._  
@@ -188,14 +188,14 @@ Specifies how often each parameter set shall be simulated. Averaging over severa
 
 - `Emin` (mandatory):  
 _Type: Real number; Unit: eV; Allowed values: Within energy axis in the DOS-File and lower than `Emax` parameter._  
-Lower boundary $`E_{\text{min}}`$ of the DOS range to be used (= lowest allowed state energy; on the energy axis of the supplied DOS-File, i.e. relative to the charge-neutral Fermi level).
+Lower boundary $`E_{\text{min}}`$ of the DOS energy range to be used (= lowest allowed state energy; on the energy axis of the supplied DOS-File, i.e. relative to the charge-neutral Fermi level).
 
 - `Emax` (mandatory):  
 _Type: Real number; Unit: eV; Allowed values: Within energy axis in the DOS-File and higher than `Emin` parameter._  
-Upper boundary $`E_{\text{max}}`$ of the DOS range to be used (= highest allowed state energy; on the energy axis of the supplied DOS-File, i.e. relative to the charge-neutral Fermi level).
+Upper boundary $`E_{\text{max}}`$ of the DOS energy range to be used (= highest allowed state energy; on the energy axis of the supplied DOS-File, i.e. relative to the charge-neutral Fermi level).
 
 - `ChemPot` (mandatory):  
-_Type: Real number; Unit: eV; Allowed values: Unrestricted (= can even be outside DOS range), but must lead to at least one electron and at least one unoccupied state in the cell._  
+_Type: Real number; Unit: eV; Allowed values: Unrestricted (= can even be outside DOS energy range), but must lead to at least one electron and at least one unoccupied state in the cell._  
 Chemical potential $\mu$ of the electrons, i.e. the position of the used Fermi level on the DOS energy axis (= relative to the charge-neutral Fermi level). This parameter determines the number of electrons initially placed in the simulation cell. Under weak-field conditions, it corresponds to the actual (relative) chemical potential of the electrons, while in the high-field regime the effective chemical potential of electrons (= steady-state Fermi level) can differ due to a higher effective temperature of the electrons. `ChemPot` $`= 0`$ leads to simulation of the charge-neutral material, while `ChemPot` $`> 0`$ shifts the Fermi level to higher energy (= more electrons = negatively charged material) and `ChemPot` $`< 0`$ shifts the Fermi level to lower energy (= less electrons = positively charged material).
 
 - `States` (mandatory):  
@@ -211,7 +211,7 @@ _Type: Real number; Unit: nm; Allowed values: $`0.0`$ - half cell size (actual m
 Spatial path cutoff $`r_{\text{cut}}`$ (= maximum state-to-state distance considered for hopping). Is increased automatically if it does not lead to at least two paths for each state. If `DistCutoff` is specified and non-zero, then the `MinPaths` parameter is ignored.
 
 - `EdiffCutoff` (optional, default $`= 0.0`$):  
-_Type: Real number; Unit: eV; Allowed values: $`0.0`$ - width of the DOS range (Emax minus Emin)._  
+_Type: Real number; Unit: eV; Allowed values: $`0.0`$ - width of the DOS energy range (Emax minus Emin)._  
 Energetic path cutoff $`E_{\text{cut}}`$ (= maximum state energy difference considered for hopping). This constraint is applied after the spatial cutoff (and may lead to states with less paths than `MinPaths`). It is increased automatically if it does not leave at least two paths for each state. The value `EdiffCutoff` $`= 0`$ corresponds to no energetic cutoff (as if `EdiffCutoff` $`= E_{\text{max}} - E_{\text{min}}`$).
 
 - `PreHops` (optional, default $`= 0`$):  
@@ -242,9 +242,9 @@ Localization radius $\alpha$ (= decay length of localized wavefunctions).
 _Type: Real number; Unit: K; Allowed values: $`\geq 0.01`$._  
 Simulation temperature $T$ (= phonon temperature in the Miller-Abrahams rate equation; = electron temperature in the weak-field regime).
 
-- `GradPhi` (mandatory):  
-_Type: Real number; Unit: V/cm; Allowed values: Unrestricted._  
-Electric potential gradient $F$ in x-direction. Its absolute value is the electric field strength. For `GradPhi` $`> 0`$, the electric field points in $`{-}x`$-direction and electrons flow in $`{+}x`$-direction (opposite for `GradPhi` $`< 0`$). For `GradPhi` $`= 0`$ there is no electric field in the simulation, i.e. only diffusion. 
+- `EField` (mandatory):  
+_Type: Real number; Unit: V/cm; Allowed values: $`\geq 0.0`$._  
+Electric field strength $F$. The electric field points in $`{-}x`$-direction and the electrons flow in $`{+}x`$-direction (i.e. the value of `EField` corresponds to the electric potential gradient $`\partial\varphi/\partial x`$). For `EField` $`= 0`$ there is no electric field in the simulation, i.e. only diffusion. 
 
 When VHoppAS is started, it analyzes whether there are already finished simulations (i.e. result files) in the output directory that correspond to simulations specified in the input file. It then only conducts those simulations and repetitions that are not already finished. Only result files whose filename begins similar as specified in the `Output-File` setting are considered for this. Result files correspond to a certain parameter set when the `ProjectID`, the `SimID` and all simulation parameters (except `Repetitions` and `Seed`; also not the settings in the `<MC-Project>` block) are equal (see also `OnlyCompareSimID` setting). While finding these corresponding result files is the basis for aggregating result tables (`./VHoppAS -collect` command), it is also helpful in several other scenarios. For example, when VHoppAS was terminated (e.g. because runtime limit on a cluster was reached) after some but not all simulations or repetitions were finished, then it can be restarted with the same input file to simulate only what is missing. When all simulations or repetitions are finished, it is also possible to add more lines at the end of the `<VariedParameters>`-table or to increase the number of `Repetitions` when more simulations or repetitions are needed.
 
@@ -361,14 +361,14 @@ Conductivity $\sigma$ of the electrons.
 - `Mobility` (Unit: cm<sup>2</sup>/Vs):  
 Drift mobility $u$ of the electrons.
 
-- `TracerDCoeff`, `TracerDCoeffP`, `TracerDCoeffT` (Unit: cm<sup>2</sup>/s):  
-Tracer diffusion coefficient $D$, parallel tracer diffusion coefficient $`D_x`$ (`P` suffix; parallel to electric field) and transverse tracer diffusion coefficient $`D_{yz}`$ (`T` suffix; perpendicular to electric field). Could also be called self-diffusion coefficients (due to homogeneous KMC cell) and correspond to the respective chemical diffusion coefficients (due to the effective charge carrier formalism).
+- `DCoeff` (Unit: cm<sup>2</sup>/s):  
+Fickian diffusion coefficient $`D`$ of the electrons. For `EField` $`\neq 0`$, $`D`$ is calculated from the displacements perpendicular to the electric field (i.e. $`D = D_{yz}`$). For `EField` $`= 0`$, $`D`$ is calculated from the displacements in all directions (i.e. $`D = D_{xyz}`$). The reason for this is explained directly below.
 
-- `ChargeDCoeff` (Unit: cm<sup>2</sup>/s):  
-Charge diffusion coefficient $`D_{\sigma}`$, i.e. the diffusion coefficient calculated from the conductivity or mobility with the Nernst-Einstein relation (using $`T_{\mathrm{eff}}`$ and $`\mu_{\mathrm{eff}}`$).
+- `DCoeffP` (Unit: cm<sup>2</sup>/s):  
+Fickian diffusion coefficient $`D_x`$ in $`x`$-direction (`P` suffix; parallel to the electric field). Note that for any non-zero electric field, $`D_x`$ typically shows deviations and non-convergence due to asymmetries in the $`x`$-displacement distribution. Therefore, for `EField` $`\neq 0`$, the $`x`$-displacements are excluded from the calculation of $`D`$ (`DCoeff`, see above) and $`D_x`$ is given separately as `DCoeffP` to show the deviations. Due to the isotropic nature of amorphous materials (even at high electric field), $`D_{yz}`$ is always also a measure for diffusion in $`x`$-direction and thus yields the Fickian diffusion coefficient $`D`$ for `EField` $`\neq 0`$.
 
-- `HavenRatio`, `HavenRatioP`, `HavenRatioT` (Unit: None):  
-Haven ratio $`H_{\mathrm{R}}=D/D_{\sigma}`$, parallel Haven ratio $`H_{\mathrm{R},x}=D_x/D_{\sigma}`$ (`P` suffix) and transverse Haven ratio $`H_{\mathrm{R},yz}=D_{yz}/D_{\sigma}`$ (`T` suffix).
+- `NERatio`, `NERatioP` (Unit: None):  
+Ratios $`H_{\mathrm{R}}=eD/uk_{\text{B}}T_{\mathrm{eff}}`$ and $`H_{\mathrm{R},x}=eD_x/uk_{\text{B}}T_{\mathrm{eff}}`$ (`P` suffix) to evaluate the validity of the Nernst-Einstein relation.
 
 - `PartialEntropy` (Unit: eV/K):  
 Partial entropy $`s_{\mathrm{e}}`$ of the electrons (for the specific random structure = calculated from the state energies $`E_i`$).
@@ -395,7 +395,7 @@ Simulated timespan $`\tau_{\mathrm{sim}}`$ (relative to the equilibration).
 Mean displacement $`\langle R \rangle_{\mathrm{sim}}`$, mean `x`-displacement $`\langle X \rangle_{\mathrm{sim}}`$, mean `y`-displacement $`\langle Y \rangle_{\mathrm{sim}}`$ and mean `z`-displacement $`\langle Z \rangle_{\mathrm{sim}}`$ of effective charge carriers (relative to the equilibration).
 
 - `MeanDispVarx`, `MeanDispVary`, `MeanDispVarz` (Unit: nm<sup>2</sup>):  
-Variance of `x`-displacement $`\langle (X-\langle X \rangle_{\mathrm{mob}})^2 \rangle_{\mathrm{sim}}`$, variance of `y`-displacement $`\langle (Y-\langle Y \rangle_{\mathrm{mob}})^2 \rangle_{\mathrm{sim}}`$ and variance of `z`-displacement $`\langle (Z-\langle Z \rangle_{\mathrm{mob}})^2 \rangle_{\mathrm{sim}}`$ of effective charge carriers (relative to the equilibration).
+Variance of `x`-displacement $`\mathrm{Var}(X)_{\mathrm{sim}}`$, variance of `y`-displacement $`\mathrm{Var}(Y)_{\mathrm{sim}}`$ and variance of `z`-displacement $`\mathrm{Var}(Z)_{\mathrm{sim}}`$ of effective charge carriers (relative to the equilibration).
 
 - `MeanSqDispx`, `MeanSqDispy`, `MeanSqDispz` (Unit: nm<sup>2</sup>):  
 Mean squared `x`-displacement $`\langle X^2 \rangle_{\mathrm{sim}}`$, mean squared `y`-displacement $`\langle Y^2 \rangle_{\mathrm{sim}}`$ and mean squared `z`-displacement $`\langle Z^2 \rangle_{\mathrm{sim}}`$ of effective charge carriers (relative to the equilibration).
@@ -407,7 +407,7 @@ Total number of non-oscillating hops during the main simulation and the ratio be
 Ratio between the number of non-oscillating hops in $+x$-direction (= from state $i$ to state $j$ with $`x_{ij} = x_j - x_i \geq 0`$) and the total number of non-oscillating hops during the main simulation.
 
 - `MeanFieldContrib` (Unit: eV):  
-Average of the electric field contribution ($`-\mathrm{e}x_{ij}F`$ term with $F$ = electric potential gradient) of all hops that occurred during the main simulation.
+Average of the electric field contribution ($`{-}ex_{ij}F`$ term with $F$ = electric potential gradient) of all hops that occurred during the main simulation.
 
 - `TotalEnergy` (Unit: eV):  
 Sum of the state energies $`E_i`$ of all occupied states (at the end of the simulation = final electron distribution).
@@ -466,7 +466,7 @@ Distributions vs. **number of non-oscillating hops**. For example how many state
 Distributions vs. **state energy difference** ($`E_{ij}`$ in the Miller-Abrahams equation; does not contain the contribution from electric field). For example how many paths exist with a certain energy difference between the partaking states or how many hops occurred with a certain state energy difference.
 
 - `Histogram:FieldEnergyContributions`:  
-Distributions vs. **energetic contribution of the electric field** ($`-\mathrm{e}x_{ij}F`$ term in the Miller-Abrahams equation). For example how many paths or how many hops occurred with a certain field contribution.
+Distributions vs. **energetic contribution of the electric field** ($`{-}ex_{ij}F`$ term in the Miller-Abrahams equation). For example how many paths or how many hops occurred with a certain field contribution.
 
 - `Histogram:Distances`:  
 Distributions vs. **hop distance** ($`r_{ij}`$ in the Miller-Abrahams equation). For example how many hops occurred with a certain spatial distance between the states.

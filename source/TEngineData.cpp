@@ -99,6 +99,10 @@ void MC::TEngineData::ValidateParameters(const TParamSet& params)
     {
         throw EX::TInvalidInput("Temperature unrealistic low (< 0.01 K).");
     }
+    if (params.m_PhiGradient < 0.0)
+    {
+        throw EX::TInvalidInput("Electric field strength is negative.");
+    }
     if (params.m_LocRadius <= 0.0)
     {
         throw EX::TInvalidInput("Localization radius zero or negative.");
@@ -184,7 +188,7 @@ void MC::TEngineData::SetParameters(std::unique_ptr<const TParamSet> params, std
             << m_ParamSet->m_LocRadius << " nm" << std::endl;
         std::cout << "  State energy range: " << m_ParamSet->m_MinStateEnergy << " eV to " << m_ParamSet->m_MaxStateEnergy 
             << " eV, Chemical potential: " << m_ParamSet->m_ChemPot << " eV" << std::endl;
-        std::cout << "  d(Electric potential)/dx: " << m_ParamSet->m_PhiGradient << " V/cm, Voltage drop across cell: " 
+        std::cout << "  Electric field strength: " << m_ParamSet->m_PhiGradient << " V/cm, Voltage drop across cell: " 
             << m_GradPhiEnergy * m_DOS->GetEnergyFactor() << " V" << std::endl;
         std::cout << "  Inverse hop attempt frequency: " << m_ParamSet->m_AttemptTime << " s" << std::endl;
         std::cout << "  Pre-equilibration hops: " << m_ParamSet->mO_PreHopLimit() 

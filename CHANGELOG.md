@@ -17,7 +17,18 @@ Syntax for links to issues (or pull requests):
 ([#1](https://github.com/phi-hein/VHoppAS/issues/1))
 --->
 
-## [1.9.0] - Juli 2023
+## [2.0.0] - February 2024
+
+### Changed:
+- **Breaking:** Rename input value `GradPhi` to `EField` and restrict possible values
+- **Breaking:** Rename several output values related to diffusion (and remove some)
+- Adjust nomenclature to match paper
+- Allow public access to repository
+
+### Fixed:
+- **Breaking:** Mobility of electrons is defined as positive
+
+## 1.9.0 - Juli 2023
 
 ### Changed:
 - **Breaking:** Rename several output values
@@ -66,7 +77,7 @@ Syntax for links to issues (or pull requests):
 _Initial release._
 
 <!--- List of links to releases: --->
-[1.9.0]: https://github.com/phi-hein/VHoppAS/releases/tag/v1.9.0
+[2.0.0]: https://github.com/phi-hein/VHoppAS/releases/tag/v2.0.0
 
 <!--- List of links to pull requests and issues: --->
 [#4]: https://github.com/phi-hein/VHoppAS/issues/4

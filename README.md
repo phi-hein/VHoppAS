@@ -5,11 +5,12 @@ This code was developed by Philipp Hein at the Institute of Physical Chemistry, 
 
 ## Features
 - Randomized 3D positions and energies of localized states generated from an arbitrary user-supplied DOS
-- Flexible cut-off definitions for DOS range, hop distance and hop energy (incl. auto-adjustment)
+- Flexible cut-off definitions for DOS energy range, hop distance and hop energy (incl. auto-adjustment)
 - Initial electron distribution: Fermi-Dirac or step function
 - Multi-stage simulations with equilibration and repetitions for improved statistics
 - Electron transport with and without electric field
-- Calculation of Haven ratio and partial entropy of electrons
+- Validation of the Nernst-Einstein relation
+- Calculation of the partial entropy of electrons
 - Facile parameter studies, e.g. of temperature, chemical potential or electric field (optimized for parallel submission to cluster systems)
 - Optional fit of the electron distribution for effective temperature and effective chemical potential (e.g. at high electric field strength)
 - Detection of oscillations
@@ -25,12 +26,9 @@ This code was developed by Philipp Hein at the Institute of Physical Chemistry, 
 ## License information
 This code is &copy; P. Hein, 2023, and it is made available under the GPL license enclosed with the software.
 
-Over and above the legal restrictions imposed by this license, if you use this software or modified variants of it, for example for an academic publication, then you are obliged to provide proper attribution. This can be to this code directly,
+Over and above the legal restrictions imposed by this license, if you use this software or modified variants of it, for example for an academic publication, then you are obliged to provide proper attribution by citing the following paper:
 
-- P. Hein. VHoppAS: Variable-range Hopping in Amorphous Solids, _\<version\>_ (2023). github.com/phi-hein/VHoppAS.
-
-or to the paper that describes it
-
-- _to be published_.
-
-or (ideally) both.
+"Variable-Range Hopping Conduction in Amorphous, Non-Stoichiometric Gallium Oxide"  
+P. Hein, T. Romstadt, F. Draber, J. Ryu, T. Böger, A. Falkenstein, M. Kim and M. Martin  
+_to be submitted_  
+DOI: _will be added_

@@ -35,14 +35,11 @@ struct TProgress
 	// Drift mobility (in cm2/Vs; based on effective carrier density)
 	double m_DriftMobility;
 
-	// Tracer diffusion coefficient (average of all directions; in cm2/s; based on effective carrier density)
+	// Fickian diffusion coefficient (in cm2/s; based on effective carrier density)
 	double m_DiffusionCoefficient;
 
-	// Tracer diffusion coefficient parallel to electric field (in cm2/s; based on effective carrier density)
+	// Fickian diffusion coefficient in x-direction (in cm2/s; based on effective carrier density)
 	double m_DiffusionCoefficientParallel;
-
-	// Tracer diffusion coefficient perpendicular to electric field (in cm2/s; based on effective carrier density)
-	double m_DiffusionCoefficientTransverse;
 
 	// Partial entropy of electrons (in eV/K)
 	double m_PartialEntropy;
@@ -111,11 +108,8 @@ public:
 	static const std::array<std::string,2> s_DriftMobility;
 	static const std::array<std::string,2> s_DiffusionCoefficient;
 	static const std::array<std::string,2> s_DiffusionCoefficientParallel;
-	static const std::array<std::string,2> s_DiffusionCoefficientTransverse;
-	static const std::array<std::string,2> s_ChargeDiffusionCoefficient;
-	static const std::array<std::string,2> s_HavenRatio;
-	static const std::array<std::string,2> s_HavenRatioParallel;
-	static const std::array<std::string,2> s_HavenRatioTransverse;
+	static const std::array<std::string,2> s_NernstEinsteinRatio;
+	static const std::array<std::string,2> s_NernstEinsteinRatioParallel;
 	static const std::array<std::string,2> s_PartialEntropy;
 	static const std::array<std::string,2> s_EffChemPot;
 	static const std::array<std::string,2> s_EffTemp;
@@ -207,26 +201,17 @@ public:
 	// Drift mobility (in cm2/Vs; based on effective carrier density)
 	double m_DriftMobility;
 
-	// Tracer diffusion coefficient (average of all directions; in cm2/s; based on effective carrier density)
+	// Fickian diffusion coefficient (in cm2/s; based on effective carrier density)
 	double m_DiffusionCoefficient;
 
-	// Tracer diffusion coefficient parallel to electric field (in cm2/s; based on effective carrier density)
+	// Fickian diffusion coefficient in x-direction (in cm2/s; based on effective carrier density)
 	double m_DiffusionCoefficientParallel;
 
-	// Tracer diffusion coefficient perpendicular to electric field (in cm2/s; based on effective carrier density)
-	double m_DiffusionCoefficientTransverse;
+	// Nernst-Einstein ratio (eD/ukTeff)
+	double m_NernstEinsteinRatio;
 
-	// Charge diffusion coefficient (in cm2/s; calculated from conductivity via Nernst-Einstein relation)
-	double m_ChargeDiffusionCoefficient;
-
-	// Haven ratio (average of all directions)
-	double m_HavenRatio;
-
-	// Haven ratio parallel to electric field (Dx / Dsigma)
-	double m_HavenRatioParallel;
-
-	// Haven ratio transverse to electric field (Dyz / Dsigma = Haven ratio at weak field)
-	double m_HavenRatioTransverse;
+	// Nernst-Einstein ratio in x-direction (eDx/ukTeff)
+	double m_NernstEinsteinRatioParallel;
 
 	// Partial entropy of electrons (in eV/K)
 	double m_PartialEntropy;
