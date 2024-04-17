@@ -21,7 +21,12 @@ import gh_md_to_html
 #     print("Exit due to wrong API response.")
 #     exit(1)
 
-gh_md_to_html.main("-t file -c gh-md-css ../USER_MANUAL.md")
+gh_md_to_html.main(md_origin="../USER_MANUAL.md",
+    origin_type="file",
+    css_paths="gh-md-css",
+    toc=True,
+    dont_make_images_links=True,
+    soft_wrap_in_code_boxes=True)
 
 # Add surrounding html for pdf conversion
 # (also add that pdf was created using httpx and xhtml2pdf Python modules)
