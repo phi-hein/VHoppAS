@@ -1,0 +1,25 @@
+{
+  "creators": [
+    {
+      "orcid": "0000-0002-3029-9467",
+      "affiliation": "Institute of Physical Chemistry, RWTH Aachen University",
+      "name": "Hein, Philipp"
+    }
+  ],
+
+  "license": "gpl-3.0-or-later",
+
+  "title": "VHoppAS: Variable-range Hopping in Amorphous Solids",
+
+  "description": "Kinetic Monte-Carlo simulation of 3D variable-range hopping of localized electrons in amorphous compounds, which yields the conductivity (and diffusion coefficients) based on a user-supplied density of states (e.g. from an ab-initio DOS).",
+
+  "keywords": [
+    "Simulation software", 
+    "Physical chemistry", 
+    "Electrochemistry",
+    "Solid-state physics",
+    "Kinetic Monte-Carlo (KMC)", 
+    "Amorphous materials", 
+    "Variable-range hopping"
+  ]
+}
