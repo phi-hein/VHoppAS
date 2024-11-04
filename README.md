@@ -3,7 +3,7 @@ Kinetic Monte-Carlo simulation of 3D variable-range hopping of localized electro
 
 This code was developed by Philipp Hein at the Institute of Physical Chemistry, RWTH Aachen University, Germany, under the supervision of Prof. Manfred Martin.
 
-DOI (scientific article): _will be added as soon as available_  
+DOI (scientific article): [10.1002/aelm.202400407](https://doi.org/10.1002/aelm.202400407)  
 DOI (citable archive): [10.5281/zenodo.10974845](https://doi.org/10.5281/zenodo.10974845)
 
 ## Features
@@ -33,5 +33,5 @@ Over and above the legal restrictions imposed by this license, if you use this s
 
 "Variable-Range Hopping Conduction in Amorphous, Non-Stoichiometric Gallium Oxide"  
 P. Hein, T. Romstadt, F. Draber, J. Ryu, T. Böger, A. Falkenstein, M. Kim and M. Martin  
-_to be submitted_  
-DOI: _will be added_
+_Advanced Electronic Materials_ 2024, 2400407  
+DOI: [10.1002/aelm.202400407](https://doi.org/10.1002/aelm.202400407)  
