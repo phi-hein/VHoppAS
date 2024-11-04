@@ -13,6 +13,14 @@
 
   "description": "Kinetic Monte-Carlo simulation of 3D variable-range hopping of localized electrons in amorphous compounds, which yields the conductivity (and diffusion coefficients) based on a user-supplied density of states (e.g. from an ab-initio DOS).",
 
+  "related_identifiers": [
+    {
+      "identifier": "https://doi.org/10.1002/aelm.202400407",
+      "relation": "isDocumentedBy",
+      "resource_type": "publication-article"
+    }
+  ],
+  
   "keywords": [
     "Simulation software", 
     "Physical chemistry", 
