@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Hein"
+  given-names: "Philipp"
+  orcid: "https://orcid.org/0000-0002-3029-9467"
+title: "VHoppAS"
+version: 2.0.0
+doi: 10.5281/zenodo.10974845
+date-released: 2024-11-04
+url: "https://github.com/phi-hein/VHoppAS"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Hein"
+    given-names: "Philipp"
+    orcid: "https://orcid.org/0000-0002-3029-9467"
+  - family-names: "Romstadt"
+    given-names: "Tobias"
+    orcid: "https://orcid.org/0009-0002-0249-6356"
+  - family-names: "Draber"
+    given-names: "Fabian"
+    orcid: "https://orcid.org/0000-0003-4359-9255"
+  - family-names: "Ryu"
+    given-names: "Jinseok"
+    orcid: "https://orcid.org/0000-0002-9558-3469"
+  - family-names: "Böger"
+    given-names: "Thorben"
+    orcid: "https://orcid.org/0009-0006-5239-7814"
+  - family-names: "Falkenstein"
+    given-names: "Andreas"
+    orcid: "https://orcid.org/0000-0002-4992-0823"
+  - family-names: "Kim"
+    given-names: "Miyoung"
+    orcid: "https://orcid.org/0000-0001-8632-6711"
+  - family-names: "Martin"
+    given-names: "Manfred"
+    orcid: "https://orcid.org/0000-0001-9046-050X"
+  doi: "10.1002/aelm.202400407"
+  journal: "Advanced Electronic Materials"
+  title: "Variable-Range Hopping Conduction in Amorphous, Non-Stoichiometric Gallium Oxide"
+  month: 11
+  year: 2024
+  start: 2400407
