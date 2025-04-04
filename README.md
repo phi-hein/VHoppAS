@@ -33,5 +33,5 @@ Over and above the legal restrictions imposed by this license, if you use this s
 
 "Variable-Range Hopping Conduction in Amorphous, Non-Stoichiometric Gallium Oxide"  
 P. Hein, T. Romstadt, F. Draber, J. Ryu, T. Böger, A. Falkenstein, M. Kim and M. Martin  
-_Advanced Electronic Materials_ 2024, 2400407  
+_Advanced Electronic Materials_ 2025, 11, 2400407  
 DOI: [10.1002/aelm.202400407](https://doi.org/10.1002/aelm.202400407)  
